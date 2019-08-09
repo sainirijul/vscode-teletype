@@ -32,7 +32,6 @@
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
-		"@types/pusher-js": "^4.2.2",
 		"awesome-typescript-loader": "^5.2.1",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.12.1",

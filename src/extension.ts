@@ -10,9 +10,10 @@ import * as vscode from 'vscode';
 // import { web_rtc } from "electron-webrtc-patched";
 
 
-import * as tc from '@atom/teletype-client';
+// import * as tc from '@atom/teletype-client';
+// import GuestPortalBinding from './GuestPortalBinding';
 
-// const TeletypeClient= require('@atom/teletype-client');
+import { TeletypeClient } from '@atom/teletype-client';
 // const teletype = require('teletype')
 
 
@@ -46,66 +47,55 @@ async function joinPortal(portalId: any) {
 		return;
 	}
 
-	// const params = {databaseURL: process.env.TEST_DATABASE_URL};
-    // // Uncomment and provide credentials to test against Pusher.
-    // params.pusherCredentials = {
-    //   appId: '123',
-    //   key: '123',
-    //   secret: '123'
-    // };
-    // let server = await startTestServer(params);
-
-
 	try {
-		let client = new tc.TeletypeClient(
-			{
-				restGateway: {}
-			},
-			{
-				pubSubGateway: {}
-			},
-			{
-				connectionTimeout: 5000
-			},
-			{
-				tetherDisconnectWindow: 100
-			},
-			{
-				testEpoch: {}
-			},
-			{
-				pusherKey: 'f119821248b7429bece3'
-			},
-			{
-				pusherOptions: {
-					cluster: 'mt1'
-				}
-			},
-			{
-				baseURL: 'https://api.teletype.atom.io'
-			},
-			{
-				didCreateOrJoinPortal: {}
-			});
+		const stubRestGateway = {
+			setOauthToken() { },
+			get() {
+				return Promise.resolve({ ok: true, body: [] });
+			}
+		};
+		const stubPubSubGateway = {
+			subscribe() {
+				return Promise.resolve({
+					dispose() { }
+				});
+			}
+		};
 
-		client.onConnectionError = (event: any) => {
-			throw (newFunction("${event.message}"));
+
+		const client = new TeletypeClient({
+			restGateway: stubPubSubGateway,
+			pubSubGateway: stubRestGateway,
+			connectionTimeout: 5000,
+			tetherDisconnectWindow: 100,
+			testEpoch: {},
+			pusherKey: 'b89ba30a0bbb1fb2e283',
+			pusherOptions: {
+				cluster: 'ap2'
+			},
+			baseURL: 'https://api.teletype.atom.io',
+			didCreateOrJoinPortal: true,
+		});
+
+		// client.onConnectionError((error) => errorEvents.push(error))
+		client.onConnectionError = (event) => {
+			throw new Error((`Connection Error: An error occurred with a teletype connection: ${event.message}`));
 		};
 		await client.initialize();
 
-		await client.signIn(process.env.AUTH_TOKEN);
+		// await client.signIn(process.env.AUTH_TOKEN);
 
 		// const portalBinding = new GuestPortalBinding({
 		// 	portalId,
 		// 	client,
 		// 	editor: vscode.window.activeTextEditor
 		// });
-		// await portalBinding.initialize();
-
+		// await portalBinding.initialize()
 
 	} catch (e) {
 		console.log("Error in creating teletype client " + e);
 	}
+
 
 
 	vscode.window.showInformationMessage('Joining Portal with ID' + ' ' + portalId + ' ');
