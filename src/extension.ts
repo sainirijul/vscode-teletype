@@ -2,18 +2,57 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+const http = require('http');
+const fetch = require('node-fetch');
+
+const constants = require('./constants');
+// const rtc = require('electron-webrtc-patched')();
+// const wrtc = require('electron-webrtc')({ headless: true });
+const globalAny: any = global;
+
+
+// const { RTCSessionDescription } = require('wrtc');
+globalAny.window = {};
+globalAny.window = global;
+globalAny.window.fetch = fetch;
+
+
+// globalAny.BlobBuilder = require("BlobBuilder");
+// globalAny.location = {protocol: 'http'};
+
+// globalAny.BinaryPack = require("binary-pack");
+// globalAny.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const wrtc = require('wrtc');
+// var wrtc = require('@elavoie/electron-webrtc')();
+
+globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
+globalAny.RTCSessionDescription = wrtc.RTCSessionDescription;
+globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
+
+// globalAny.WebSocket = require('ws');
+
+// globalAny.RTCPeerConnection = rtc.RTCPeerConnection;
+// globalAny.RTCSessionDescription = rtc.RTCSessionDescription;
+// globalAny.RTCIceCandidate = rtc.RTCIceCandidate;
+
+// const WebSocket = require('ws');
+
+// globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
+// globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
+
+// globalAny.RTCSessionDescription = wrtc.RTCSessionDescription;
 // import Pusher = require('pusher-js');
 
 // import { TeletypeClient } from "teletype-client";
-// const TeletypeClient = require('teletype-client/lib/teletype-client');
+// import TeletypeClient = require('@atom/teletype-client/lib/teletype-client');
 // import { TeletypeClient } from "teletype-client/lib/teletype-client";
 // import { web_rtc } from "electron-webrtc-patched";
-
-
+import { RestGateway, PusherPubSubGateway, Portal, TeletypeClient } from '@atom/teletype-client';
 // import * as tc from '@atom/teletype-client';
-// import GuestPortalBinding from './GuestPortalBinding';
+import GuestPortalBinding from './GuestPortalBinding';
 
-import { TeletypeClient } from '@atom/teletype-client';
+
+// import { TeletypeClient } from '@atom/teletype-client';
 // const teletype = require('teletype')
 
 
@@ -40,70 +79,84 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
+
+
 async function joinPortal(portalId: any) {
 
 	if (!portalId) {
 		vscode.window.showErrorMessage('This doesn\'t look like a valid portal identifier. Please ask your host to provide you with their current portal URL and try again.');
 		return;
 	}
+	else {
+		try {
+			// const address = function listen(request, response) {
+			// 	response.writeHead(200, {'Content-Type': 'application/json'})
+			// 	response.write('{"a": 1}')
+			// 	response.end()
+			//  });
 
-	try {
-		const stubRestGateway = {
-			setOauthToken() { },
-			get() {
-				return Promise.resolve({ ok: true, body: [] });
+			//  const gateway1 = new RestGateway({baseURL: address});
+			//  const response = await gateway1.get('/');
+
+
+			// const address = listen(function (request: any, response: any) {
+			// 	response.writeHead(200, { 'Content-Type': 'application/json' });
+			// 	response.write('{"a": 1}');
+			// 	response.end();
+			// });
+
+			// function listen(requestListener: any) {
+			// 	const server = http.createServer(requestListener).listen(0);
+			// 	servers.push(server);
+			// 	return `http://localhost:${server.address().port}`;
+			// }
+
+			// console.log(address);
+
+			const gateway = new RestGateway({
+				baseURL: 'https://api.teletype.atom.io',
+				oauthToken: 'b35cfaa6349f7cd26a2071ae70153b9faf89890f'
+			});
+
+
+			// const url = gateway.getAbsoluteURL('/protocol-version');
+			// console.log("url" + url);
+
+			// const response = await gateway.get('/protocol-version');
+
+
+			const client = new TeletypeClient({
+				restGateway: gateway,
+				// pubSubGateway: pusherPubSubGateway,
+				// connectionTimeout: 5000,
+				// tetherDisconnectWindow: 1000,
+				// testEpoch: 10,
+				activePubSubGateway: 'socketcluster',
+				// pusherKey: constants.PUSHER_KEY,
+				// pusherOptions: {
+				// 	cluster: constants.PUSHER_CLUSTER,
+				// },
+				// baseURL: constants.API_URL_BASE
+				// didCreateOrJoinPortal: {},
 			}
-		};
-		const stubPubSubGateway = {
-			subscribe() {
-				return Promise.resolve({
-					dispose() { }
-				});
-			}
-		};
+			);
 
+			await client.initialize();
 
-		const client = new TeletypeClient({
-			restGateway: stubPubSubGateway,
-			pubSubGateway: stubRestGateway,
-			connectionTimeout: 5000,
-			tetherDisconnectWindow: 100,
-			testEpoch: {},
-			pusherKey: 'b89ba30a0bbb1fb2e283',
-			pusherOptions: {
-				cluster: 'ap2'
-			},
-			baseURL: 'https://api.teletype.atom.io',
-			didCreateOrJoinPortal: true,
-		});
+			// let result = await gateway.get('/identity');
 
-		// client.onConnectionError((error) => errorEvents.push(error))
-		client.onConnectionError = (event) => {
-			throw new Error((`Connection Error: An error occurred with a teletype connection: ${event.message}`));
-		};
-		await client.initialize();
+			await client.signIn(constants.AUTH_TOKEN);
 
-		// await client.signIn(process.env.AUTH_TOKEN);
+			let textEditor = vscode.window.activeTextEditor;
 
-		// const portalBinding = new GuestPortalBinding({
-		// 	portalId,
-		// 	client,
-		// 	editor: vscode.window.activeTextEditor
-		// });
-		// await portalBinding.initialize()
+			const portalBinding = new GuestPortalBinding({ client, portalId, editor: textEditor });
+			await portalBinding.initialize();
 
-	} catch (e) {
-		console.log("Error in creating teletype client " + e);
-	}
+			vscode.window.showInformationMessage('Joining Portal with ID' + ' ' + portalId + ' ');
 
-
-
-	vscode.window.showInformationMessage('Joining Portal with ID' + ' ' + portalId + ' ');
-
-
-	function newFunction(msg: string) {
-		let event_message = msg;
-		return "Connection Error: An error occurred with a teletype connection:" + event_message;
+		} catch (e) {
+			console.log("Exception Error Message " + e);
+		}
 	}
 }
 
