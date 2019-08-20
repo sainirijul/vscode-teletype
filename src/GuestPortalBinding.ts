@@ -40,9 +40,9 @@ export default class GuestPortalBinding {
 
 	async initialize() {
 		try {
-			 this.portal = await this.client.joinPortal(this.portalId);
-			await this.portal.setDelegate(this);
-
+			const guestPortal = await this.client.joinPortal(this.portalId);
+			await guestPortal.setDelegate(this);
+			this.portal = guestPortal;
 			this.registerWorkspaceEvents();
 		} catch (error) {
 			let message, description, shortMessage;

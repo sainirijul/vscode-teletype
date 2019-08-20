@@ -2,12 +2,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-const http = require('http');
 const fetch = require('node-fetch');
 
 const constants = require('./constants');
-// const rtc = require('electron-webrtc-patched')();
-// const wrtc = require('electron-webrtc')({ headless: true });
+// const adapter = require('electron-webrtc-patched')();
+// const adapter = require('electron-webrtc')({ headless: true });
 const globalAny: any = global;
 
 
@@ -16,18 +15,18 @@ globalAny.window = {};
 globalAny.window = global;
 globalAny.window.fetch = fetch;
 
-
+globalAny.RTCPeerConnection = require('wrtc').RTCPeerConnection;
 // globalAny.BlobBuilder = require("BlobBuilder");
-// globalAny.location = {protocol: 'http'};
+
 
 // globalAny.BinaryPack = require("binary-pack");
 // globalAny.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-const wrtc = require('wrtc');
-// var wrtc = require('@elavoie/electron-webrtc')();
+// const adapter = require('wrtc');
+// // var wrtc = require('@elavoie/electron-webrtc')();
 
-globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
-globalAny.RTCSessionDescription = wrtc.RTCSessionDescription;
-globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
+// globalAny.RTCPeerConnection = adapter.RTCPeerConnection;
+// globalAny.RTCSessionDescription = adapter.RTCSessionDescription;
+// globalAny.RTCIceCandidate = adapter.RTCIceCandidate;
 
 // globalAny.WebSocket = require('ws');
 
@@ -36,6 +35,7 @@ globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
 // globalAny.RTCIceCandidate = rtc.RTCIceCandidate;
 
 // const WebSocket = require('ws');
+// const localConnection = new wrtc.RTCPeerConnection();
 
 // globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
 // globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
@@ -89,55 +89,26 @@ async function joinPortal(portalId: any) {
 	}
 	else {
 		try {
-			// const address = function listen(request, response) {
-			// 	response.writeHead(200, {'Content-Type': 'application/json'})
-			// 	response.write('{"a": 1}')
-			// 	response.end()
-			//  });
-
-			//  const gateway1 = new RestGateway({baseURL: address});
-			//  const response = await gateway1.get('/');
-
-
-			// const address = listen(function (request: any, response: any) {
-			// 	response.writeHead(200, { 'Content-Type': 'application/json' });
-			// 	response.write('{"a": 1}');
-			// 	response.end();
-			// });
-
-			// function listen(requestListener: any) {
-			// 	const server = http.createServer(requestListener).listen(0);
-			// 	servers.push(server);
-			// 	return `http://localhost:${server.address().port}`;
-			// }
-
-			// console.log(address);
 
 			const gateway = new RestGateway({
 				baseURL: 'https://api.teletype.atom.io',
 				oauthToken: 'b35cfaa6349f7cd26a2071ae70153b9faf89890f'
 			});
 
-
-			// const url = gateway.getAbsoluteURL('/protocol-version');
-			// console.log("url" + url);
-
-			// const response = await gateway.get('/protocol-version');
-
-
 			const client = new TeletypeClient({
 				restGateway: gateway,
-				// pubSubGateway: pusherPubSubGateway,
-				// connectionTimeout: 5000,
-				// tetherDisconnectWindow: 1000,
-				// testEpoch: 10,
-				activePubSubGateway: 'socketcluster',
-				// pusherKey: constants.PUSHER_KEY,
-				// pusherOptions: {
-				// 	cluster: constants.PUSHER_CLUSTER,
-				// },
-				// baseURL: constants.API_URL_BASE
-				// didCreateOrJoinPortal: {},
+				pubSubGateway: new PusherPubSubGateway({key: constants.PUSHER_KEY, options: {cluster: constants.PUSHER_CLUSTER}}),
+				connectionTimeout: 5000,
+				tetherDisconnectWindow: 1000,
+				testEpoch: 10,
+				// activePubSubGateway: 'socketcluster',
+				pusherKey: constants.PUSHER_KEY,
+				pusherOptions: {
+					cluster: constants.PUSHER_CLUSTER,
+					disableStats: true
+				},
+				baseURL: constants.API_URL_BASE,
+				didCreateOrJoinPortal: {},
 			}
 			);
 
