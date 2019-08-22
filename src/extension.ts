@@ -5,28 +5,27 @@ import * as vscode from 'vscode';
 const fetch = require('node-fetch');
 
 const constants = require('./constants');
-// const adapter = require('electron-webrtc-patched')();
+// const adapter = require('electron-webrtc')();
 // const adapter = require('electron-webrtc')({ headless: true });
 const globalAny: any = global;
-
 
 // const { RTCSessionDescription } = require('wrtc');
 globalAny.window = {};
 globalAny.window = global;
 globalAny.window.fetch = fetch;
-
-globalAny.RTCPeerConnection = require('wrtc').RTCPeerConnection;
+// globalAny.events = require('events').EventEmitter;
+// globalAny.RTCPeerConnection = require('electron-webrtc')().RTCPeerConnection;
 // globalAny.BlobBuilder = require("BlobBuilder");
 
 
 // globalAny.BinaryPack = require("binary-pack");
 // globalAny.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-// const adapter = require('wrtc');
-// // var wrtc = require('@elavoie/electron-webrtc')();
+const wrtc = require('wrtc');
 
-// globalAny.RTCPeerConnection = adapter.RTCPeerConnection;
-// globalAny.RTCSessionDescription = adapter.RTCSessionDescription;
-// globalAny.RTCIceCandidate = adapter.RTCIceCandidate;
+
+globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
+globalAny.RTCSessionDescription = wrtc.RTCSessionDescription;
+globalAny.RTCIceCandidate = wrtc.RTCIceCandidate;
 
 // globalAny.WebSocket = require('ws');
 

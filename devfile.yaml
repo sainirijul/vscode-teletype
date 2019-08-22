@@ -1,0 +1,90 @@
+# A devfile to setup a vscode-teletype extension in Che.
+
+apiVersion: 1.0.0
+metadata:
+  name: vscode-teletype
+
+projects:
+
+  - name: vscode-teletype
+    source:
+      location: 'https://github.com/Rijul5/vscode-teletype'
+      type: git
+      branch: master
+
+components:
+
+  - alias: vscode-extension-sidecar
+    type: dockerimage
+    image: eclipse/che-theia-endpoint-runtime:7.0.0-next
+    endpoints:
+      - name: theia-remote-endpoint
+        port: 10000
+        attributes:
+          protocol: ws
+          public: 'true'
+    memoryLimit: 512M
+    mountSources: true
+
+  - alias: git
+    type: dockerimage
+    image: sunix/git-devtools
+    mountSources: true
+    memoryLimit: 256M
+
+  - alias: che-dev
+    type: dockerimage
+    image: eclipse/che-theia-dev:nightly
+    mountSources: true
+    endpoints:
+      - name: "theia-dev-flow"
+        port: 3010
+        attributes:
+          protocol: http
+          public: 'true'
+    memoryLimit: 1024M
+
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+
+  - id: che-incubator/typescript/latest
+    type: chePlugin
+    memoryLimit: 1024M
+
+  - type: cheEditor
+    alias: theia-editor
+    id: eclipse/che-theia/7.0.0-next
+
+commands:
+
+  - name: build ... vscode ext
+    actions:
+      - type: exec
+        component: che-dev
+        command: npm install -g vsce && npm install && vsce package
+        workdir: /projects/vscode-teletype/
+
+  - name: run ... remote vscode ext
+    actions:
+      - type: exec
+        component: vscode-extension-sidecar
+        command: >
+                 export THEIA_PLUGIN_ENDPOINT_DISCOVERY_PORT='2504' &&
+                 export THEIA_PLUGINS='local-dir:///projects/vscode-teletype/' &&
+                 export THEIA_PLUGIN_ENDPOINT_PORT='10000' &&
+                 node /home/theia/lib/node/plugin-remote.js
+        workdir: /home/theia/
+  
+  - name: run ... HOSTED che-theia + detect remote vscode ext
+    actions:
+      - type: exec
+        component: theia-editor
+        command: >
+                 kill `cat /tmp/node_theiadev.pid` &> /dev/null;
+                 mkdir -p /tmp/theiadev_projects &&
+                 export THEIA_PLUGIN_ENDPOINT_DISCOVERY_PORT='2504' &&
+                 export CHE_PROJECTS_ROOT=/tmp/theiadev_projects &&
+                 node src-gen/backend/main.js /tmp/theiadev_projects --hostname=0.0.0.0 --port=3130 & echo $!> /tmp/node_theiadev.pid ; wait `cat /tmp/node_theiadev.pid`
+        workdir: /home/theia
+
+
