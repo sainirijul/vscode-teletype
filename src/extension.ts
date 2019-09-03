@@ -1,86 +1,90 @@
+'use strict';
 
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { TeletypeClient } from '@atom/teletype-client';
+import GuestPortalBinding from './GuestPortalBinding';
+import FakeBufferDelegate from './FakeBufferDelegate';
+const FakeEditorDelegate = require('./FakeEditorDelegate');
 
 
-// const path = require('path');
+const fetch = require('node-fetch');
+const constants = require('./constants');
+const globalAny: any = global;
+const wrtc = require('wrtc');
 
+globalAny.window = {};
+globalAny.window = global;
+globalAny.window.fetch = fetch;
+globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
 
-// const fetch = require('node-fetch');
-// const wrtc = require('electron-webrtc-patched')()
-
-// const TeletypeClient = require('@atom/teletype-client') 
-
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+// this method is called when the extension is activated
+// the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-		console.log('Congratulations, your extension "vscode-teletype" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
+	console.log('Great, your extension "vscode-teletype" is now active!');
 	let disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
-		// The code you place here will be executed every time your command is executed
-		const portalId = await vscode.window.showInputBox({prompt: 'Enter ID of the Portal you wish to join'})
-		// await TeletypeClient.joinPortal(portalId);
-		// Display a message box to the user
-		// vscode.window.showInformationMessage('Joining Portal with ID' + ' ' + portalId);
-	});
 
+		let portalIdInput = await getPortalID();
+		if (!portalIdInput) {
+			vscode.window.showInformationMessage("No Portal ID has been entered. Please try again");
+		}
+		else {
+			vscode.window.showInformationMessage('Trying to Join Portal with ID' + ' ' + portalIdInput + ' ');
+			await joinPortal(portalIdInput);
+		}
+
+	});
 	context.subscriptions.push(disposable);
 }
 
-// async function joinPortal (portalId) {
-
-// // vscode.window.showInformationMessage('Joining Portal with ID' + ' ' + portalId);
-
-
-// 	const client = new TeletypeClient({
-// 		pusherKey: 'f119821248b7429bece3',
-// 		pusherOptions: {
-// 			cluster: 'mt1'
-// 		},
-// 		baseURL: 'https://api.teletype.atom.io'
-// 	});
+async function getPortalID() {
+	let portalID = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
+	return portalID;
+}
 
 
-// 	// const client = new TeletypeClient({
+async function joinPortal(portalId: any) {
+	let textEditor = vscode.window.activeTextEditor;
+	let client, guest_portal_binding, guestEditorProxy, guestBufferProxy, guestBufferDelegate;
 
-// 	// 	pusherKey: '',
-//     //   pusherOptions: {
-// 	// 	cluster: 'mt1'
-// 	// },
-//     //   baseURL: 'https://api.teletype.atom.io',
-//     //   pubSubGateway: '',
-//     //   connectionTimeout: '',
-//     //   tetherDisconnectWindow: '',
-// 	// });
+	try {
+		client = new TeletypeClient({
+			// restGateway: gateway,
+			// pubSubGateway: new PusherPubSubGateway({key: constants.PUSHER_KEY, options: {cluster: constants.PUSHER_CLUSTER}}),
+			// connectionTimeout: 50000,
+			// tetherDisconnectWindow: 1000,
+			// testEpoch: 100,
+			// activePubSubGateway: 'socketcluster',
+			pusherKey: constants.PUSHER_KEY,
+			pusherOptions: {
+				cluster: constants.PUSHER_CLUSTER
+			},
+			baseURL: constants.API_URL_BASE,
+			// didCreateOrJoinPortal: {},
+		}
+		);
 
-// 	client.onConnectionError = (event) => {
-// 		throw(`Connection Error: An error occurred with a teletype connection: ${event.message}`);
-// 	}
+		await client.initialize();
+		await client.signIn(constants.AUTH_TOKEN);
 
+	} catch (e) {
+		console.log("Exception Error Message " + e);
+	}
 
-// 	  await client.initialize()
-// 	  await client.signIn(process.env.AUTH_TOKEN)
+	guest_portal_binding = new GuestPortalBinding({ client: client, portalId: portalId, editor: textEditor });
+	await guest_portal_binding.initialize();
 
+	console.log("activebufferproxyuri : " + guest_portal_binding.getTetherBufferProxyURI());
 
+	guestEditorProxy = guest_portal_binding.getTetherEditorProxy();
+	guestBufferProxy = guestEditorProxy.bufferProxy;
+	guestBufferDelegate = new FakeBufferDelegate({ text: {}, didSetText: {} });
+	guestBufferProxy.setDelegate(guestBufferDelegate);
+	guestBufferProxy.setTextInRange(...guestBufferDelegate.insert({ row: 0, column: 0 }, 'hello people\n'));
 
-// 	// // await client.initialize();
+}
 
-// 	// // await client.signIn(process.env.AUTH_TOKEN)
-
-// 	const portalBinding = new TeletypeClient.GuestPortalBinding({
-// 		portalId,
-// 		client,
-// 		editor: vscode.window.activeTextEditor
-// 	});
-// 	await portalBinding.initialize()
 // }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

@@ -17,6 +17,14 @@
 			],
 			"preLaunchTask": "npm: watch"
 		},
+
+		{
+            "name": "Launch localhost",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost/8000",
+            "webRoot": "${workspaceFolder}"
+        },
 		{
 			"name": "Extension Tests",
 			"type": "extensionHost",

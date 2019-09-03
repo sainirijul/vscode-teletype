@@ -9,14 +9,14 @@
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true,
-		"noImplicitAny":false   /* enable all strict type-checking options */
+		"noImplicitAny":true   /* enable all strict type-checking options */
 		/* Additional Checks */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
 	},
 	"include": [
-        "./src/**/*"
+        "./src/**/*", "src/teletype-client.d.tsient.d.ts"
     ],
 	"exclude": [
 		"node_modules",
