@@ -1,6 +1,7 @@
 declare module '@atom/teletype-client' {
 
     export class BufferProxy {
+		onDidChangeBuffer: any;
         constructor(...args: any[]);
 
         applyGroupingInterval(...args: any[]): void;

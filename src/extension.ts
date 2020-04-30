@@ -2,9 +2,7 @@
 
 import * as vscode from 'vscode';
 import { TeletypeClient } from '@atom/teletype-client';
-import GuestPortalBinding from './GuestPortalBinding';
-import FakeBufferDelegate from './FakeBufferDelegate';
-const FakeEditorDelegate = require('./FakeEditorDelegate');
+import PortalBinding from './PortalBinding';
 
 
 const fetch = require('node-fetch');
@@ -45,46 +43,33 @@ async function getPortalID() {
 
 async function joinPortal(portalId: any) {
 	let textEditor = vscode.window.activeTextEditor;
-	let client, guest_portal_binding, guestEditorProxy, guestBufferProxy, guestBufferDelegate;
+	let client, portal_binding;
+	if (constants.AUTH_TOKEN !== '') {
+		try {
+			client = new TeletypeClient({
+				pusherKey: constants.PUSHER_KEY,
+				pusherOptions: {
+					cluster: constants.PUSHER_CLUSTER
+				},
+				baseURL: constants.API_URL_BASE,
+			}
+			);
 
-	try {
-		client = new TeletypeClient({
-			// restGateway: gateway,
-			// pubSubGateway: new PusherPubSubGateway({key: constants.PUSHER_KEY, options: {cluster: constants.PUSHER_CLUSTER}}),
-			// connectionTimeout: 50000,
-			// tetherDisconnectWindow: 1000,
-			// testEpoch: 100,
-			// activePubSubGateway: 'socketcluster',
-			pusherKey: constants.PUSHER_KEY,
-			pusherOptions: {
-				cluster: constants.PUSHER_CLUSTER
-			},
-			baseURL: constants.API_URL_BASE,
-			// didCreateOrJoinPortal: {},
+			await client.initialize();
+			await client.signIn(constants.AUTH_TOKEN);
+
+			
+
+		} catch (e) {
+			console.log("Exception Error Message " + e);
 		}
-		);
 
-		await client.initialize();
-		await client.signIn(constants.AUTH_TOKEN);
-
-	} catch (e) {
-		console.log("Exception Error Message " + e);
+		portal_binding = new PortalBinding({ client: client, portalId: portalId, editor: textEditor });
+		await portal_binding.initialize();
 	}
-
-	guest_portal_binding = new GuestPortalBinding({ client: client, portalId: portalId, editor: textEditor });
-	await guest_portal_binding.initialize();
-
-	console.log("activebufferproxyuri : " + guest_portal_binding.getTetherBufferProxyURI());
-
-	guestEditorProxy = guest_portal_binding.getTetherEditorProxy();
-	guestBufferProxy = guestEditorProxy.bufferProxy;
-	guestBufferDelegate = new FakeBufferDelegate({ text: {}, didSetText: {} });
-	guestBufferProxy.setDelegate(guestBufferDelegate);
-	guestBufferProxy.setTextInRange(...guestBufferDelegate.insert({ row: 0, column: 0 }, 'hello people\n'));
-
+	else {
+		vscode.window.showErrorMessage("GitHub Auth Token. Please provide it in the constants.ts file");
+	}
 }
 
-// }
-
-// this method is called when your extension is deactivated
 export function deactivate() { }

@@ -49,6 +49,7 @@
 	"dependencies": {
 		"@atom/teletype-client": "github:Rijul5/teletype-client",
 		"google-protobuf": "^3.8.0",
+		"mkdirp-promise": "^5.0.1",
 		"node-fetch": "^2.6.0",
 		"wrtc": "^0.4.1"
 	}
