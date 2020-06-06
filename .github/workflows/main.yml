@@ -49,11 +49,12 @@ jobs:
         run: npm ci
 
       - name: update metadata in package.json
+        uses: onlyutkarsh/patch-files-action@v1.0.1
         with:
           files: '${{github.workspace}}/package.json'
           patch-syntax: |
             = /version => "${{ steps.gitversion.outputs.semVer }}"
-            = /displayName => "VSIX Viewer"
+            = /displayName => "vscode-teletype"
             = /description => "VS Code Teletype extension for Creating CoEditing skeleton for Eclipse Che and Theia"
       
       - name: add version in CHANGELOG.md
