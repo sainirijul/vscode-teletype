@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
@@ -12,7 +10,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -20,14 +17,62 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+      - name: checkout repo
+        uses: actions/checkout@v2
 
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
+      - name: fetch all history and tags from all branches for gitversion
+        run: git fetch --prune --unshallow
 
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+      - name: install gitversion tool
+        uses: gittools/actions/gitversion/setup@v0.9
+        with:
+            versionSpec: '5.1.x'
+      
+      - name: execute gitversion
+        id: gitversion # step id used as reference for output values
+        uses: gittools/actions/gitversion/execute@v0.9
+        
+      - name: print gitversion
+        run: |
+          echo "Major: ${{ steps.gitversion.outputs.major }}"
+          echo "Minor: ${{ steps.gitversion.outputs.minor }}"
+          echo "Patch: ${{ steps.gitversion.outputs.patch }}"
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+        
+      - name: clean install dependencies
+        run: npm ci
+
+      - name: update metadata in package.json
+        uses: Rijul5/patch-files-action@v1.0.1
+        with:
+          files: '${{github.workspace}}/package.json'
+          patch-syntax: |
+            = /version => "${{ steps.gitversion.outputs.semVer }}"
+            = /displayName => "VSIX Viewer"
+            = /description => "VS Code Teletype extension for Creating CoEditing skeleton for Eclipse Che and Theia"
+      
+      - name: add version in CHANGELOG.md
+        uses: cschleiden/replace-tokens@v1.0
+        with:
+          files: '${{github.workspace}}/CHANGELOG.md'
+        env:
+          VERSION: "${{ steps.gitversion.outputs.semVer }}"
+
+      - name: compile and create vsix
+        run: npm run package
+
+      - name: print vsix path
+        run: |
+          echo "VSIX Path: ${{ env.vsix_path }}"
+
+      - name: upload vsix as artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: vscode-teletype-${{steps.gitversion.outputs.semVer}}.vsix
+          path: ${{github.workspace}}/vscode-teletype-${{steps.gitversion.outputs.semVer}}.vsix
