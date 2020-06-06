@@ -44,9 +44,15 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '10.x'
-        
-      - name: clean install dependencies
-        run: npm ci
+          
+      - name: remove node modules
+        run: rm -rf node_modules
+      - name: install dependencies
+        run: npm i --no-optional
+      - name: remove duplicates
+        run: npm dedupe
+      - name: latest version of dependencies
+        run: npm up
 
       - name: update metadata in package.json
         uses: onlyutkarsh/patch-files-action@v1.0.1
