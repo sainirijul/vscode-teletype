@@ -52,7 +52,7 @@
 		"@atom/teletype-client": "github:Rijul5/teletype-client",
 		"google-protobuf": "^3.12.2",
 		"mkdirp-promise": "^5.0.1",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"wrtc": "^0.4.5"
 	}
 }
