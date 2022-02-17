@@ -50,6 +50,7 @@
 	},
 	"dependencies": {
 		"@atom/teletype-client": "github:amos42/teletype-client",
+		"@atom/teletype-server": "github:amos42/teletype-server",
 		"google-protobuf": "^3.12.2",
 		"mkdirp-promise": "^5.0.1",
 		"node-fetch": "^2.6.0",

@@ -164,7 +164,7 @@ export default class PortalBinding {
 				this.onUpdateTether(state, editorProxy, position)
 			);
 		}
-		console.log("updateTether: " + editorProxy.bufferProxy?.uri);
+		console.log("updateTether: " + editorProxy?.bufferProxy?.uri);
 		this.addEditorProxy(editorProxy);
 		this.tetherState = state;
 		if (editorProxy !== this.tetherEditorProxy) {
