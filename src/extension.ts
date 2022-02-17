@@ -55,10 +55,10 @@ async function joinPortal(portalId: any) {
 			}
 			);
 
-			await client.initialize();
-			await client.signIn(constants.AUTH_TOKEN);
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-			
+			await client.signIn(constants.AUTH_TOKEN);
+			await client.initialize();
 
 		} catch (e) {
 			console.log("Exception Error Message " + e);

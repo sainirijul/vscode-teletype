@@ -119,7 +119,7 @@ export default class PortalBinding {
 		if (typeof this.onAddEditorProxy === "function") {
 			this.onAddEditorProxy(editorProxy);
 		}
-		console.log("addEditorProxy: " + editorProxy.bufferProxy.uri);
+		console.log("addEditorProxy: " + editorProxy.bufferProxy?.uri);
 		if (!this.editorProxies.has(editorProxy)) {
 			console.log('Cannot add the same editor proxy multiple times remove/add again');
 			this.editorProxies.delete(editorProxy);
@@ -164,7 +164,7 @@ export default class PortalBinding {
 				this.onUpdateTether(state, editorProxy, position)
 			);
 		}
-		console.log("updateTether: " + editorProxy.bufferProxy.uri);
+		console.log("updateTether: " + editorProxy.bufferProxy?.uri);
 		this.addEditorProxy(editorProxy);
 		this.tetherState = state;
 		if (editorProxy !== this.tetherEditorProxy) {
@@ -234,9 +234,10 @@ export default class PortalBinding {
 		if (bufferBinding) {
 			buffer = bufferBinding.buffer;
 		} else {
-			const bufferURI = vscode.Uri.parse(`file://${path.join(os.tmpdir(), `/${this.portalId}/`, bufferProxy.uri)}`);
-			await require('mkdirp-promise')(path.dirname(bufferURI.fsPath));
-			fs.writeFileSync(bufferURI.fsPath, '');
+			const filePath = path.join(os.tmpdir(), this.portalId, bufferProxy.uri);
+			const bufferURI = vscode.Uri.file(filePath);
+			await require('mkdirp-promise')(path.dirname(filePath));
+			fs.writeFileSync(filePath, '');
 
 			buffer = await vscode.workspace.openTextDocument(bufferURI);
 
