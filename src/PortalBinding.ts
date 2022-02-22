@@ -1,5 +1,5 @@
-const assert = require('assert');
 import * as vscode from 'vscode';
+import * as assert from 'assert';
 import { TeletypeClient, Errors, Portal, FollowState, EditorProxy, BufferProxy } from '@atom/teletype-client';
 import BufferBinding from './BufferBinding';
 import EditorBinding from './EditorBinding';
@@ -10,8 +10,8 @@ import * as fs from 'fs';
 
 export default class PortalBinding {
 	public client: TeletypeClient;
-	private readonly portalId: string;
-	private readonly editor: vscode.TextEditor;
+	public readonly portalId: string;
+	public readonly editor: vscode.TextEditor;
 	private portal!: Portal;
 	private tetherState: any;
 	private tetherEditorProxy: any;
@@ -241,11 +241,9 @@ export default class PortalBinding {
 
 			buffer = await vscode.workspace.openTextDocument(bufferURI);
 
-			bufferBinding = new BufferBinding({
-				buffer,
-				isHost: false,
-				didDispose: () => this.bufferBindingsByBufferProxy.delete(bufferProxy)
-			});
+			bufferBinding = new BufferBinding(
+				buffer, false, () => this.bufferBindingsByBufferProxy.delete(bufferProxy)
+			);
 
 			bufferBinding.setBufferProxy(bufferProxy);
 			bufferProxy.setDelegate(bufferBinding);

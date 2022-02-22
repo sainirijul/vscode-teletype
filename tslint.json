@@ -1,4 +1,5 @@
 {
+	"esversion": 6,
 	"rules": {
 		"no-string-throw": true,
 		"no-unused-expression": true,

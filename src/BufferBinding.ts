@@ -1,9 +1,7 @@
-import * as fs from 'fs';
 import * as vscode from 'vscode';
-
+import * as fs from 'fs';
 import { BufferProxy } from '@atom/teletype-client';
-
-import { Position, TextUdpate } from './teletype_types';
+import { Position, TextUdpate } from './teletype-types';
 
 export default class BufferBinding {
 	public readonly buffer: vscode.TextDocument;
@@ -11,15 +9,14 @@ export default class BufferBinding {
 	private readonly isHost: boolean;
 	private bufferProxy!: BufferProxy;
 	private onGetText: any;
-	public didDispose: Function;
+	public didDispose: Function | undefined;
 	private disposed!: boolean;
 	private onUpdateText: any;
 	private onInsert: any;
 	private onDelete: any;
 
 
-	constructor({ buffer, isHost, didDispose }: { buffer: any; isHost: any; didDispose: any; }) {
-
+	constructor(buffer: vscode.TextDocument, isHost: boolean, didDispose: Function | undefined = undefined) {
 		this.buffer = buffer;
 		this.isHost = isHost;
 		this.didDispose = didDispose;

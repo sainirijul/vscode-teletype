@@ -1,7 +1,10 @@
 declare module '@atom/teletype-client' {
 
     export class BufferProxy {
+        id: string;
+        uri: any;
 		onDidChangeBuffer: any;
+        // constructor({id, uri, text, history, operations, router, hostPeerId, siteId, didDispose});
         constructor(...args: any[]);
 
         applyGroupingInterval(...args: any[]): void;
@@ -44,7 +47,7 @@ declare module '@atom/teletype-client' {
 
         receiveUpdate(...args: any[]): void;
 
-        redo(...args: any[]): void;
+        redo(...args: any[]): any;
 
         requestSave(...args: any[]): void;
 
@@ -58,7 +61,7 @@ declare module '@atom/teletype-client' {
 
         setURI(...args: any[]): void;
 
-        undo(...args: any[]): void;
+        undo(...args: any[]): any;
 
         updateMarkers(...args: any[]): void;
 
@@ -67,6 +70,8 @@ declare module '@atom/teletype-client' {
     }
 
     export class EditorProxy {
+        id: string;
+
         constructor(...args: any[]);
 
         bufferProxyDidUpdateMarkers(...args: any[]): void;
@@ -249,6 +254,8 @@ declare module '@atom/teletype-client' {
     }
 
     export class Portal {
+        id: string;
+        
         constructor(...args: any[]);
 
         activateEditorProxy(...args: any[]): void;
@@ -293,13 +300,13 @@ declare module '@atom/teletype-client' {
 
         findOrFetchBufferProxy(...args: any[]): void;
 
-        findOrFetchEditorProxy(...args: any[]): void;
+        findOrFetchEditorProxy(...args: any[]): EditorProxy;
 
         follow(...args: any[]): void;
 
         getActiveSiteIds(...args: any[]): void;
 
-        getEditorProxiesMetadata(...args: any[]): void;
+        getEditorProxiesMetadata(...args: any[]): any[];
 
         getEditorProxyMetadata(...args: any[]): void;
 
@@ -329,7 +336,7 @@ declare module '@atom/teletype-client' {
 
         receiveUpdate(...args: any[]): void;
 
-        resolveFollowState(...args: any[]): void;
+        resolveFollowState(...args: any[]): number;
 
         resolveLeaderPosition(...args: any[]): void;
 

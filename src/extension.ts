@@ -3,18 +3,36 @@
 import * as vscode from 'vscode';
 import { TeletypeClient } from '@atom/teletype-client';
 import PortalBinding from './PortalBinding';
-
+import * as constants from './constants';
 
 const fetch = require('node-fetch');
-const constants = require('./constants');
-const globalAny: any = global;
 const wrtc = require('wrtc');
 
+const globalAny: any = global;
 globalAny.window = {};
 globalAny.window = global;
 globalAny.window.fetch = fetch;
 globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
 
+globalAny.portalBindingManagerPromise = null;
+
+// module.exports = new TeletypePackage({
+// 	config: atom.config,
+// 	workspace: atom.workspace,
+// 	notificationManager: atom.notifications,
+// 	packageManager: atom.packages,
+// 	commandRegistry: atom.commands,
+// 	tooltipManager: atom.tooltips,
+// 	clipboard: atom.clipboard,
+// 	pusherKey: atom.config.get('teletype.dev.pusherKey'),
+// 	pusherOptions: {
+// 	  cluster: atom.config.get('teletype.dev.pusherCluster'),
+// 	  disableStats: true
+// 	},
+// 	baseURL: atom.config.get('teletype.dev.baseURL'),
+// 	getAtomVersion: atom.getVersion.bind(atom)
+//   })
+  
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -33,6 +51,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.share-portal', async () => {
+
+		vscode.window.showInformationMessage('Trying to Share Portal');
+		//await TeletypePackage.sharePortal();
+
+	});
+	context.subscriptions.push(disposable);
 }
 
 async function getPortalID() {
@@ -40,11 +66,19 @@ async function getPortalID() {
 	return portalID;
 }
 
+// async function isSignedIn () {
+//     const authenticationProvider = await this.getAuthenticationProvider();
+//     if (authenticationProvider) {
+//       return authenticationProvider.isSignedIn();
+//     } else {
+//       return false;
+//     }
+// }
 
 async function joinPortal(portalId: any) {
 	let textEditor = vscode.window.activeTextEditor;
 	let client, portal_binding;
-	if (constants.AUTH_TOKEN !== '') {
+	if (constants.AUTH_TOKEN) {
 		try {
 			client = new TeletypeClient({
 				pusherKey: constants.PUSHER_KEY,
