@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { EditorProxy, Portal } from '@atom/teletype-client';
 
-import { SelectionMap, Selection, Position, Range } from './teletype_types';
+import { SelectionMap, Selection, Position, Range } from './teletype-types';
 
 interface SiteDecoration {
 	cursorDecoration: vscode.TextEditorDecorationType;
