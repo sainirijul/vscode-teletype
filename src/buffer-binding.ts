@@ -1,27 +1,25 @@
 import * as vscode from 'vscode';
-import {EventEmitter} from 'events';
-// import * as fs from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
-import { Position, TextUdpate } from './teletype-types';
-import { BufferProxy } from '@atom/teletype-client';
-
-
+import {EventEmitter} from 'events';
 // const {Emitter, Range, CompositeDisposable, TextBuffer} = require('atom')
+import { Position, TextUdpate } from './teletype-types';
+import { BufferProxy, IBufferDelegate } from '@atom/teletype-client';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
 
 function doNothing () {}
 
-export default class BufferBinding {
+export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
-	public buffer: vscode.TextDocument | undefined;
-	private editor!: vscode.TextEditor | undefined;
+	public buffer!: vscode.TextDocument;
+	private editor!: vscode.TextEditor;
 	private readonly isHost: boolean;
   emitDidDispose: Function;
   private pendingChanges: vscode.TextDocumentContentChangeEvent[];
   disposed: boolean;
   disableHistory: boolean;
   // subscriptions: Disposable;
-  private bufferProxy!: BufferProxy;
+  public bufferProxy!: BufferProxy;
   bufferDestroySubscription: any;
   remoteFile: any;
 
@@ -32,11 +30,12 @@ export default class BufferBinding {
     this.pendingChanges = [];
     this.disposed = false;
     this.disableHistory = false;
-    // if (isHost) {
-    //   this.subscriptions.add(buffer.onDidChangePath(this.relayURIChange.bind(this)));
-    // }
+    if (isHost) {
+      // this.subscriptions.add(buffer.onDidChangePath(this.relayURIChange.bind(this)));
+    }
   }
 
+  // @override
   dispose () {
     if (this.disposed) { return; }
 
@@ -53,27 +52,29 @@ export default class BufferBinding {
 
   setBufferProxy (bufferProxy: BufferProxy) {
     this.bufferProxy = bufferProxy;
-    // this.buffer?.setHistoryProvider(this);
-    while (this.pendingChanges.length > 0) {
-      this.pushChange(this.pendingChanges.shift());
-    }
-    if (!this.isHost) {
-      this.remoteFile = new RemoteFile(bufferProxy.uri);
-      this.buffer?.setFile(this.remoteFile);
-    }
-    this.bufferDestroySubscription = this.buffer?.onDidDestroy(() => {
-      if (this.isHost) {
-        bufferProxy.dispose();
-      } else {
-        this.dispose();
-      }
-    });
+    // // this.buffer?.setHistoryProvider(this);
+    // while (this.pendingChanges.length > 0) {
+    //   this.pushChange(this.pendingChanges.shift());
+    // }
+    // if (!this.isHost) {
+    //   this.remoteFile = new RemoteFile(bufferProxy.uri);
+    //   this.buffer?.setFile(this.remoteFile);
+    // }
+    // this.bufferDestroySubscription = this.buffer?.onDidDestroy(() => {
+    //   if (this.isHost) {
+    //     bufferProxy.dispose();
+    //   } else {
+    //     this.dispose();
+    //   }
+    // });
   }
 
+  // @override
   setText (text: string) {
-    this.disableHistory = true;
-    this.buffer?.setTextInRange(this.buffer?.getRange(), text);
-    this.disableHistory = false;
+    // this.disableHistory = true;
+    // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
+    // this.disableHistory = false;
+		fs.writeFileSync(this.buffer.uri.fsPath, text);
   }
 
   pushChange (change: vscode.TextDocumentContentChangeEvent | undefined) {
@@ -95,13 +96,20 @@ export default class BufferBinding {
     }
   }
 
+  // @override
   updateText (textUpdates: any[]) {
-    for (let i = textUpdates.length - 1; i >= 0; i--) {
-      const {oldStart, oldEnd, newText} = textUpdates[i];
-      this.disableHistory = true;
-      this.buffer?.setTextInRange(new vscode.Range(oldStart, oldEnd), newText);
-      this.disableHistory = false;
-    }
+    // for (let i = textUpdates.length - 1; i >= 0; i--) {
+    //   const {oldStart, oldEnd, newText} = textUpdates[i];
+    //   this.disableHistory = true;
+    //   this.buffer?.setTextInRange(new vscode.Range(oldStart, oldEnd), newText);
+    //   this.disableHistory = false;
+    // }
+		return this.editor.edit(builder => {
+			for (let i = textUpdates.length - 1; i >= 0; i--) {
+				const textUpdate = textUpdates[i];
+				builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+			}
+		}, { undoStopBefore: false, undoStopAfter: true });
   }
 
   undo () {
@@ -183,6 +191,7 @@ export default class BufferBinding {
 
   enforceUndoStackSizeLimit () {}
 
+  // @override
   save () {
     if (this.buffer?.uri) { return this.buffer.save(); }
   }
@@ -191,13 +200,14 @@ export default class BufferBinding {
     this.bufferProxy.setURI(this.getBufferProxyURI());
   }
 
-  didChangeURI (uri: vscode.Uri) {
+  // @override
+  didChangeURI (uri: string) {
     if (this.remoteFile) { this.remoteFile.setURI(uri); }
   }
 
   getBufferProxyURI () {
-    if (!this.buffer.getPath()) { return 'untitled'; }
-    const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.getPath());
+    if (!this.buffer.uri.fsPath) { return 'untitled'; }
+    const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
     if (projectPath) {
       const projectName = path.basename(projectPath);
       return path.join(projectName, relativePath);

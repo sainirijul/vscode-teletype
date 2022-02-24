@@ -3,7 +3,6 @@ export interface Position {
 	column: number;
 }
 
-
 export interface TextUdpate {
 	oldStart: Position;
 	oldEnd: Position;
@@ -17,7 +16,6 @@ export interface Range {
 	start: Position;
 	end: Position;
 }
-
 
 export interface Selection {
 	exclusive?: boolean;

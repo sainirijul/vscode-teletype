@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
 //const {CompositeDisposable, Emitter, TextEditor, TextBuffer} = require('atom');
-import { SelectionMap, Selection, Position, Range } from './teletype-types';
-import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal} from '@atom/teletype-client';
+import { SelectionMap, Selection, Position, Range} from './teletype-types';
+import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal, IPortalDelegate, EditorProxyMetadata} from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
 import EditorBinding from './editor-binding';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
@@ -14,10 +14,11 @@ import * as fs from 'fs';
 
 const NOOP = () => {};
 
-export default class GuestPortalBinding {
+export default class GuestPortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   portalId: string;
-  workspace: any;
+  public readonly workspace: vscode.WorkspaceFolder;
+	public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
   emitDidDispose: any;
   lastActivePaneItem: null;
@@ -26,22 +27,23 @@ export default class GuestPortalBinding {
   private bufferBindingsByBuffer : Map<vscode.TextDocument, BufferBinding>;
 	private editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
 	private editorProxiesByEditor : WeakMap<vscode.TextEditor, EditorProxy>;
-  editorBindingsByEditorProxyId: Map<string, EditorBinding>;
+  editorBindingsByEditorProxyId: Map<number, EditorBinding>;
   // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
-  bufferBindingsByBufferProxyId: Map<string, BufferBinding>;
-  editorProxiesMetadataById: Map<string, any>;
+  bufferBindingsByBufferProxyId: Map<number, BufferBinding>;
+  editorProxiesMetadataById: Map<number, EditorProxyMetadata>;
   emitter: EventEmitter;
   // subscriptions: any;
   lastEditorProxyChangePromise: Promise<void>;
   shouldRelayActiveEditorChanges: boolean;
-  private portal: Portal | null = null;
+  public portal: Portal | null = null;
   // sitePositionsComponent: SitePositionsComponent;
   newActivePaneItem: any;
 
-  constructor (client: TeletypeClient, portalId: string, workspace, notificationManager: NotificationManager, didDispose: Function) {
+  constructor (client: TeletypeClient, portalId: string, workspace: vscode.WorkspaceFolder, editor: vscode.TextEditor, notificationManager: NotificationManager, didDispose: Function) {
     this.client = client;
     this.portalId = portalId;
     this.workspace = workspace;
+    this.editor = editor;
     this.notificationManager = notificationManager;
     this.emitDidDispose = didDispose || NOOP;
     this.lastActivePaneItem = null;
@@ -82,14 +84,14 @@ export default class GuestPortalBinding {
     this.emitDidDispose();
   }
 
-  siteDidJoin (siteId: string) {
+  siteDidJoin (siteId: number) {
     const {login: hostLogin} = this.portal?.getSiteIdentity(1);
     const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${siteLogin} has joined @${hostLogin}'s portal`);
     this.emitter.emit('did-change');
   }
 
-  siteDidLeave (siteId: string) {
+  siteDidLeave (siteId: number) {
     const {login: hostLogin} = this.portal?.getSiteIdentity(1);
     const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${siteLogin} has left @${hostLogin}'s portal`);
@@ -98,7 +100,9 @@ export default class GuestPortalBinding {
 
   didChangeEditorProxies () {}
 
-  getRemoteEditors () {
+  getRemoteEditors (): any[] | null {
+    if (!this.portal) { return null; }
+
     const hostIdentity = this.portal?.getSiteIdentity(1);
     const bufferProxyIds = new Set();
     const remoteEditors = [];
@@ -111,7 +115,7 @@ export default class GuestPortalBinding {
 
         remoteEditors.push({
           hostGitHubUsername: hostIdentity.login,
-          uri: getEditorURI(this.portal?.id, id),
+          uri: getEditorURI(this.portal.id, id),
           path: getPathWithNativeSeparators(bufferProxyURI)
         });
         bufferProxyIds.add(bufferProxyId);
@@ -130,7 +134,7 @@ export default class GuestPortalBinding {
     }
   }
 
-  updateActivePositions (positionsBySiteId: Position[]) {
+  updateActivePositions (positionsBySiteId: Position[]) : void {
     // this.sitePositionsComponent.update({positionsBySiteId});
   }
 
@@ -149,10 +153,10 @@ export default class GuestPortalBinding {
     if (followState === FollowState.RETRACTED) {
       const editor = this.findOrCreateEditorForEditorProxy(editorProxy);
       this.shouldRelayActiveEditorChanges = false;
-      await this.openPaneItem(editor);
+      // await this.openPaneItem(editor);
       this.shouldRelayActiveEditorChanges = true;
     } else {
-      this.editorBindingsByEditorProxyId.forEach((b) => b.updateTether(followState));
+      if (position) { this.editorBindingsByEditorProxyId.forEach((a,b) => a.updateTether(followState, position)); }
     }
 
     const editorBinding = this.editorBindingsByEditorProxyId.get(editorProxy.id);
@@ -162,15 +166,15 @@ export default class GuestPortalBinding {
   }
 
   // Private
-  findOrCreateEditorForEditorProxy (editorProxy: EditorProxy) {
+  async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy) {
     let editor: vscode.TextEditor;
     let editorBinding = this.editorBindingsByEditorProxyId.get(editorProxy.id);
     if (editorBinding) {
       editor = editorBinding.editor;
     } else {
       const {bufferProxy} = editorProxy;
-      const buffer = this.findOrCreateBufferForBufferProxy(bufferProxy);
-      editor = new vscode.TextEditor(buffer, autoHeight: false);
+      const buffer = await this.findOrCreateBufferForBufferProxy(bufferProxy);
+      editor = await vscode.workspace.openTextDocument(buffer?.uri);
       editorBinding = new EditorBinding(editor, this.portal, false);
       editorBinding.setEditorProxy(editorProxy);
       editorProxy.setDelegate(editorBinding);
@@ -184,7 +188,7 @@ export default class GuestPortalBinding {
 
         const isRetracted = this.portal?.resolveFollowState() === FollowState.RETRACTED;
         this.shouldRelayActiveEditorChanges = !isRetracted;
-        editor.destroy();
+        editor.close();
         this.shouldRelayActiveEditorChanges = true;
 
         this.editorProxiesByEditor.delete(editor);
@@ -303,9 +307,9 @@ export default class GuestPortalBinding {
 
 
 	private registerWorkspaceEvents () {
-		vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
-		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
+		// vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
+		// vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
+		// vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
 	}
 
 }

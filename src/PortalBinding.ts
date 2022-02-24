@@ -7,6 +7,7 @@ import EditorBinding from './EditorBinding';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+import { Position } from './teletype-types';
 
 export default class PortalBinding {
 	public client: TeletypeClient;
@@ -30,7 +31,7 @@ export default class PortalBinding {
     private leaveEvents = [];
     private editorProxies = new Set();
     private tetherEditorProxyChangeCounter: any;
-    private tetherPosition = null;
+    private tetherPosition: Position | null = null;
     private activePositionsBySiteId = {};
 
 
@@ -98,10 +99,12 @@ export default class PortalBinding {
 		return this.disposed;
 	}
 
+	// Portal implements
 	hostDidClosePortal() {
 		this.hostClosedPortal = true;
 	}
 
+	// Portal implements
 	hasHostClosedPortal() {
 		return this.hostClosedPortal;
 	}
@@ -157,7 +160,8 @@ export default class PortalBinding {
 		return Array.from(this.editorProxies);
 	}
 
-	async updateTether(state: any, editorProxy: any, position: any) {
+	// Portal implements
+	async updateTether(state: number, editorProxy: EditorProxy, position: Position) {
 		
 		if (editorProxy) {
 			this.lastEditorProxyChangePromise = this.lastEditorProxyChangePromise.then(() =>
@@ -267,14 +271,16 @@ export default class PortalBinding {
 		// this.sitePositionsComponent.update({positionsBySiteId})
 	}
 
-
-	siteDidJoin(siteId: any) {
+	// Portal implements
+	siteDidJoin(siteId: string) {
 		this.joinEvents.push(siteId);
 	}
 
+	// Portal implements
 	siteDidLeave(siteId: never) {
 		this.leaveEvents.push(siteId);
 	}
 
+	// Portal implements
 	didChangeEditorProxies() { }
 }

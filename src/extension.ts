@@ -86,8 +86,7 @@ async function joinPortal(portalId: any) {
 					cluster: constants.PUSHER_CLUSTER
 				},
 				baseURL: constants.API_URL_BASE,
-			}
-			);
+			});
 
 			process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 

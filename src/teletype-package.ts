@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+//import {EventEmitter} from 'events';
 //import {CompositeDisposable} from 'atom';
 import {TeletypeClient, Errors} from '@atom/teletype-client';
 import PortalBindingManager from './portal-binding-manager';
@@ -146,7 +147,7 @@ export default class TeletypePackage {
     }
   }
 
-  async joinPortal (id: string = '') {
+  async joinPortal (id: number = 0) {
     this.showPopover();
 
     if (await this.isSignedIn()) {

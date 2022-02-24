@@ -13,7 +13,7 @@ export default class PortalBindingManager {
   public workspace: any;
   public notificationManager: NotificationManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding> | null;
-  private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
+  private promisesByGuestPortalId: Map<number, Promise<GuestPortalBinding>>;
 
   constructor (client: TeletypeClient, workspace, notificationManager: NotificationManager) {
     this.emitter = new EventEmitter();
@@ -78,7 +78,7 @@ export default class PortalBindingManager {
     this.emitter.emit('did-change');
   }
 
-  createGuestPortalBinding (portalId: string) {
+  createGuestPortalBinding (portalId: number) {
     let promise = this.promisesByGuestPortalId.get(portalId);
     if (promise) {
       promise.then((binding) => {
@@ -98,8 +98,10 @@ export default class PortalBindingManager {
 
   async _createGuestPortalBinding (portalId: string) : Promise<GuestPortalBinding> {
     const portalBinding = new GuestPortalBinding(
-        this.client, portalId, this.workspace, this.notificationManager,
-        () => { this.didDisposeGuestPortalBinding(portalBinding); }
+        this.client, portalId, this.workspace, activeEditor, this.notificationManager,
+        () => { 
+          this.didDisposeGuestPortalBinding(portalBinding); 
+        }
     );
 
     if (await portalBinding.initialize()) {
@@ -115,11 +117,14 @@ export default class PortalBindingManager {
     return portalBindings.filter((binding) => binding);
   }
 
-  async getRemoteEditors () {
+  async getRemoteEditors () : Promise<any[] | null> {
     const remoteEditors = [];
     for (const bindingPromise of this.promisesByGuestPortalId.values()) {
       const portalBinding = await bindingPromise;
-      remoteEditors.push(...portalBinding.getRemoteEditors());
+      const editors = portalBinding.getRemoteEditors();
+      if (editors) {
+        remoteEditors.push(...editors);
+      }
     }
 
     return remoteEditors;

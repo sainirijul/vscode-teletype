@@ -73,6 +73,7 @@ export default class BufferBinding {
 		}
 		return [position, position, text];
 	}
+
 	delete(startPosition: any, extent: any) {
 		console.log("buffer delete start pos:" + startPosition + " extent: " + extent);
 		if (typeof this.onDelete === "function") {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
-import {EditorProxy, Portal} from '@atom/teletype-client';
+import {EditorProxy, IEditorDelegate, Portal} from '@atom/teletype-client';
 import {SelectionMap, Selection, Position, Range} from './teletype-types';
 
 /* global ResizeObserver */
@@ -10,24 +10,24 @@ const path = require('path');
 const {getEditorURI} = require('./uri-helpers');
 const {FollowState} = require('@atom/teletype-client');
 
-export default class EditorBinding {
+export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
-	private portal: Portal;
+	private portal: Portal | undefined;
 	private readonly isHost: boolean;
   emitter: EventEmitter;
   selectionsMarkerLayer: any;
-  markerLayersBySiteId: Map<any, any>;
-  markersByLayerAndId: WeakMap<object, any>;
+  markerLayersBySiteId: Map<any, number>;
+  markersByLayerAndId: WeakMap<object, number>;
   // subscriptions: any;
   preserveFollowState: boolean;
   positionsBySiteId: {};
   disposed: any;
   localCursorLayerDecoration: any;
-  editorProxy: any;
-  batchedMarkerUpdates: {};
+  editorProxy: EditorProxy | undefined;
+  batchedMarkerUpdates: {} | null;
   isBatchingMarkerUpdates: boolean;
 
-  constructor (editor: vscode.TextEditor, portal: Portal, isHost: boolean) {
+  constructor (editor: vscode.TextEditor, portal: Portal | undefined, isHost: boolean) {
     this.editor = editor;
     this.portal = portal;
     this.isHost = isHost;
@@ -40,6 +40,12 @@ export default class EditorBinding {
     this.positionsBySiteId = {};
   }
 
+  // @override
+  updateActivePositions(positionsBySiteId: Position[]): void {
+
+  }
+
+  // @override
   dispose () {
     if (this.disposed) { return; }
 
@@ -77,8 +83,8 @@ export default class EditorBinding {
   }
 
   monkeyPatchEditorMethods (editor: vscode.TextEditor, editorProxy: EditorProxy) {
-    const remoteBuffer = editor.getBuffer();
-    const originalRemoteBufferGetPath = TextBuffer.prototype.getPath.bind(remoteBuffer);
+    const remoteBuffer = editor.document;
+    const originalRemoteBufferGetPath = remoteBuffer.uri.fsPath;
     const {bufferProxy} = editorProxy;
     const hostIdentity = this.portal.getSiteIdentity(1);
     const prefix = hostIdentity ? `@${hostIdentity.login}` : 'remote';
@@ -131,23 +137,23 @@ export default class EditorBinding {
   }
 
   async editorDidChangeScrollTop () {
-    const {element} = this.editor;
-    await element.component.getNextUpdatePromise();
-    this.editorProxy.didScroll();
-    this.emitter.emit('did-scroll');
+    // const {element} = this.editor;
+    // await element.component.getNextUpdatePromise();
+    // this.editorProxy.didScroll();
+    // this.emitter.emit('did-scroll');
   }
 
   async editorDidChangeScrollLeft () {
-    const {element} = this.editor;
-    await element.component.getNextUpdatePromise();
-    this.editorProxy.didScroll();
-    this.emitter.emit('did-scroll');
+    // const {element} = this.editor;
+    // await element.component.getNextUpdatePromise();
+    // this.editorProxy.didScroll();
+    // this.emitter.emit('did-scroll');
   }
 
   async editorDidResize () {
-    const {element} = this.editor;
-    await element.component.getNextUpdatePromise();
-    this.emitter.emit('did-resize');
+    // const {element} = this.editor;
+    // await element.component.getNextUpdatePromise();
+    // this.emitter.emit('did-resize');
   }
 
   onDidDispose (callback: Function) {
@@ -162,7 +168,7 @@ export default class EditorBinding {
     return this.emitter.on('did-resize', callback);
   }
 
-  updateSelectionsForSiteId (siteId: string, selections: Selection[]) {
+  updateSelectionsForSiteId (siteId: number, selections: Selection[]) {
     let markerLayer = this.markerLayersBySiteId.get(siteId);
     if (!markerLayer) {
       markerLayer = this.editor.addMarkerLayer();
@@ -177,17 +183,17 @@ export default class EditorBinding {
       this.markersByLayerAndId.set(markerLayer, markersById);
     }
 
-    let maxMarkerId;
+    let maxMarkerId: number = 0;
     for (let markerId in selections) {
       const markerUpdate = selections[markerId];
-      markerId = parseInt(markerId);
-      let marker = markersById.get(markerId);
+      const numMarkerId = parseInt(markerId);
+      let marker = markersById.get(numMarkerId);
 
       if (markerUpdate) {
-        maxMarkerId = maxMarkerId ? Math.max(maxMarkerId, markerId) : markerId;
+        maxMarkerId = maxMarkerId ? Math.max(maxMarkerId, numMarkerId) : numMarkerId;
 
         const {start, end} = markerUpdate.range;
-        const newRange = vscode.Range(start, end);
+        const newRange = new vscode.Range(start, end);
         if (marker) {
           marker.setBufferRange(newRange, {reversed: markerUpdate.reversed});
         } else {
@@ -210,12 +216,12 @@ export default class EditorBinding {
   }
 
   isScrollNeededToViewPosition (position: Position) {
-    const isPositionVisible = this.getDirectionFromViewportToPosition(position) === 'inside';
-    const isEditorAttachedToDOM = document.body.contains(this.editor.element);
-    return isEditorAttachedToDOM && !isPositionVisible;
+    // const isPositionVisible = this.getDirectionFromViewportToPosition(position) === 'inside';
+    // const isEditorAttachedToDOM = document.body.contains(this.editor.element);
+    // return isEditorAttachedToDOM && !isPositionVisible;
   }
 
-  updateTether (state: number, position: Position) {
+  public updateTether (state: number, position: Position) {
     const localCursorDecorationProperties = {type: 'cursor'};
 
     if (state === FollowState.RETRACTED) {
@@ -231,29 +237,29 @@ export default class EditorBinding {
   }
 
   getDirectionFromViewportToPosition (bufferPosition: Position) {
-    const {element} = this.editor;
-    if (!document.contains(element)) { return; }
+    // const {element} = this.editor;
+    // if (!document.contains(element)) { return; }
 
-    const {row, column} = this.editor.screenPositionForBufferPosition(bufferPosition);
-    const top = element.component.pixelPositionAfterBlocksForRow(row);
-    const left = column * this.editor.getDefaultCharWidth();
+    // const {row, column} = this.editor.screenPositionForBufferPosition(bufferPosition);
+    // const top = element.component.pixelPositionAfterBlocksForRow(row);
+    // const left = column * this.editor.getDefaultCharWidth();
 
-    if (top < element.getScrollTop()) {
-      return 'upward';
-    } else if (top >= element.getScrollBottom()) {
-      return 'downward';
-    } else if (left < element.getScrollLeft()) {
-      return 'leftward';
-    } else if (left >= element.getScrollRight()) {
-      return 'rightward';
-    } else {
-      return 'inside';
-    }
+    // if (top < element.getScrollTop()) {
+    //   return 'upward';
+    // } else if (top >= element.getScrollBottom()) {
+    //   return 'downward';
+    // } else if (left < element.getScrollLeft()) {
+    //   return 'leftward';
+    // } else if (left >= element.getScrollRight()) {
+    //   return 'rightward';
+    // } else {
+    //   return 'inside';
+    // }
   }
 
-  clearSelectionsForSiteId (siteId: string) {
+  clearSelectionsForSiteId (siteId: number) {
     const markerLayer = this.markerLayersBySiteId.get(siteId);
-    if (markerLayer != null) { markerLayer.destroy(); }
+    if (markerLayer) { markerLayer.destroy(); }
     this.markerLayersBySiteId.delete(siteId);
     this.markersByLayerAndId.delete(markerLayer);
   }
@@ -265,7 +271,7 @@ export default class EditorBinding {
       const marker = selectionMarkers[i];
       selectionUpdates[marker.id] = getSelectionState(marker);
     }
-    this.editorProxy.updateSelections(selectionUpdates, {initialUpdate: true});
+    this.editorProxy?.updateSelections(selectionUpdates, {initialUpdate: true});
   }
 
   batchMarkerUpdates (fn: Function) {
@@ -273,7 +279,7 @@ export default class EditorBinding {
     this.isBatchingMarkerUpdates = true;
     fn();
     this.isBatchingMarkerUpdates = false;
-    this.editorProxy.updateSelections(this.batchedMarkerUpdates);
+    this.editorProxy?.updateSelections(this.batchedMarkerUpdates);
     this.batchedMarkerUpdates = null;
   }
 
@@ -281,20 +287,26 @@ export default class EditorBinding {
     if (this.isBatchingMarkerUpdates) {
       Object.assign(this.batchedMarkerUpdates, update);
     } else {
-      this.editorProxy.updateSelections(update);
+      this.editorProxy?.updateSelections(update);
     }
   }
 
-  toggleFollowingForSiteId (siteId: string) {
-    if (siteId === this.editorProxy.getFollowedSiteId()) {
-      this.editorProxy.unfollow();
+  toggleFollowingForSiteId (siteId: number) {
+    // portal이 아니라 editorProxy가 맞나???
+    // if (siteId === this.editorProxy?.getFollowedSiteId()) {
+    //   this.editorProxy?.unfollow();
+    // } else {
+    //   this.editorProxy?.follow(siteId);
+    // }
+    if (siteId === this.portal?.getFollowedSiteId()) {
+      this.portal?.unfollow();
     } else {
-      this.editorProxy.follow(siteId);
+      this.portal?.follow(siteId);
     }
   }
 }
 
-function getSelectionState (marker) {
+function getSelectionState (marker: Marker) {
   return {
     range: marker.getRange(),
     exclusive: marker.isExclusive(),
@@ -302,7 +314,7 @@ function getSelectionState (marker) {
   };
 }
 
-function cursorClassForSiteId (siteId: string, {blink} = {}) {
+function cursorClassForSiteId (siteId: number, {blink} = {}) {
   let className = 'ParticipantCursor--site-' + siteId;
   if (blink === false) { className += ' non-blinking'; }
   return className;

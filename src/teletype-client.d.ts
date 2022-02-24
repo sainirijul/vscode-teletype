@@ -1,7 +1,21 @@
+//import { Position } from "./teletype-types";
+
 declare module '@atom/teletype-client' {
+    export class Position {
+        row: number;
+        column: number;
+    }
+
+    export interface IBufferDelegate {
+        dispose() : void;
+        setText(text: string) : void;
+        didChangeURI(uri: string) : void;
+        save() : void;
+        updateText(updates: any[]) : void;
+    }
 
     export class BufferProxy {
-        id: string;
+        id: number;
         uri: any;
 		onDidChangeBuffer: any;
         // constructor({id, uri, text, history, operations, router, hostPeerId, siteId, didDispose});
@@ -55,7 +69,7 @@ declare module '@atom/teletype-client' {
 
         serialize(...args: any[]): void;
 
-        setDelegate(...args: any[]): void;
+        setDelegate(delegate: IBufferDelegate): void;
 
         setTextInRange(...args: any[]): void;
 
@@ -69,8 +83,19 @@ declare module '@atom/teletype-client' {
 
     }
 
+    interface IEditorDelegate {
+        dispose(): void;
+        clearSelectionsForSiteId(siteId: number): void;
+        isScrollNeededToViewPosition(position: Position): void;
+        updateActivePositions(positionsBySiteId: Position[]): void;
+        updateSelectionsForSiteId(...args: any[]): void;
+        updateTether(state: number, position: Position): void;
+    }
+
     export class EditorProxy {
-        id: string;
+        id: number;
+        siteId: number;
+        bufferProxy: BufferProxy;
 
         constructor(...args: any[]);
 
@@ -108,7 +133,7 @@ declare module '@atom/teletype-client' {
 
         serialize(...args: any[]): void;
 
-        setDelegate(...args: any[]): void;
+        setDelegate(delegate: IEditorDelegate): void;
 
         showSelections(...args: any[]): void;
 
@@ -130,44 +155,6 @@ declare module '@atom/teletype-client' {
         serialize(...args: any[]): void;
 
         static deserialize(...args: any[]): void;
-
-    }
-
-    export class NullEditorProxyDelegate {
-        constructor(...args: any[]);
-
-        clearSelectionsForSiteId(...args: any[]): void;
-
-        dispose(...args: any[]): void;
-
-        isScrollNeededToViewPosition(...args: any[]): void;
-
-        updateActivePositions(...args: any[]): void;
-
-        updateSelectionsForSiteId(...args: any[]): void;
-
-        updateTether(...args: any[]): void;
-
-    }
-
-    export class NullPortalDelegate {
-        constructor(...args: any[]);
-
-        didChangeEditorProxies(...args: any[]): void;
-
-        dispose(...args: any[]): void;
-
-        hostDidClosePortal(...args: any[]): void;
-
-        hostDidLoseConnection(...args: any[]): void;
-
-        siteDidJoin(...args: any[]): void;
-
-        siteDidLeave(...args: any[]): void;
-
-        updateActivePositions(...args: any[]): void;
-
-        updateTether(...args: any[]): void;
 
     }
 
@@ -253,6 +240,17 @@ declare module '@atom/teletype-client' {
 
     }
 
+    export interface IPortalDelegate {
+        dispose(): void;
+        updateActivePositions(positionsBySiteId: Position[]): void;
+        hostDidLoseConnection(): void
+        hostDidClosePortal(): void;
+        updateTether(state: number, editorProxy: EditorProxy, position: Position): void;
+        siteDidJoin(siteId: number): void;
+        siteDidLeave(siteId: number): void;
+        didChangeEditorProxies(): void;    
+    }
+
     export class Portal {
         id: string;
         
@@ -278,9 +276,9 @@ declare module '@atom/teletype-client' {
 
         broadcastEditorProxySwitch(...args: any[]): void;
 
-        createBufferProxy(...args: any[]): void;
+        createBufferProxy(...args: any[]): BufferProxy;
 
-        createEditorProxy(...args: any[]): void;
+        createEditorProxy(...args: any[]): EditorProxy;
 
         deserializeBufferProxy(...args: any[]): void;
 
@@ -310,7 +308,7 @@ declare module '@atom/teletype-client' {
 
         getEditorProxyMetadata(...args: any[]): void;
 
-        getFollowedSiteId(...args: any[]): void;
+        getFollowedSiteId(): string;
 
         getLocalActiveEditorProxy(...args: any[]): void;
 
@@ -348,7 +346,7 @@ declare module '@atom/teletype-client' {
 
         sendSubscriptionResponse(...args: any[]): void;
 
-        setDelegate(...args: any[]): void;
+        setDelegate(delegate: IPortalDelegate): Promise<void>;
 
         setFollowState(...args: any[]): void;
 
@@ -489,7 +487,7 @@ declare module '@atom/teletype-client' {
     export class TeletypeClient {
         constructor(...args: any[]);
 
-        createPortal(...args: any[]): void;
+        createPortal(...args: any[]): Portal;
 
         dispose(...args: any[]): void;
 
