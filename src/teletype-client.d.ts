@@ -492,11 +492,11 @@ declare module '@atom/teletype-client' {
 
         getClientId(...args: any[]): void;
 
-        getLocalUserIdentity(...args: any[]): void;
+        getLocalUserIdentity(...args: any[]): any;
 
         initialize(...args: any[]): void;
 
-        isSignedIn(...args: any[]): void;
+        isSignedIn(...args: any[]): boolean;
 
         joinPortal(...args: any[]): Portal;
 

@@ -6,7 +6,7 @@ import NotificationManager from './notification-manager';
 import * as constants from './constants';
 
 export class AuthenticationProvider {
-  client: any;
+  client: TeletypeClient;
   credentialCache: any;
   notificationManager: NotificationManager;
   workspace: any;
@@ -70,15 +70,15 @@ export class AuthenticationProvider {
     }
   }
 
-  isSigningIn () {
+  isSigningIn () : boolean {
     return this.signingIn;
   }
 
-  isSignedIn () {
+  isSignedIn () : boolean {
     return this.client.isSignedIn();
   }
 
-  getIdentity () {
+  getIdentity () : any {
     return this.client.getLocalUserIdentity();
   }
 
