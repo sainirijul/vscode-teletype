@@ -7,6 +7,10 @@ const SERVICE_NAME = 'vscode-teletype';
 export class CredentialCache {
   private strategy: any;
 
+  constructor() {
+    this.strategy = undefined;
+  }
+
   async get(key: string) {
     const strategy = await this.getStrategy();
     return strategy.get(SERVICE_NAME, key);
@@ -48,7 +52,7 @@ export class CredentialCache {
 //   return keytar;
 // }
 
-class KeytarStrategy {
+export class KeytarStrategy {
   static async isValid() {
     try {
       await keytar.setPassword('atom-test-service', 'test-key', 'test-value');
@@ -73,7 +77,7 @@ class KeytarStrategy {
   }
 }
 
-class SecurityBinaryStrategy {
+export class SecurityBinaryStrategy {
   static isValid() {
     return process.platform === 'darwin';
   }
@@ -105,7 +109,7 @@ class SecurityBinaryStrategy {
   }
 }
 
-class InMemoryStrategy {
+export class InMemoryStrategy {
   credentials: Map<any, any>;
   constructor() {
     this.credentials = new Map();
@@ -138,5 +142,4 @@ class InMemoryStrategy {
   }
 }
 
-Object.assign(CredentialCache, { KeytarStrategy, SecurityBinaryStrategy, InMemoryStrategy });
-module.exports = CredentialCache;
+// Object.assign(CredentialCache, { KeytarStrategy, SecurityBinaryStrategy, InMemoryStrategy });

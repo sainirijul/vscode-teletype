@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-//import { Emitter } from 'atom';
 import { EventEmitter } from 'events';
 import HostPortalBinding from './host-portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
@@ -10,17 +9,19 @@ import NotificationManager from './notification-manager';
 export default class PortalBindingManager {
   private emitter: EventEmitter;
   public client: TeletypeClient;
-  public workspace: vscode.WorkspaceFolder;
+  public workspace!: vscode.WorkspaceFolder | null;
   public notificationManager: NotificationManager;
-  private hostPortalBindingPromise: Promise<HostPortalBinding> | null;
+  private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager) {
     this.emitter = new EventEmitter();
     this.client = client;
-    this.workspace = workspace;
+    if (this.workspace) {
+      this.workspace = workspace;
+    }
     this.notificationManager = notificationManager;
-    this.hostPortalBindingPromise = null;
+    // this.hostPortalBindingPromise = null;
     this.promisesByGuestPortalId = new Map();
   }
 
@@ -29,7 +30,7 @@ export default class PortalBindingManager {
 
     if (this.hostPortalBindingPromise) {
       const disposePromise = this.hostPortalBindingPromise.then((portalBinding) => {
-        portalBinding.close();
+        portalBinding?.close();
       });
       disposePromises.push(disposePromise);
     }
@@ -44,27 +45,32 @@ export default class PortalBindingManager {
     return Promise.all(disposePromises);
   }
 
-  createHostPortalBinding () {
+  async createHostPortalBinding () {
     if (this.hostPortalBindingPromise === null) {
       this.hostPortalBindingPromise = this._createHostPortalBinding();
-      this.hostPortalBindingPromise.then((binding) => {
-        if (!binding) { this.hostPortalBindingPromise = null; }
-      });
+      if(this.hostPortalBindingPromise) {
+        this.hostPortalBindingPromise.then((binding) => {
+          if (!binding) { this.hostPortalBindingPromise = undefined; }
+        });
+      }
     }
 
     return this.hostPortalBindingPromise;
   }
 
-  async _createHostPortalBinding () : Promise<HostPortalBinding> {
-    const portalBinding = new HostPortalBinding(this.client, this.workspace, activeEditor, this.notificationManager,
-      () => { this.didDisposeHostPortalBinding(); }
-    );
+  async _createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
+    if (this.workspace) {
+      const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager,
+        () => { this.didDisposeHostPortalBinding(); }
+      );
 
-    if (await portalBinding.initialize()) {
-      this.emitter.emit('did-change');
+      if (await portalBinding.initialize()) {
+        this.emitter.emit('did-change');
+      }
+      
+      return portalBinding;
     }
-    
-    return portalBinding;
+    return undefined;
   }
 
   getHostPortalBinding () {
@@ -74,7 +80,7 @@ export default class PortalBindingManager {
   }
 
   didDisposeHostPortalBinding () {
-    this.hostPortalBindingPromise = null;
+    this.hostPortalBindingPromise = undefined;
     this.emitter.emit('did-change');
   }
 
@@ -98,7 +104,7 @@ export default class PortalBindingManager {
 
   async _createGuestPortalBinding (portalId: string) : Promise<GuestPortalBinding> {
     const portalBinding = new GuestPortalBinding(
-        this.client, portalId, this.workspace, activeEditor, this.notificationManager,
+        this.client, portalId, this.notificationManager,
         () => { 
           this.didDisposeGuestPortalBinding(portalBinding); 
         }
@@ -131,11 +137,13 @@ export default class PortalBindingManager {
   }
 
   async getActiveGuestPortalBinding () : Promise<GuestPortalBinding | null> {
-    const activePaneItem = this.workspace.getActivePaneItem();
-    for (const [_, portalBindingPromise] of this.promisesByGuestPortalId) { // eslint-disable-line no-unused-vars
-      const portalBinding = await portalBindingPromise;
-      if (portalBinding?.hasPaneItem(activePaneItem)) {
-        return portalBinding;
+    const activePaneItem = vscode.window.activeTextEditor;
+    if (activePaneItem) {
+      for (const [_, portalBindingPromise] of this.promisesByGuestPortalId) { // eslint-disable-line no-unused-vars
+        const portalBinding = await portalBindingPromise;
+        if (portalBinding?.hasPaneItem(activePaneItem)) {
+          return portalBinding;
+        }
       }
     }
     return null;

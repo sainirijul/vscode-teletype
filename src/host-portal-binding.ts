@@ -11,7 +11,7 @@ import NotificationManager from './notification-manager';
 export default class HostPortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   public readonly workspace: vscode.WorkspaceFolder;
-  public readonly editor: vscode.TextEditor;
+  // public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
   editorBindingsByEditor: WeakMap<vscode.TextEditor, EditorBinding>;
   editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
@@ -24,10 +24,10 @@ export default class HostPortalBinding implements IPortalDelegate {
   uri: string | undefined;
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, editor: vscode.TextEditor, notificationManager: NotificationManager, didDispose: Function | undefined = undefined) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, didDispose: Function | undefined = undefined) {
     this.client = client;
     this.workspace = workspace;
-    this.editor = editor;
+    // this.editor = editor;
     this.notificationManager = notificationManager;
     this.editorBindingsByEditor = new WeakMap();
     this.editorBindingsByEditorProxy = new Map();

@@ -17,8 +17,8 @@ const NOOP = () => {};
 export default class GuestPortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   portalId: string;
-  public readonly workspace: vscode.WorkspaceFolder;
-	public readonly editor: vscode.TextEditor;
+  // public readonly workspace: vscode.WorkspaceFolder;
+	// public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
   emitDidDispose: any;
   lastActivePaneItem: null;
@@ -40,11 +40,11 @@ export default class GuestPortalBinding implements IPortalDelegate {
   newActivePaneItem: any;
   triggerSelectionChanges: any;
 
-  constructor (client: TeletypeClient, portalId: string, workspace: vscode.WorkspaceFolder, editor: vscode.TextEditor, notificationManager: NotificationManager, didDispose: Function) {
+  constructor (client: TeletypeClient, portalId: string, notificationManager: NotificationManager, didDispose: Function) {
     this.client = client;
     this.portalId = portalId;
-    this.workspace = workspace;
-    this.editor = editor;
+    // this.workspace = workspace;
+    // this.editor = editor;
     this.notificationManager = notificationManager;
     this.emitDidDispose = didDispose || NOOP;
     this.lastActivePaneItem = null;
@@ -71,6 +71,12 @@ export default class GuestPortalBinding implements IPortalDelegate {
       await this.portal.setDelegate(this);
 			//vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
 			this.registerWorkspaceEvents();
+
+      this.notificationManager.addInfo(`Joined Portal with ID ${this.portalId}`, {
+        description: '',
+        dismissable: true
+      });
+  
       return true;
     } catch (error) {
       this.didFailToJoin(error as Error);
@@ -306,23 +312,23 @@ export default class GuestPortalBinding implements IPortalDelegate {
   //   }
   // }
 
-  // hasPaneItem (paneItem) {
-  //   return this.editorProxiesByEditor.has(paneItem);
-  // }
+  hasPaneItem(paneItem: vscode.TextEditor) : boolean {
+    return this.editorProxiesByEditor.has(paneItem);
+  }
 
-  // getActivePaneItem () {
-  //   return this.newActivePaneItem || this.workspace.getActivePaneItem();
-  // }
+  getActivePaneItem() : vscode.TextEditor {
+    return this.newActivePaneItem || vscode.window.activeTextEditor;
+  }
 
-  onDidChange (callback: Function) {
+  onDidChange(callback: Function) {
     // return this.emitter.on('did-change', callback);
   }
 
 
 	private registerWorkspaceEvents () {
-		vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
-		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
+		// vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
+		// vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
+		// vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
 	}
 
 	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {

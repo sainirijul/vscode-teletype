@@ -3,11 +3,12 @@ import { TeletypeClient } from '@atom/teletype-client';
 import { EventEmitter } from 'events';
 import { CredentialCache } from './credential-cache';
 import NotificationManager from './notification-manager';
+import * as constants from './constants';
 
 export class AuthenticationProvider {
   client: any;
   credentialCache: any;
-  notificationManager: any;
+  notificationManager: NotificationManager;
   workspace: any;
   emitter: any;
   signingIn: boolean = false;
@@ -24,7 +25,8 @@ export class AuthenticationProvider {
   async signInUsingSavedToken () {
     if (this.isSignedIn()) { return true; }
 
-    const token = await this.credentialCache.get('oauth-token');
+    //const token = await this.credentialCache.get('oauth-token');
+    const token = constants.AUTH_TOKEN;
     if (token) {
       return this._signIn(token);
     } else {
@@ -85,12 +87,12 @@ export class AuthenticationProvider {
   }
 
   didChangeSignIn () {
-    const workspaceElement = this.workspace.getElement();
-    if (this.isSignedIn()) {
-      workspaceElement.classList.add('teletype-Authenticated');
-    } else {
-      workspaceElement.classList.remove('teletype-Authenticated');
-    }
+    // const workspaceElement = this.workspace.getElement();
+    // if (this.isSignedIn()) {
+    //   workspaceElement.classList.add('teletype-Authenticated');
+    // } else {
+    //   workspaceElement.classList.remove('teletype-Authenticated');
+    // }
 
     this.emitter.emit('did-change');
   }

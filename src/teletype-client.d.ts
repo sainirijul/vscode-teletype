@@ -506,7 +506,7 @@ declare module '@atom/teletype-client' {
 
         peerPoolDidError(...args: any[]): void;
 
-        signIn(...args: any[]): void;
+        signIn(...args: any[]): boolean;
 
         signOut(...args: any[]): void;
 

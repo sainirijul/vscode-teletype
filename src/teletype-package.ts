@@ -21,10 +21,10 @@ export default class TeletypePackage {
   tooltipManager: any;
   clipboard: any;
   pubSubGateway: any;
-  pusherKey: any;
+  pusherKey: string;
   pusherOptions: any;
-  baseURL: any;
-  getAtomVersion: any;
+  baseURL: string;
+  getAtomVersion: Function;
   peerConnectionTimeout: any;
   tetherDisconnectWindow: any;
   credentialCache: any;
@@ -78,24 +78,24 @@ export default class TeletypePackage {
     console.log('teletype: Using pusher key:', this.pusherKey);
     console.log('teletype: Using base URL:', this.baseURL);
   
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:sign-out', () => {
-      this.signOut();
-    }));
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:share-portal', () => {
-      this.sharePortal();
-    }));
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:join-portal', () => {
-      this.joinPortal();
-    }));
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:leave-portal', () => {
-      this.leavePortal();
-    }));
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:copy-portal-url', () => {
-      this.copyHostPortalURI();
-    }));
-    this.subscriptions.push(vscode.commands.registerCommand('teletype:close-portal', () => {
-      this.closeHostPortal();
-    }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:sign-out', () => {
+    //   this.signOut();
+    // }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:share-portal', () => {
+    //   this.sharePortal();
+    // }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:join-portal', () => {
+    //   this.joinPortal();
+    // }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:leave-portal', () => {
+    //   this.leavePortal();
+    // }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:copy-portal-url', () => {
+    //   this.copyHostPortalURI();
+    // }));
+    // this.subscriptions.push(vscode.commands.registerCommand('teletype:close-portal', () => {
+    //   this.closeHostPortal();
+    // }));
 
     // Initiate sign-in, which will continue asynchronously, since we don't want
     // to block here.
