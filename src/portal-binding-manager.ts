@@ -56,7 +56,7 @@ export default class PortalBindingManager {
   }
 
   async _createHostPortalBinding () : Promise<HostPortalBinding> {
-    const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager,
+    const portalBinding = new HostPortalBinding(this.client, this.workspace, activeEditor, this.notificationManager,
       () => { this.didDisposeHostPortalBinding(); }
     );
 
@@ -169,7 +169,7 @@ export default class PortalBindingManager {
   didDisposeGuestPortalBinding (portalBinding: GuestPortalBinding) {
     this.promisesByGuestPortalId.delete(portalBinding.portalId);
     if (this.promisesByGuestPortalId.size === 0) {
-      this.workspace.getElement().classList.remove('teletype-Guest');
+      // this.workspace.getElement().classList.remove('teletype-Guest');
     }
     this.emitter.emit('did-change');
   }

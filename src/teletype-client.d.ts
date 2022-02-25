@@ -1,7 +1,6 @@
 //import { Position } from "./teletype-types";
-
 declare module '@atom/teletype-client' {
-    export class Position {
+    export interface Position {
         row: number;
         column: number;
     }
@@ -21,7 +20,7 @@ declare module '@atom/teletype-client' {
         // constructor({id, uri, text, history, operations, router, hostPeerId, siteId, didDispose});
         constructor(...args: any[]);
 
-        applyGroupingInterval(...args: any[]): void;
+        applyGroupingInterval(applyGroupingInterval: number): void;
 
         broadcastOperations(...args: any[]): void;
 
@@ -29,7 +28,7 @@ declare module '@atom/teletype-client' {
 
         broadcastUpdate(...args: any[]): void;
 
-        createCheckpoint(...args: any[]): void;
+        createCheckpoint(...args: any[]): Checkpoint;
 
         dispose(...args: any[]): void;
 
@@ -65,7 +64,7 @@ declare module '@atom/teletype-client' {
 
         requestSave(...args: any[]): void;
 
-        revertToCheckpoint(...args: any[]): void;
+        revertToCheckpoint(checkpoint: Checkpoint, options: any): any;
 
         serialize(...args: any[]): void;
 
@@ -83,7 +82,7 @@ declare module '@atom/teletype-client' {
 
     }
 
-    interface IEditorDelegate {
+    export interface IEditorDelegate {
         dispose(): void;
         clearSelectionsForSiteId(siteId: number): void;
         isScrollNeededToViewPosition(position: Position): void;
@@ -308,7 +307,7 @@ declare module '@atom/teletype-client' {
 
         getEditorProxyMetadata(...args: any[]): void;
 
-        getFollowedSiteId(): string;
+        getFollowedSiteId(): number;
 
         getLocalActiveEditorProxy(...args: any[]): void;
 
@@ -518,6 +517,12 @@ declare module '@atom/teletype-client' {
         EXTENDED: number;
         RETRACTED: number;
     };
+
+    export interface Checkpoint {
+        id: number;
+        isBarrier: boolean;
+        markersSnapshot: any;
+    }
 
     export function convertToProtobufCompatibleBuffer(data: any): any;
 

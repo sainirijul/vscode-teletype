@@ -45,6 +45,8 @@
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
 		"deep-equal": "^1.1.1",
+		"keytar": "^7.9.0",
+		"node-fetch": "^2.6.0",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",
@@ -52,7 +54,6 @@
 		"vscode": "^1.1.37",
 		"webpack": "^4.43.0",
 		"webpack-cli": "^3.3.11",
-		"node-fetch": "^2.6.0",
 		"wrtc": "^0.4.5"
 	},
 	"dependencies": {

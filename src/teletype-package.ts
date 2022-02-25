@@ -5,10 +5,11 @@ import {TeletypeClient, Errors} from '@atom/teletype-client';
 import PortalBindingManager from './portal-binding-manager';
 import NotificationManager from './notification-manager';
 // import PortalStatusBarIndicator from './portal-status-bar-indicator';
-// import AuthenticationProvider from './authentication-provider';
+import { AuthenticationProvider } from './authentication-provider';
 // import CredentialCache = from './credential-cache';
 import TeletypeService from './teletype-service';
 import { findPortalId } from './portal-id-helpers';
+import { CredentialCache } from './credential-cache';
 // import JoinViaExternalAppDialog from './join-via-external-app-dialog';
 
 export default class TeletypePackage {
@@ -69,7 +70,7 @@ export default class TeletypePackage {
     });
     this.client.onConnectionError(this.handleConnectionError.bind(this));
     this.portalBindingManagerPromise = null;
-    this.joinViaExternalAppDialog = new JoinViaExternalAppDialog({config, commandRegistry, workspace});
+    // this.joinViaExternalAppDialog = new JoinViaExternalAppDialog({config, commandRegistry, workspace});
     this.subscriptions = subscriptions;
   }
 
@@ -117,21 +118,23 @@ export default class TeletypePackage {
   }
 
   async handleURI (parsedURI: vscode.Uri, rawURI: string) {
-    const portalId = findPortalId(parsedURI.pathname) || rawURI;
+    const portalId = findPortalId(parsedURI.fsPath) || rawURI;
 
     if (this.config.get('teletype.askBeforeJoiningPortalViaExternalApp')) {
-      const {EXIT_STATUS} = JoinViaExternalAppDialog;
+      //const {EXIT_STATUS} = JoinViaExternalAppDialog;
 
-      const status = await this.joinViaExternalAppDialog.show(rawURI);
-      switch (status) {
-        case EXIT_STATUS.CONFIRM_ONCE:
-          return this.joinPortal(portalId);
-        case EXIT_STATUS.CONFIRM_ALWAYS:
-          this.config.set('teletype.askBeforeJoiningPortalViaExternalApp', false);
-          return this.joinPortal(portalId);
-        default:
-          break;
-      }
+      // const status = await this.joinViaExternalAppDialog.show(rawURI);
+      // switch (portalID) {
+      //   case EXIT_STATUS.CONFIRM_ONCE:
+      //     return this.joinPortal(portalId);
+      //   case EXIT_STATUS.CONFIRM_ALWAYS:
+      //     this.config.set('teletype.askBeforeJoiningPortalViaExternalApp', false);
+      //     return this.joinPortal(portalId);
+      //   default:
+      //     break;
+      // }
+      const portalID = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
+      return this.joinPortal(portalId);
     } else {
       return this.joinPortal(portalId);
     }
@@ -147,7 +150,7 @@ export default class TeletypePackage {
     }
   }
 
-  async joinPortal (id: number = 0) {
+  async joinPortal (id: string = '') {
     this.showPopover();
 
     if (await this.isSignedIn()) {
@@ -184,7 +187,7 @@ export default class TeletypePackage {
   }
 
   provideTeletype () {
-    return new TeletypeService({teletypePackage: this});
+    return new TeletypeService(this);
   }
 
   // async consumeStatusBar (statusBar) {
@@ -211,13 +214,13 @@ export default class TeletypePackage {
   // }
 
   registerRemoteEditorOpener () {
-    this.subscriptions.add(this.workspace.addOpener((uri) => {
-      if (uri.startsWith('atom://teletype/')) {
-        return this.getRemoteEditorForURI(uri);
-      } else {
-        return null;
-      }
-    }));
+    // this.subscriptions.add(this.workspace.addOpener((uri) => {
+    //   if (uri.startsWith('atom://teletype/')) {
+    //     return this.getRemoteEditorForURI(uri);
+    //   } else {
+    //     return null;
+    //   }
+    // }));
   }
 
   async getRemoteEditorForURI (uri: string) {
@@ -254,20 +257,20 @@ export default class TeletypePackage {
   }
 
   showPopover () {
-    if (!this.portalStatusBarIndicator) { return }
+    if (!this.portalStatusBarIndicator) { return; }
 
     this.portalStatusBarIndicator.showPopover();
   }
 
   async showJoinPortalPrompt () {
-    if (!this.portalStatusBarIndicator) { return }
+    if (!this.portalStatusBarIndicator) { return; }
 
     const {popoverComponent} = this.portalStatusBarIndicator;
     const {portalListComponent} = popoverComponent.refs;
     await portalListComponent.showJoinPortalPrompt();
   }
 
-  handleConnectionError (event: Event) {
+  handleConnectionError (event: Error) {
     const message = 'Connection Error';
     const description = `An error occurred with a teletype connection: <code>${event.message}</code>`;
     this.notificationManager.addError(message, {
@@ -281,12 +284,9 @@ export default class TeletypePackage {
       this.authenticationProviderPromise = new Promise(async (resolve, reject) => {
         const client = await this.getClient();
         if (client) {
-          resolve(new AuthenticationProvider({
-            client,
-            credentialCache: this.credentialCache,
-            notificationManager: this.notificationManager,
-            workspace: this.workspace
-          }));
+          resolve(new AuthenticationProvider(
+            client, this.notificationManager, this.credentialCache, this.workspace
+          ));
         } else {
           this.authenticationProviderPromise = null;
           resolve(null);

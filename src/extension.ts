@@ -2,7 +2,8 @@
 
 import * as vscode from 'vscode';
 import { TeletypeClient } from '@atom/teletype-client';
-import PortalBinding from './PortalBinding';
+import GuestPortalBinding from './guest-portal-binding';
+import HostPortalBinding from './host-portal-binding';
 import * as constants from './constants';
 
 const fetch = require('node-fetch');
@@ -97,7 +98,7 @@ async function joinPortal(portalId: any) {
 			console.log("Exception Error Message " + e);
 		}
 
-		portal_binding = new PortalBinding({ client: client, portalId: portalId, editor: textEditor });
+		portal_binding = new GuestPortalBinding(client, portalId, workspace, textEditor);
 		await portal_binding.initialize();
 	}
 	else {

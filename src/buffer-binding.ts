@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import * as converter from './teletype-converter';
 import * as fs from 'fs';
 import * as path from 'path';
 import {EventEmitter} from 'events';
 // const {Emitter, Range, CompositeDisposable, TextBuffer} = require('atom')
-import { Position, TextUdpate } from './teletype-types';
-import { BufferProxy, IBufferDelegate } from '@atom/teletype-client';
+import { Position, Range, TextUdpate } from './teletype-types';
+import { BufferProxy, Checkpoint, IBufferDelegate } from '@atom/teletype-client';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
 
 function doNothing () {}
@@ -43,7 +44,7 @@ export default class BufferBinding implements IBufferDelegate {
     // this.subscriptions.dispose();
     if (this.buffer) {
       // this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(this.buffer.maxUndoEntries));
-      this.buffer = undefined;
+      // this.buffer = undefined;
     }
     if (this.bufferDestroySubscription) { this.bufferDestroySubscription.dispose(); }
     if (this.remoteFile) { this.remoteFile.dispose(); }
@@ -139,22 +140,22 @@ export default class BufferBinding implements IBufferDelegate {
 		);
 	}
 
-  convertMarkerRanges (layersById) {
+  convertMarkerRanges (layersById: any[]) {
     for (const layerId in layersById) {
       const markersById = layersById[layerId];
       for (const markerId in markersById) {
         const marker = markersById[markerId];
-        marker.range = vscode.Range.fromObject(marker.range);
+        marker.range = converter.convertToVSCodeRange(marker.range);
       }
     }
   }
 
-  getChangesSinceCheckpoint (checkpoint) {
+  getChangesSinceCheckpoint (checkpoint: Checkpoint) {
     return this.bufferProxy.getChangesSinceCheckpoint(checkpoint);
   }
 
-  createCheckpoint (options: any[]) {
-    if (this.disableHistory) { return; }
+  createCheckpoint (options: any[]) : Checkpoint | null {
+    if (this.disableHistory) { return null; }
 
     return this.bufferProxy.createCheckpoint(options);
   }
@@ -183,7 +184,7 @@ export default class BufferBinding implements IBufferDelegate {
     return this.bufferProxy.groupLastChanges();
   }
 
-  applyGroupingInterval (groupingInterval) {
+  applyGroupingInterval (groupingInterval: number) {
     if (this.disableHistory) { return; }
 
     this.bufferProxy.applyGroupingInterval(groupingInterval);
@@ -207,28 +208,30 @@ export default class BufferBinding implements IBufferDelegate {
 
   getBufferProxyURI () {
     if (!this.buffer.uri.fsPath) { return 'untitled'; }
-    const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
-    if (projectPath) {
-      const projectName = path.basename(projectPath);
-      return path.join(projectName, relativePath);
-    } else {
-      return relativePath;
-    }
+    // const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
+    // if (projectPath) {
+    //   const projectName = path.basename(projectPath);
+    //   return path.join(projectName, relativePath);
+    // } else {
+    //   return relativePath;
+    // }
+    return this.buffer.uri.fsPath;
   }
 
   serialize (options: any[]) {
-    return this.serializeUsingDefaultHistoryProviderFormat(options);
+    // return this.serializeUsingDefaultHistoryProviderFormat(options);
+    return null;
   }
 
-  serializeUsingDefaultHistoryProviderFormat (options: any[]) {
-    const {maxUndoEntries} = this.buffer;
-    this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(maxUndoEntries));
-    const serializedDefaultHistoryProvider = this.buffer.historyProvider.serialize(options);
+  // serializeUsingDefaultHistoryProviderFormat (options: any[]) {
+  //   const {maxUndoEntries} = this.buffer;
+  //   this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(maxUndoEntries));
+  //   const serializedDefaultHistoryProvider = this.buffer.historyProvider.serialize(options);
 
-    this.buffer.setHistoryProvider(this);
+  //   this.buffer.setHistoryProvider(this);
 
-    return serializedDefaultHistoryProvider;
-  }
+  //   return serializedDefaultHistoryProvider;
+  // }
 
 	onDidChangeBuffer(changes: vscode.TextDocumentContentChangeEvent[]) {
 		this.bufferProxy.onDidChangeBuffer(changes.map(change => {
@@ -279,4 +282,5 @@ class RemoteFile {
   existsSync () {
     return false;
   }
+ 
 }
