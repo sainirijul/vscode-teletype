@@ -38,6 +38,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
   public portal: Portal | null = null;
   // sitePositionsComponent: SitePositionsComponent;
   newActivePaneItem: any;
+  triggerSelectionChanges: any;
 
   constructor (client: TeletypeClient, portalId: string, workspace: vscode.WorkspaceFolder, editor: vscode.TextEditor, notificationManager: NotificationManager, didDispose: Function) {
     this.client = client;
@@ -68,11 +69,11 @@ export default class GuestPortalBinding implements IPortalDelegate {
       // this.subscriptions.add(this.workspace.onDidChangeActivePaneItem(this.didChangeActivePaneItem.bind(this)));
 
       await this.portal.setDelegate(this);
-			vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
+			//vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
 			this.registerWorkspaceEvents();
       return true;
     } catch (error) {
-      this.didFailToJoin(error);
+      this.didFailToJoin(error as Error);
       return false;
     }
   }
@@ -89,6 +90,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
     const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${siteLogin} has joined @${hostLogin}'s portal`);
     this.emitter.emit('did-change');
+    vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
   }
 
   siteDidLeave (siteId: number) {
@@ -96,6 +98,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
     const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${siteLogin} has left @${hostLogin}'s portal`);
     this.emitter.emit('did-change');
+    vscode.window.showInformationMessage('Leaved Portal with ID' + ' ' + this.portalId + ' ');
   }
 
   didChangeEditorProxies () {}
@@ -166,7 +169,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
   }
 
   // Private
-  async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy) {
+  async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy) : Promise<vscode.TextEditor | null> {
     let editor: vscode.TextEditor;
     let editorBinding = this.editorBindingsByEditorProxyId.get(editorProxy.id);
     if (editorBinding) {
@@ -174,27 +177,37 @@ export default class GuestPortalBinding implements IPortalDelegate {
     } else {
       const {bufferProxy} = editorProxy;
       const buffer = await this.findOrCreateBufferForBufferProxy(bufferProxy);
-      editor = await vscode.workspace.openTextDocument(buffer?.uri);
-      editorBinding = new EditorBinding(editor, this.portal, false);
-      editorBinding.setEditorProxy(editorProxy);
-      editorProxy.setDelegate(editorBinding);
+      if (buffer && this.portal) {
+        const document = await vscode.workspace.openTextDocument(buffer.uri);
+        editor = await vscode.window.showTextDocument(document);
+        if (editor !== null) {
+          editorBinding = new EditorBinding(editor, this.portal, false);
+          editorBinding.setEditorProxy(editorProxy);
+          editorProxy.setDelegate(editorBinding);
 
-      this.editorBindingsByEditorProxyId.set(editorProxy.id, editorBinding);
-      this.editorProxiesByEditor.set(editor, editorProxy);
+          this.editorBindingsByEditorProxyId.set(editorProxy.id, editorBinding);
+          this.editorProxiesByEditor.set(editor, editorProxy);
 
-      const didDestroyEditorSubscription = editor.onDidDestroy(() => editorBinding.dispose());
-      editorBinding.onDidDispose(() => {
-        didDestroyEditorSubscription.dispose();
+          // const didDestroyEditorSubscription = vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => editorBinding.dispose());
+          editorBinding.onDidDispose(() => {
+          //   didDestroyEditorSubscription.dispose();
 
-        const isRetracted = this.portal?.resolveFollowState() === FollowState.RETRACTED;
-        this.shouldRelayActiveEditorChanges = !isRetracted;
-        editor.close();
-        this.shouldRelayActiveEditorChanges = true;
+          //   const isRetracted = this.portal?.resolveFollowState() === FollowState.RETRACTED;
+          //   this.shouldRelayActiveEditorChanges = !isRetracted;
+          //   editor.close();
+          //   this.shouldRelayActiveEditorChanges = true;
 
-        this.editorProxiesByEditor.delete(editor);
-        this.editorBindingsByEditorProxyId.delete(editorProxy.id);
-      });
+            this.editorProxiesByEditor.delete(editor);
+            this.editorBindingsByEditorProxyId.delete(editorProxy.id);
+          });
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
     }
+
     return editor;
   }
 
@@ -232,7 +245,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
     // }
   }
 
-  didFailToJoin (error) {
+  didFailToJoin (error: Error) {
     let message, description;
     if (error instanceof Errors.PortalNotFoundError) {
       message = 'Portal not found';
@@ -307,9 +320,26 @@ export default class GuestPortalBinding implements IPortalDelegate {
 
 
 	private registerWorkspaceEvents () {
-		// vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
-		// vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-		// vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
+		vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
+		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
+		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
 	}
 
+	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
+		if(this.bufferBindingsByBuffer){
+			const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
+			if (bufferBinding) {
+				bufferBinding.onDidChangeBuffer(event.contentChanges);
+			}
+		}
+	}
+
+	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
+		if(this.bufferBindingsByBuffer){
+      const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
+      if (bufferBinding) {
+        event.waitUntil(bufferBinding.requestSavePromise());
+      }
+    }
+  }
 }

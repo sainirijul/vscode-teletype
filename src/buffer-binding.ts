@@ -241,6 +241,12 @@ export default class BufferBinding implements IBufferDelegate {
 			};
 		}));
 	}
+
+  requestSavePromise(): Thenable<vscode.TextEdit[]> {
+		return new Promise(() => {
+			this.bufferProxy.requestSave();
+		});
+  }
 }
 
 class RemoteFile {

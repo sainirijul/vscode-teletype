@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { TeletypeClient, Errors, Portal, FollowState, EditorProxy, BufferProxy } from '@atom/teletype-client';
+import { TeletypeClient, Errors, Portal, FollowState, EditorProxy, BufferProxy, IPortalDelegate } from '@atom/teletype-client';
 import BufferBinding from './BufferBinding';
 import EditorBinding from './EditorBinding';
 
@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Position } from './teletype-types';
 
-export default class PortalBinding {
+export default class PortalBinding implements IPortalDelegate {
 	public client: TeletypeClient;
 	public readonly portalId: string;
 	public readonly editor: vscode.TextEditor;
@@ -68,11 +68,11 @@ export default class PortalBinding {
 
 	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
 		if(this.bufferBindingsByBuffer){
-		const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
-		if (bufferBinding) {
-			bufferBinding.onDidChangeBuffer(event.contentChanges);
+			const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
+			if (bufferBinding) {
+				bufferBinding.onDidChangeBuffer(event.contentChanges);
+			}
 		}
-	}
 	}
 
 	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
@@ -272,7 +272,7 @@ export default class PortalBinding {
 	}
 
 	// Portal implements
-	siteDidJoin(siteId: string) {
+	siteDidJoin(siteId: number) {
 		this.joinEvents.push(siteId);
 	}
 

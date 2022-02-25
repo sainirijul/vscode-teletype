@@ -10,12 +10,12 @@ import NotificationManager from './notification-manager';
 export default class PortalBindingManager {
   private emitter: EventEmitter;
   public client: TeletypeClient;
-  public workspace: any;
+  public workspace: vscode.WorkspaceFolder;
   public notificationManager: NotificationManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding> | null;
-  private promisesByGuestPortalId: Map<number, Promise<GuestPortalBinding>>;
+  private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
 
-  constructor (client: TeletypeClient, workspace, notificationManager: NotificationManager) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager) {
     this.emitter = new EventEmitter();
     this.client = client;
     this.workspace = workspace;
@@ -78,7 +78,7 @@ export default class PortalBindingManager {
     this.emitter.emit('did-change');
   }
 
-  createGuestPortalBinding (portalId: number) {
+  createGuestPortalBinding (portalId: string) {
     let promise = this.promisesByGuestPortalId.get(portalId);
     if (promise) {
       promise.then((binding) => {
@@ -105,7 +105,7 @@ export default class PortalBindingManager {
     );
 
     if (await portalBinding.initialize()) {
-      this.workspace.getElement().classList.add('teletype-Guest');
+      // this.workspace.getElement().classList.add('teletype-Guest');
       this.emitter.emit('did-change');
     }
 

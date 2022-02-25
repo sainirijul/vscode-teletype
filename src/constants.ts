@@ -3,4 +3,4 @@
 export const API_URL_BASE: string = 'https://api.teletype.atom.io';
 export const PUSHER_KEY: string = 'f119821248b7429bece3';
 export const PUSHER_CLUSTER: string = 'mt1';
-export const AUTH_TOKEN: string = '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';
+export const AUTH_TOKEN: string = '';
