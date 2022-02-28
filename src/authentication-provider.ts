@@ -7,7 +7,7 @@ import * as constants from './constants';
 
 export class AuthenticationProvider {
   client: TeletypeClient;
-  credentialCache: any;
+  credentialCache: CredentialCache;
   notificationManager: NotificationManager;
   workspace: any;
   emitter: any;
@@ -25,8 +25,7 @@ export class AuthenticationProvider {
   async signInUsingSavedToken () {
     if (this.isSignedIn()) { return true; }
 
-    //const token = await this.credentialCache.get('oauth-token');
-    const token = constants.AUTH_TOKEN;
+    const token = await this.credentialCache.get('oauth-token');
     if (token) {
       return this._signIn(token);
     } else {

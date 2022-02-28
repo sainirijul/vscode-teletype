@@ -9,6 +9,7 @@ import NotificationManager from './notification-manager';
 import PortalBindingManager from './portal-binding-manager';
 import { AuthenticationProvider } from './authentication-provider';
 import TeletypePackage from './teletype-package';
+import { findPortalId } from './portal-id-helpers';
 
 const fetch = require('node-fetch');
 const wrtc = require('wrtc');
@@ -66,7 +67,21 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	console.log('Great, your extension "vscode-teletype" is now active!');
-	let disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
+
+	let disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
+
+		let token = await getTeletypeToken();
+		if (!token) {
+			vscode.window.showInformationMessage("No Portal ID has been entered. Please try again");
+		} else {
+			vscode.window.showInformationMessage('Trying to SignIn');
+			await globalAny.teletype.signIn(token);
+		}
+
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
 
 		let portalIdInput = await getPortalID();
 		if (!portalIdInput) {
@@ -88,12 +103,22 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 	  
-    globalAny.teletype.activate();
+    (globalAny.teletype as TeletypePackage).activate();
 }
 
 async function getPortalID() {
-	let portalID = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
-	return portalID;
+	let url = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
+	if (url) {
+		let portalID = findPortalId(url);
+		return portalID;
+	}
+
+	return undefined;
+}
+
+async function getTeletypeToken() {
+	let token = await vscode.window.showInputBox({ prompt: 'Enter Teletype Authentication Token' });
+	return token;
 }
 
 export function deactivate() { }

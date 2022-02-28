@@ -16,12 +16,17 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onCommand:extension.teletype-signin",
 		"onCommand:extension.join-portal",
 		"onCommand:extension.share-portal"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
+			{
+				"command": "extension.teletype-signin",
+				"title": "SignIn Teletype"
+			},
 			{
 				"command": "extension.join-portal",
 				"title": "Join Portal"

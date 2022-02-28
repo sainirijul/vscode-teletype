@@ -24,8 +24,9 @@ export default class BufferBinding implements IBufferDelegate {
   bufferDestroySubscription: any;
   remoteFile: any;
 
-	constructor(buffer: vscode.TextDocument, isHost: boolean, didDispose: Function = doNothing) {
+	constructor(buffer: vscode.TextDocument, editor: vscode.TextEditor, isHost: boolean, didDispose: Function = doNothing) {
     this.buffer = buffer;
+    this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
     this.pendingChanges = [];

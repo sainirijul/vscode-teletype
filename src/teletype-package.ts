@@ -230,6 +230,15 @@ export default class TeletypePackage {
     }
   }
 
+  async signIn (token: string) {
+    const authenticationProvider = await this.getAuthenticationProvider();
+    if (authenticationProvider) {
+      return authenticationProvider.signIn(token);
+    } else {
+      return false;
+    }
+  }
+
   async signInUsingSavedToken () {
     const authenticationProvider = await this.getAuthenticationProvider();
     if (authenticationProvider) {
@@ -279,13 +288,13 @@ export default class TeletypePackage {
     });
   }
 
-  getAuthenticationProvider () {
+  async getAuthenticationProvider () : Promise<AuthenticationProvider> {
     if (!this.authenticationProviderPromise) {
       this.authenticationProviderPromise = new Promise(async (resolve, reject) => {
         const client = await this.getClient();
         if (client) {
           resolve(new AuthenticationProvider(
-            client, this.notificationManager, this.credentialCache, this.workspace
+            client, this.notificationManager, this.workspace, this.credentialCache
           ));
         } else {
           this.authenticationProviderPromise = null;

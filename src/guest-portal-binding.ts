@@ -147,6 +147,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
     // this.sitePositionsComponent.update({positionsBySiteId});
   }
 
+  // @override
   updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (editorProxy) {
       this.lastEditorProxyChangePromise = this.lastEditorProxyChangePromise.then(() =>
@@ -229,8 +230,9 @@ export default class GuestPortalBinding implements IPortalDelegate {
 			fs.writeFileSync(filePath, '');
 
 			buffer = await vscode.workspace.openTextDocument(bufferURI);
+			const editor = await vscode.window.showTextDocument(buffer);
       bufferBinding = new BufferBinding(
-        buffer, false, () => this.bufferBindingsByBufferProxyId.delete(bufferProxy.id)
+        buffer, editor, false, () => this.bufferBindingsByBufferProxyId.delete(bufferProxy.id)
       );
 
       bufferBinding.setBufferProxy(bufferProxy);

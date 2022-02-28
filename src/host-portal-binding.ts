@@ -153,7 +153,7 @@ this.findOrCreateEditorProxyForEditor(editor);
       return editorBinding.editorProxy;
     } else {
       if (this.portal) {
-        const bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document);
+        const bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document, editor);
         const editorProxy = this.portal.createEditorProxy({bufferProxy});
         editorBinding = new EditorBinding(editor, this.portal, true);
         editorBinding.setEditorProxy(editorProxy);
@@ -174,13 +174,13 @@ this.findOrCreateEditorProxyForEditor(editor);
     return undefined;
   }
 
-  findOrCreateBufferProxyForBuffer (buffer: vscode.TextDocument) : BufferProxy | null {
+  findOrCreateBufferProxyForBuffer (buffer: vscode.TextDocument, editor: vscode.TextEditor) : BufferProxy | null {
     let bufferBinding = this.bufferBindingsByBuffer.get(buffer);
     if (bufferBinding) {
       return bufferBinding.bufferProxy;
     } else {
       if(this.portal) {
-        bufferBinding = new BufferBinding(buffer, true);
+        bufferBinding = new BufferBinding(buffer, editor, true);
         const bufferProxy = this.portal.createBufferProxy({
           uri: bufferBinding.getBufferProxyURI(),
           // history: buffer.getHistory()
