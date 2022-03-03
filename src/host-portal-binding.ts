@@ -57,12 +57,20 @@ export default class HostPortalBinding implements IPortalDelegate {
 
       this.uri = getPortalURI(this.portal.id);
       // this.sitePositionsComponent = new SitePositionsComponent({portal: this.portal, workspace: this.workspace});
+      vscode.window.showInformationMessage(`Create Portal with ID ${this.uri}`);
 
       this.portal.setDelegate(this);
       // this.disposables.add(
       //   this.workspace.observeTextEditors(this.didAddTextEditor.bind(this)),
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
+      vscode.window.onDidChangeActiveTextEditor((e) => {
+        this.didChangeActiveTextEditor(e);
+      });
+      vscode.workspace.onDidOpenTextDocument(async (e) => {
+        const editor = await vscode.window.showTextDocument(e);
+        this.didAddTextEditor(editor);
+      });
 
       // this.workspace.getElement().classList.add('teletype-Host');
       return true;
@@ -104,7 +112,7 @@ export default class HostPortalBinding implements IPortalDelegate {
     return this.emitter.on('did-change', callback);
   }
 
-  didChangeActiveTextEditor (editor: vscode.TextEditor) {
+  didChangeActiveTextEditor (editor: vscode.TextEditor | undefined) {
     //if (editor && !editor.isRemote) {
     if (editor) {
       const editorProxy = this.findOrCreateEditorProxyForEditor(editor);
@@ -143,8 +151,9 @@ export default class HostPortalBinding implements IPortalDelegate {
   }
 
   didAddTextEditor (editor: vscode.TextEditor) {
-    //if (!editor.isRemote) { this.findOrCreateEditorProxyForEditor(editor); }
-this.findOrCreateEditorProxyForEditor(editor);
+    //if (!editor.isRemote) { 
+      this.findOrCreateEditorProxyForEditor(editor); 
+    //}
   }
 
   findOrCreateEditorProxyForEditor (editor: vscode.TextEditor) : EditorProxy | undefined {
@@ -163,10 +172,10 @@ this.findOrCreateEditorProxyForEditor(editor);
         this.editorBindingsByEditorProxy.set(editorProxy, editorBinding);
 
         // const didDestroyEditorSubscription = editor.onDidDestroy(() => editorProxy.dispose());
-        // editorBinding.onDidDispose(() => {
+        editorBinding.onDidDispose(() => {
         //   didDestroyEditorSubscription.dispose();
-        //   this.editorBindingsByEditorProxy.delete(editorProxy);
-        // });
+           this.editorBindingsByEditorProxy.delete(editorProxy);
+        });
 
         return editorProxy;
       }

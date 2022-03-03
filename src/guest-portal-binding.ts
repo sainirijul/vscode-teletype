@@ -289,8 +289,11 @@ export default class GuestPortalBinding implements IPortalDelegate {
     });
   }
 
-  leave () {
-    if (this.portal) { this.portal.dispose(); }
+  public leave () {
+    if (this.portal) {
+       this.portal.dispose(); 
+       this.portal = null;
+    }
   }
 
   // async openPaneItem (newActivePaneItem) {
@@ -328,9 +331,9 @@ export default class GuestPortalBinding implements IPortalDelegate {
 
 
 	private registerWorkspaceEvents () {
-		// vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
-		// vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-		// vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
+		vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
+		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
+		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
 	}
 
 	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {

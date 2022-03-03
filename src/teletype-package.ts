@@ -74,7 +74,7 @@ export default class TeletypePackage {
     this.subscriptions = subscriptions;
   }
 
-  activate () {
+  async activate () {
     console.log('teletype: Using pusher key:', this.pusherKey);
     console.log('teletype: Using base URL:', this.baseURL);
   
@@ -99,8 +99,11 @@ export default class TeletypePackage {
 
     // Initiate sign-in, which will continue asynchronously, since we don't want
     // to block here.
-    this.signInUsingSavedToken();
-    this.registerRemoteEditorOpener();
+    if (await this.signInUsingSavedToken()) {
+      this.registerRemoteEditorOpener();
+    } else {
+      this.notificationManager?.addError("failed sign-in.");
+    }
   }
 
   async deactivate () {
@@ -239,10 +242,10 @@ export default class TeletypePackage {
     }
   }
 
-  async signInUsingSavedToken () {
+  async signInUsingSavedToken () : Promise<boolean> {
     const authenticationProvider = await this.getAuthenticationProvider();
     if (authenticationProvider) {
-      return authenticationProvider.signInUsingSavedToken();
+      return await authenticationProvider.signInUsingSavedToken();
     } else {
       return false;
     }
@@ -251,12 +254,12 @@ export default class TeletypePackage {
   async signOut () {
     const authenticationProvider = await this.getAuthenticationProvider();
     if (authenticationProvider) {
-      this.portalStatusBarIndicator.showPopover();
+      //this.portalStatusBarIndicator.showPopover();
       await authenticationProvider.signOut();
     }
   }
 
-  async isSignedIn () {
+  async isSignedIn () : Promise<boolean> {
     const authenticationProvider = await this.getAuthenticationProvider();
     if (authenticationProvider) {
       return authenticationProvider.isSignedIn();

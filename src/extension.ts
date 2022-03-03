@@ -63,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
 			disableStats: true
 		},
 		// tetherDisconnectWindow, tooltipManager,
-		// workspace  
+		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined
 	});
 
 	console.log('Great, your extension "vscode-teletype" is now active!');
@@ -72,11 +72,22 @@ export function activate(context: vscode.ExtensionContext) {
 
 		let token = await getTeletypeToken();
 		if (!token) {
-			vscode.window.showInformationMessage("No Portal ID has been entered. Please try again");
+			vscode.window.showInformationMessage("No Toekn has been entered. Please try again");
 		} else {
-			vscode.window.showInformationMessage('Trying to SignIn');
-			await globalAny.teletype.signIn(token);
+			vscode.window.showInformationMessage('Trying to SignIn...');
+			if (await globalAny.teletype.signIn(token)) {
+				vscode.window.showInformationMessage("SignIn successeded.");
+			} else {
+				vscode.window.showErrorMessage("SignIn failed.");
+			}
 		}
+
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.teletype-signout', async () => {
+
+		await globalAny.teletype.signOut();
 
 	});
 	context.subscriptions.push(disposable);
@@ -89,8 +100,16 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		else {
 			vscode.window.showInformationMessage('Trying to Join Portal with ID' + ' ' + portalIdInput + ' ');
-			await globalAny.teletype.joinPortal(portalIdInput);
+			await (globalAny.teletype as TeletypePackage).joinPortal(portalIdInput);
 		}
+
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.leave-portal', async () => {
+
+		vscode.window.showInformationMessage('Leave Portal');
+		await (globalAny.teletype as TeletypePackage).leavePortal();
 
 	});
 	context.subscriptions.push(disposable);
@@ -98,12 +117,20 @@ export function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('extension.share-portal', async () => {
 
 		vscode.window.showInformationMessage('Trying to Share Portal');
-		await globalAny.teletype.sharePortal();
+		await (globalAny.teletype as TeletypePackage).sharePortal();
 
 	});
 	context.subscriptions.push(disposable);
 	  
-    (globalAny.teletype as TeletypePackage).activate();
+	disposable = vscode.commands.registerCommand('extension.close-host-portal', async () => {
+
+		vscode.window.showInformationMessage('Cose Host Portal');
+		await (globalAny.teletype as TeletypePackage).closeHostPortal();
+
+	});
+	context.subscriptions.push(disposable);
+
+	(globalAny.teletype as TeletypePackage).activate();
 }
 
 async function getPortalID() {

@@ -9,7 +9,7 @@ import NotificationManager from './notification-manager';
 export default class PortalBindingManager {
   private emitter: EventEmitter;
   public client: TeletypeClient;
-  public workspace!: vscode.WorkspaceFolder | null;
+  public workspace!: vscode.WorkspaceFolder | undefined;
   public notificationManager: NotificationManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
@@ -17,7 +17,7 @@ export default class PortalBindingManager {
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager) {
     this.emitter = new EventEmitter();
     this.client = client;
-    if (this.workspace) {
+    if (workspace) {
       this.workspace = workspace;
     }
     this.notificationManager = notificationManager;
@@ -46,7 +46,7 @@ export default class PortalBindingManager {
   }
 
   async createHostPortalBinding () {
-    if (this.hostPortalBindingPromise === null) {
+    if (!this.hostPortalBindingPromise) {
       this.hostPortalBindingPromise = this._createHostPortalBinding();
       if(this.hostPortalBindingPromise) {
         this.hostPortalBindingPromise.then((binding) => {
@@ -66,6 +66,8 @@ export default class PortalBindingManager {
 
       if (await portalBinding.initialize()) {
         this.emitter.emit('did-change');
+      } else {
+        vscode.window.showErrorMessage(`Create Portal failed`);        
       }
       
       return portalBinding;

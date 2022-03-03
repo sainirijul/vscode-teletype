@@ -17,8 +17,11 @@
 	],
 	"activationEvents": [
 		"onCommand:extension.teletype-signin",
+		"onCommand:extension.teletype-signout",
 		"onCommand:extension.join-portal",
-		"onCommand:extension.share-portal"
+		"onCommand:extension.leave-portal",
+		"onCommand:extension.share-portal",
+		"onCommand:extension.close-host-portal"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -28,12 +31,24 @@
 				"title": "SignIn Teletype"
 			},
 			{
+				"command": "extension.teletype-signout",
+				"title": "SignOut Teletype"
+			},
+			{
 				"command": "extension.join-portal",
 				"title": "Join Portal"
 			},
 			{
+				"command": "extension.leave-portal",
+				"title": "Leave Portal"
+			},
+			{
 				"command": "extension.share-portal",
 				"title": "Share Portal"
+			},
+			{
+				"command": "extension.close-host-portal",
+				"title": "Close Host Portal"
 			}
 		]
 	},

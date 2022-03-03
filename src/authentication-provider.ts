@@ -22,18 +22,18 @@ export class AuthenticationProvider {
     this.emitter = new EventEmitter();
   }
 
-  async signInUsingSavedToken () {
+  async signInUsingSavedToken () : Promise<boolean> {
     if (this.isSignedIn()) { return true; }
 
     const token = await this.credentialCache.get('oauth-token');
     if (token) {
-      return this._signIn(token);
+      return await this._signIn(token);
     } else {
       return false;
     }
   }
 
-  async signIn (token: string) {
+  async signIn (token: string) : Promise<boolean> {
     if (this.isSignedIn()) { return true; }
 
     if (await this._signIn(token)) {
@@ -51,7 +51,7 @@ export class AuthenticationProvider {
     this.client.signOut();
   }
 
-  async _signIn (token: string) {
+  private async _signIn (token: string) : Promise<boolean> {
     try {
       this.signingIn = true;
       this.didChangeSignIn();
@@ -67,6 +67,7 @@ export class AuthenticationProvider {
       this.signingIn = false;
       this.didChangeSignIn();
     }
+    return this.signingIn;
   }
 
   isSigningIn () : boolean {
@@ -85,7 +86,7 @@ export class AuthenticationProvider {
     return this.emitter.on('did-change', callback);
   }
 
-  didChangeSignIn () {
+  didChangeSignIn () : void {
     // const workspaceElement = this.workspace.getElement();
     // if (this.isSignedIn()) {
     //   workspaceElement.classList.add('teletype-Authenticated');
