@@ -9,7 +9,7 @@ export class AuthenticationProvider {
   client: TeletypeClient;
   credentialCache: CredentialCache;
   notificationManager: NotificationManager;
-  workspace: any;
+  workspace: vscode.WorkspaceFolder;
   emitter: any;
   signingIn: boolean = false;
 

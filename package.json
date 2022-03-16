@@ -10,7 +10,7 @@
 		"url": "https://github.com/amos42/vscode-teletype.git"
 	},
 	"engines": {
-		"vscode": "^1.35.0"
+		"vscode": "^1.50.0"
 	},
 	"categories": [
 		"Other"
@@ -70,10 +70,10 @@
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",
-		"vsce": "~1.71.0",
+		"vsce": "^2.7.0",
 		"vscode": "^1.1.37",
 		"webpack": "^4.43.0",
-		"webpack-cli": "^3.3.11",
+		"webpack-cli": "^4.9.2",
 		"wrtc": "^0.4.5"
 	},
 	"dependencies": {

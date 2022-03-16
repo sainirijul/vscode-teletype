@@ -9,7 +9,7 @@ import NotificationManager from './notification-manager';
 export default class PortalBindingManager {
   private emitter: EventEmitter;
   public client: TeletypeClient;
-  public workspace!: vscode.WorkspaceFolder | undefined;
+  public workspace!: vscode.WorkspaceFolder | null;
   public notificationManager: NotificationManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;

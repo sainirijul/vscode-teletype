@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 //import {EventEmitter} from 'events';
 //import {CompositeDisposable} from 'atom';
-import {TeletypeClient, Errors} from '@atom/teletype-client';
+import {TeletypeClient, Errors, PusherPubSubGateway} from '@atom/teletype-client';
 import PortalBindingManager from './portal-binding-manager';
 import NotificationManager from './notification-manager';
 // import PortalStatusBarIndicator from './portal-status-bar-indicator';
@@ -14,13 +14,13 @@ import { CredentialCache } from './credential-cache';
 
 export default class TeletypePackage {
   config: any;
-  workspace: any;
+  workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
   packageManager: any;
   commandRegistry: any;
   tooltipManager: any;
   clipboard: any;
-  pubSubGateway: any;
+  pubSubGateway: PusherPubSubGateway;
   pusherKey: string;
   pusherOptions: any;
   baseURL: string;
@@ -102,7 +102,7 @@ export default class TeletypePackage {
     if (await this.signInUsingSavedToken()) {
       this.registerRemoteEditorOpener();
     } else {
-      this.notificationManager?.addError("failed sign-in.");
+      this.notificationManager?.addWarn("Session expired. Try sign-in.");
     }
   }
 
@@ -336,6 +336,7 @@ export default class TeletypePackage {
       if (error instanceof Errors.ClientOutOfDateError) {
         this.isClientOutdated = true;
       } else {
+        this.notificationManager.addError('client initialize error');
         this.initializationError = error;
       }
     }

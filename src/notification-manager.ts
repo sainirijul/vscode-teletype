@@ -10,4 +10,7 @@ export default class NotificationManager {
         vscode.window.showErrorMessage(message);
     }
 
+    public addWarn(message: string, options: { description: string; dismissable: boolean; } | undefined = undefined) {
+        vscode.window.showWarningMessage(message);
+    }
 }

@@ -234,7 +234,7 @@ export default class BufferBinding implements IBufferDelegate {
   //   return serializedDefaultHistoryProvider;
   // }
 
-	onDidChangeBuffer(changes: vscode.TextDocumentContentChangeEvent[]) {
+	onDidChangeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
 		this.bufferProxy.onDidChangeBuffer(changes.map(change => {
 			const { start, end } = change.range;
 
@@ -246,7 +246,8 @@ export default class BufferBinding implements IBufferDelegate {
 		}));
 	}
 
-  requestSavePromise(): Thenable<vscode.TextEdit[]> {
+  //requestSavePromise(): Promise<vscode.TextEditor[]> {
+    requestSavePromise(): Promise<void> {
 		return new Promise(() => {
 			this.bufferProxy.requestSave();
 		});

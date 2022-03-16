@@ -43,8 +43,9 @@ globalAny.notificationManager = null;
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	// atom 공용 서버와의 node 버전 차이로 인한 문제 임시로 피하기 위해
-	process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+	// atom 공용 서버와의 node 버전 차이로 인한 문제 임시로 피하기 위해.
+	// (private 서버의 경우엔 적절한 node 버전을 조정하면 해당 코드가 필요 없어짐)
+	// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 	globalAny.teletype = new TeletypePackage({
 		baseURL: constants.API_URL_BASE,
@@ -60,7 +61,11 @@ export function activate(context: vscode.ExtensionContext) {
 		pusherKey: constants.PUSHER_KEY, 
 		pusherOptions: { 
 			cluster: constants.PUSHER_CLUSTER,
-			disableStats: true
+			wsHost: '127.0.0.1',
+			wsPort: 6001,
+			forceTLS: false,
+			disableStats: true,
+			enabledTransports: ['ws', 'wss'],
 		},
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined

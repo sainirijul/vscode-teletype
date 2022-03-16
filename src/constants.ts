@@ -5,5 +5,9 @@
 //export const PUSHER_CLUSTER: string = 'mt1';
 export const API_URL_BASE: string = 'http://localhost:3000';
 export const PUSHER_KEY: string = 'cc8fb96b89e84d763d6b';
+//export const PUSHER_KEY: string = 'PUSHER_KEY=1234567890
+export const PUSHER_SECRET: string = '1882b79e0d1e521226d7';
 export const PUSHER_CLUSTER: string = 'ap3';
-export const AUTH_TOKEN: string = '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';
+//export const PUSHER_CLUSTER: string = 'xx1';
+export const AUTH_TOKEN: string = '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';
+
