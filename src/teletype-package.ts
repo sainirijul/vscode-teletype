@@ -10,12 +10,15 @@ import { AuthenticationProvider } from './authentication-provider';
 import TeletypeService from './teletype-service';
 import { findPortalId } from './portal-id-helpers';
 import { CredentialCache } from './credential-cache';
+import WorkspaceManager from './workspace-manager';
 // import JoinViaExternalAppDialog from './join-via-external-app-dialog';
+
 
 export default class TeletypePackage {
   config: any;
   workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
+  workspaceManager: WorkspaceManager;
   packageManager: any;
   commandRegistry: any;
   tooltipManager: any;
@@ -40,7 +43,7 @@ export default class TeletypePackage {
   constructor (options: any) {
     const {
       baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
-      notificationManager, packageManager, peerConnectionTimeout, pubSubGateway,
+      notificationManager, packageManager, workspaceManager, peerConnectionTimeout, pubSubGateway,
       pusherKey, pusherOptions, tetherDisconnectWindow, tooltipManager,
       workspace, subscriptions
     } = options;
@@ -48,6 +51,7 @@ export default class TeletypePackage {
     this.config = config;
     this.workspace = workspace;
     this.notificationManager = notificationManager;
+    this.workspaceManager = workspaceManager;
     this.packageManager = packageManager;
     this.commandRegistry = commandRegistry;
     this.tooltipManager = tooltipManager;
@@ -104,6 +108,8 @@ export default class TeletypePackage {
     } else {
       this.notificationManager?.addWarn("Session expired. Try sign-in.");
     }
+
+    this.workspaceManager.initialize();
   }
 
   async deactivate () {
@@ -314,7 +320,7 @@ export default class TeletypePackage {
       this.portalBindingManagerPromise = new Promise(async (resolve, reject) => {
         const client = await this.getClient();
         if (client) {
-          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager));
+          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager));
         } else {
           this.portalBindingManagerPromise = null;
           resolve(null);

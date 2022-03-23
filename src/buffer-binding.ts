@@ -23,6 +23,7 @@ export default class BufferBinding implements IBufferDelegate {
   public bufferProxy!: BufferProxy;
   bufferDestroySubscription: any;
   remoteFile: any;
+  isUpdating: boolean = false;
 
 	constructor(buffer: vscode.TextDocument, editor: vscode.TextEditor, isHost: boolean, didDispose: Function = doNothing) {
     this.buffer = buffer;
@@ -55,13 +56,13 @@ export default class BufferBinding implements IBufferDelegate {
   setBufferProxy (bufferProxy: BufferProxy) {
     this.bufferProxy = bufferProxy;
     // // this.buffer?.setHistoryProvider(this);
-    // while (this.pendingChanges.length > 0) {
-    //   this.pushChange(this.pendingChanges.shift());
-    // }
-    // if (!this.isHost) {
-    //   this.remoteFile = new RemoteFile(bufferProxy.uri);
-    //   this.buffer?.setFile(this.remoteFile);
-    // }
+    while (this.pendingChanges.length > 0) {
+      this.pushChange(this.pendingChanges.shift());
+    }
+    if (!this.isHost) {
+      this.remoteFile = new RemoteFile(bufferProxy.uri);
+      // this.buffer?.setFile(this.remoteFile);
+    }
     // this.bufferDestroySubscription = this.buffer?.onDidDestroy(() => {
     //   if (this.isHost) {
     //     bufferProxy.dispose();
@@ -84,7 +85,11 @@ export default class BufferBinding implements IBufferDelegate {
     if (!change) { return; }
 
     if (this.bufferProxy) {
-      this.bufferProxy.setTextInRange(change.range.start, change.range.end, change.text);
+      this.bufferProxy.setTextInRange(
+        {row: change.range.start.line, column: change.range.start.character},
+        {row: change.range.end.line, column: change.range.end.character},
+        change.text
+      );
     } else {
       this.pendingChanges.push(change);
     }
@@ -100,17 +105,17 @@ export default class BufferBinding implements IBufferDelegate {
 
   // @override
   updateText (textUpdates: any[]) {
-    // for (let i = textUpdates.length - 1; i >= 0; i--) {
-    //   const {oldStart, oldEnd, newText} = textUpdates[i];
-    //   this.disableHistory = true;
-    //   this.buffer?.setTextInRange(new vscode.Range(oldStart, oldEnd), newText);
-    //   this.disableHistory = false;
-    // }
 		return this.editor.edit(builder => {
-			for (let i = textUpdates.length - 1; i >= 0; i--) {
-				const textUpdate = textUpdates[i];
-				builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-			}
+      if (textUpdates) {
+        this.isUpdating = true;
+        for (let i = textUpdates.length - 1; i >= 0; i--) {
+          const textUpdate = textUpdates[i];
+          this.disableHistory = true;
+          builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+          this.disableHistory = false;
+        }
+        // this.isUpdating = false;
+      }
 		}, { undoStopBefore: false, undoStopAfter: true });
   }
 
@@ -236,7 +241,8 @@ export default class BufferBinding implements IBufferDelegate {
 
 	onDidChangeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
 		this.bufferProxy.onDidChangeBuffer(changes.map(change => {
-			const { start, end } = change.range;
+    // this.bufferProxy.onDidUpdateText(changes.map(change => {
+		 	const { start, end } = changes[0].range;
 
 			return {
 				oldStart: { row: start.line, column: start.character },
@@ -246,8 +252,26 @@ export default class BufferBinding implements IBufferDelegate {
 		}));
 	}
 
+	changeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
+		//this.bufferProxy.onDidChangeBuffer(changes.map(change => {
+    // this.bufferProxy.onDidUpdateText(changes.map(change => {
+		 	const { start, end } = changes[0].range;
+
+		// 	return {
+		// 		oldStart: { row: start.line, column: start.character },
+		// 		oldEnd: { row: end.line, column: end.character },
+		// 		newText: change.text
+		// 	};
+		// }));
+    this.bufferProxy.setTextInRange(
+      { row: start.line, column: start.character },
+      { row: end.line, column: end.character },
+      changes[0].text
+    );
+	}
+
   //requestSavePromise(): Promise<vscode.TextEditor[]> {
-    requestSavePromise(): Promise<void> {
+  requestSavePromise(): Promise<void> {
 		return new Promise(() => {
 			this.bufferProxy.requestSave();
 		});

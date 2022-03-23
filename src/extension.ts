@@ -10,6 +10,7 @@ import PortalBindingManager from './portal-binding-manager';
 import { AuthenticationProvider } from './authentication-provider';
 import TeletypePackage from './teletype-package';
 import { findPortalId } from './portal-id-helpers';
+import WorkspaceManager from './workspace-manager';
 
 const fetch = require('node-fetch');
 const wrtc = require('wrtc');
@@ -39,7 +40,8 @@ globalAny.notificationManager = null;
 // 	baseURL: atom.config.get('teletype.dev.baseURL'),
 // 	getAtomVersion: atom.getVersion.bind(atom)
 //   })
-  
+
+
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -55,18 +57,21 @@ export function activate(context: vscode.ExtensionContext) {
 		// credentialCache,
 		// getAtomVersion,
 		notificationManager: new NotificationManager(), 
+		workspaceManager: new WorkspaceManager(), 
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,
 		pusherKey: constants.PUSHER_KEY, 
 		pusherOptions: { 
 			cluster: constants.PUSHER_CLUSTER,
-			wsHost: '127.0.0.1',
-			wsPort: 6001,
-			forceTLS: false,
-			disableStats: true,
-			enabledTransports: ['ws', 'wss'],
+			encrypted: true,
+			// wsHost: '127.0.0.1',
+			// wsPort: 6001,
+			// forceTLS: false,
+			// disableStats: true,
+			// enabledTransports: ['ws', 'wss'],
 		},
+		
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined
 	});

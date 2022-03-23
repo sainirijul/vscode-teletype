@@ -36,6 +36,7 @@ export default class EditorBinding implements IEditorDelegate {
   editorProxy: EditorProxy | undefined;
   // batchedMarkerUpdates: {} | null;
   // isBatchingMarkerUpdates: boolean;
+  isRemote: boolean = false;
 
   constructor (editor: vscode.TextEditor, portal: Portal | undefined, isHost: boolean) {
     this.editor = editor;
@@ -112,7 +113,7 @@ export default class EditorBinding implements IEditorDelegate {
     // editor.getURI = () => getEditorURI(this.portal.id, editorProxy.id);
     // editor.copy = () => null;
     // editor.serialize = () => null;
-    // editor.isRemote = true;
+    this.isRemote = true;
 
     // let remoteEditorCountForBuffer = remoteBuffer.remoteEditorCount || 0;
     // remoteBuffer.remoteEditorCount = ++remoteEditorCountForBuffer;
@@ -158,21 +159,21 @@ export default class EditorBinding implements IEditorDelegate {
   async editorDidChangeScrollTop () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    // this.editorProxy.didScroll();
-    // this.emitter.emit('did-scroll');
+    this.editorProxy?.didScroll();
+    this.emitter.emit('did-scroll');
   }
 
   async editorDidChangeScrollLeft () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    // this.editorProxy.didScroll();
-    // this.emitter.emit('did-scroll');
+    this.editorProxy?.didScroll();
+    this.emitter.emit('did-scroll');
   }
 
   async editorDidResize () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    // this.emitter.emit('did-resize');
+    this.emitter.emit('did-resize');
   }
 
 	onDidDispose(callback: { (): void; (...args: any[]): void; }) {
@@ -346,11 +347,23 @@ export default class EditorBinding implements IEditorDelegate {
     // this.batchedMarkerUpdates = null;
   }
 
-  updateSelections (update: any) {
+  updateSelections (updates: vscode.Selection[]) {
     // if (this.isBatchingMarkerUpdates) {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {
-    //   this.editorProxy?.updateSelections(update);
+      this.editorProxy?.updateSelections(
+        [
+          {
+            exclusive: true,
+            range: {
+              start: {row: updates[0].start.line, column: updates[0].start.character},
+              end: {row: updates[0].end.line, column: updates[0].end.character},
+            },
+            reversed: false,
+            tailed: false
+          }
+        ]
+      );
     // }
   }
 

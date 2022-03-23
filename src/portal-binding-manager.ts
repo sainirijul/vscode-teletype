@@ -4,6 +4,7 @@ import HostPortalBinding from './host-portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
 import { TeletypeClient } from '@atom/teletype-client';
 import { findPortalId } from './portal-id-helpers';
+import WorkspaceManager from './workspace-manager';
 import NotificationManager from './notification-manager';
 
 export default class PortalBindingManager {
@@ -11,10 +12,11 @@ export default class PortalBindingManager {
   public client: TeletypeClient;
   public workspace!: vscode.WorkspaceFolder | null;
   public notificationManager: NotificationManager;
+  public workspaceManager: WorkspaceManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager, workspaceManager: WorkspaceManager) {
     this.emitter = new EventEmitter();
     this.client = client;
     if (workspace) {
@@ -22,6 +24,7 @@ export default class PortalBindingManager {
     }
     this.notificationManager = notificationManager;
     // this.hostPortalBindingPromise = null;
+    this.workspaceManager = workspaceManager;
     this.promisesByGuestPortalId = new Map();
   }
 
@@ -60,7 +63,7 @@ export default class PortalBindingManager {
 
   async _createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
     if (this.workspace) {
-      const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager,
+      const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager, this.workspaceManager,
         () => { this.didDisposeHostPortalBinding(); }
       );
 
@@ -106,7 +109,7 @@ export default class PortalBindingManager {
 
   async _createGuestPortalBinding (portalId: string) : Promise<GuestPortalBinding> {
     const portalBinding = new GuestPortalBinding(
-        this.client, portalId, this.notificationManager,
+        this.client, portalId, this.notificationManager, this.workspaceManager,
         () => { 
           this.didDisposeGuestPortalBinding(portalBinding); 
         }

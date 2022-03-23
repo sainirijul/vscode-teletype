@@ -9,5 +9,5 @@ export const PUSHER_KEY: string = 'cc8fb96b89e84d763d6b';
 export const PUSHER_SECRET: string = '1882b79e0d1e521226d7';
 export const PUSHER_CLUSTER: string = 'ap3';
 //export const PUSHER_CLUSTER: string = 'xx1';
-export const AUTH_TOKEN: string = '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';
+export const AUTH_TOKEN: string = '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';
 

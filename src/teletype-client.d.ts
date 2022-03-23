@@ -70,7 +70,7 @@ declare module '@atom/teletype-client' {
 
         setDelegate(delegate: IBufferDelegate): void;
 
-        setTextInRange(...args: any[]): void;
+        setTextInRange(oldStart: Position, oldEnd: Position, newText: string): void;
 
         setURI(...args: any[]): void;
 
