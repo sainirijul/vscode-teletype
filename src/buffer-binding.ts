@@ -13,7 +13,7 @@ function doNothing () {}
 export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
 	public buffer!: vscode.TextDocument;
-	private editor!: vscode.TextEditor;
+	public editor!: vscode.TextEditor;
 	private readonly isHost: boolean;
   emitDidDispose: Function;
   private pendingChanges: vscode.TextDocumentContentChangeEvent[];
@@ -73,7 +73,7 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   // @override
-  setText (text: string) {
+  setText (text: string) : void {
     // this.disableHistory = true;
     // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
     // this.disableHistory = false;
@@ -104,19 +104,25 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   // @override
-  updateText (textUpdates: any[]) {
-		return this.editor.edit(builder => {
-      if (textUpdates) {
-        this.isUpdating = true;
-        for (let i = textUpdates.length - 1; i >= 0; i--) {
-          const textUpdate = textUpdates[i];
-          this.disableHistory = true;
-          builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-          this.disableHistory = false;
+  updateText (textUpdates: any[]) : void {
+    if (textUpdates) {
+      if (!this.editor.document.isClosed) {
+        try {
+          this.editor.edit(builder => {
+            this.isUpdating = true;
+            for (let i = textUpdates.length - 1; i >= 0; i--) {
+              const textUpdate = textUpdates[i];
+              this.disableHistory = true;
+              builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+              this.disableHistory = false;
+            }
+            // this.isUpdating = false;
+          }, { undoStopBefore: false, undoStopAfter: true });
+        } catch(e) {
+          console.log(e);
         }
-        // this.isUpdating = false;
       }
-		}, { undoStopBefore: false, undoStopAfter: true });
+    }
   }
 
   undo () {
@@ -199,8 +205,10 @@ export default class BufferBinding implements IBufferDelegate {
   enforceUndoStackSizeLimit () {}
 
   // @override
-  save () {
-    if (this.buffer?.uri) { return this.buffer.save(); }
+  save () : void {
+    if (this.buffer?.uri) { 
+      this.buffer.save(); 
+    }
   }
 
   relayURIChange () {
@@ -208,7 +216,7 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   // @override
-  didChangeURI (uri: string) {
+  didChangeURI (uri: string) : void {
     if (this.remoteFile) { this.remoteFile.setURI(uri); }
   }
 

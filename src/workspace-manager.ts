@@ -137,6 +137,19 @@ export default class WorkspaceManager {
 		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
 		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
     vscode.window.onDidChangeTextEditorVisibleRanges(this.triggerViewRangeChanges.bind(this));
+
+      // vscode.window.onDidChangeActiveTextEditor((e) => {
+      //   const editor = e as vscode.TextEditor;
+      //   this.didChangeActiveTextEditor(editor);
+      // });
+      // vscode.workspace.onDidOpenTextDocument(async (e) => {
+      //   const editor = await vscode.window.showTextDocument(e);
+      //   this.didAddTextEditor(editor);
+      // });
+
+    vscode.workspace.onDidCloseTextDocument(async (e) => {
+      this.didRemoveTextEditor(e);
+    });
 	}
 
 	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
@@ -151,6 +164,20 @@ export default class WorkspaceManager {
       }
 		}
 	}
+
+  // private didAddTextEditor (editor: vscode.TextEditor) {
+  //   if (!this.editorBindingsByEditor.get(editor)?.isRemote) {
+  //     this.findOrCreateEditorProxyForEditor(editor); 
+  //   }
+  // }
+
+  private didRemoveTextEditor (buffer: vscode.TextDocument) {
+    const bufferBiding = this.bufferBindingsByBuffer.get(buffer);
+    if (bufferBiding?.editor){
+      const editorProxy = this.editorProxiesByEditor.get(bufferBiding.editor);
+      editorProxy?.dispose();
+    }
+  }
 
 	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
 		if(this.bufferBindingsByBuffer){

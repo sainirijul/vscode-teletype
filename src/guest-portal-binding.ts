@@ -205,8 +205,10 @@ export default class GuestPortalBinding implements IPortalDelegate {
 
           //   const isRetracted = this.portal?.resolveFollowState() === FollowState.RETRACTED;
           //   this.shouldRelayActiveEditorChanges = !isRetracted;
-          //   editor.close();
+            //vscode.commands.executeCommand('workbench.action.closeActiveEditor');            
+            editor.hide();
           //   this.shouldRelayActiveEditorChanges = true;
+          
 
             this.workspaceManager.editorBindingsByEditor.delete(editor);
             this.workspaceManager.editorProxiesByEditor.delete(editor);

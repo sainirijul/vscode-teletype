@@ -77,6 +77,9 @@ export default class HostPortalBinding implements IPortalDelegate {
         const editor = await vscode.window.showTextDocument(e);
         this.didAddTextEditor(editor);
       });
+      // vscode.workspace.onDidCloseTextDocument(async (e) => {
+      //   this.didRemoveTextEditor(e);
+      // });
 
       // this.workspace.getElement().classList.add('teletype-Host');
       return true;
@@ -163,6 +166,14 @@ export default class HostPortalBinding implements IPortalDelegate {
     }
   }
 
+  // didRemoveTextEditor (buffer: vscode.TextDocument) {
+  //   const bufferBiding = this.workspaceManager.bufferBindingsByBuffer.get(buffer);
+  //   if (bufferBiding?.editor){
+  //     const editorProxy = this.workspaceManager.editorProxiesByEditor.get(bufferBiding.editor);
+  //     editorProxy?.dispose();
+  //   }
+  // }
+
   findOrCreateEditorProxyForEditor (editor: vscode.TextEditor) : EditorProxy | undefined {
     let editorBinding = this.workspaceManager.editorBindingsByEditor.get(editor);
     if (editorBinding) {
@@ -177,12 +188,15 @@ export default class HostPortalBinding implements IPortalDelegate {
 
         this.workspaceManager.editorBindingsByEditor.set(editor, editorBinding);
         this.workspaceManager.editorBindingsByEditorProxy.set(editorProxy, editorBinding);
+        this.workspaceManager.editorProxiesByEditor.set(editor, editorProxy);
 
         // const didDestroyEditorSubscription = editor.onDidDestroy(() => editorProxy.dispose());
         editorBinding.onDidDispose(() => {
         //   didDestroyEditorSubscription.dispose();
+           this.workspaceManager.editorBindingsByEditor.delete(editor);
            this.workspaceManager.editorBindingsByEditorProxy.delete(editorProxy);
-        });
+           this.workspaceManager.editorProxiesByEditor.delete(editor);
+          });
 
         return editorProxy;
       }
