@@ -9,9 +9,9 @@ import getPathWithNativeSeparators from './get-path-with-native-separators';
 import {getEditorURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
-import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
+// import * as os from 'os';
+// import * as path from 'path';
+// import * as fs from 'fs';
 
 const NOOP = () => {};
 
@@ -37,7 +37,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
   // subscriptions: any;
   lastEditorProxyChangePromise: Promise<void>;
   shouldRelayActiveEditorChanges: boolean;
-  public portal: Portal | null = null;
+  public portal?: Portal = undefined;
   // sitePositionsComponent: SitePositionsComponent;
   // public newActivePaneItem: any;
 
@@ -138,8 +138,8 @@ export default class GuestPortalBinding implements IPortalDelegate {
 
   async getRemoteEditor (editorProxyId: number) : Promise<vscode.TextEditor | null> {
     const editorProxy = await this.portal?.findOrFetchEditorProxy(editorProxyId);
-    if (editorProxy) {
-      return this.findOrCreateEditorForEditorProxy(editorProxy);
+    if (this.portal && editorProxy) {
+      return this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
     } else {
       return null;
     }
@@ -164,7 +164,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
   // Private
   async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (followState === FollowState.RETRACTED) {
-      const editor = this.findOrCreateEditorForEditorProxy(editorProxy);
+      const editor = this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
       this.shouldRelayActiveEditorChanges = false;
       // await this.openPaneItem(editor);
       this.shouldRelayActiveEditorChanges = true;
@@ -176,79 +176,6 @@ export default class GuestPortalBinding implements IPortalDelegate {
     if (editorBinding && position) {
       editorBinding.updateTether(followState, position);
     }
-  }
-
-  // Private
-  async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy) : Promise<vscode.TextEditor | null> {
-    let editor: vscode.TextEditor;
-    let editorBinding = this.workspaceManager.editorBindingsByEditorProxyId.get(editorProxy.id);
-    if (editorBinding) {
-      editor = editorBinding.editor;
-    } else {
-      const {bufferProxy} = editorProxy;
-      const buffer = await this.findOrCreateBufferForBufferProxy(bufferProxy);
-      if (buffer && this.portal) {
-        const document = await vscode.workspace.openTextDocument(buffer.uri);
-        editor = await vscode.window.showTextDocument(document);
-        if (editor !== null) {
-          editorBinding = new EditorBinding(editor, this.portal, false);
-          editorBinding.setEditorProxy(editorProxy);
-          editorProxy.setDelegate(editorBinding);
-
-          this.workspaceManager.editorBindingsByEditor.set(editor, editorBinding);
-          this.workspaceManager.editorBindingsByEditorProxyId.set(editorProxy.id, editorBinding);
-          this.workspaceManager.editorProxiesByEditor.set(editor, editorProxy);
-
-          // const didDestroyEditorSubscription = vscode.workspace.onDidCloseTextDocument((document: vscode.TextDocument) => editorBinding.dispose());
-          editorBinding.onDidDispose(() => {
-          //   didDestroyEditorSubscription.dispose();
-
-          //   const isRetracted = this.portal?.resolveFollowState() === FollowState.RETRACTED;
-          //   this.shouldRelayActiveEditorChanges = !isRetracted;
-            //vscode.commands.executeCommand('workbench.action.closeActiveEditor');            
-            editor.hide();
-          //   this.shouldRelayActiveEditorChanges = true;
-          
-
-            this.workspaceManager.editorBindingsByEditor.delete(editor);
-            this.workspaceManager.editorProxiesByEditor.delete(editor);
-            this.workspaceManager.editorBindingsByEditorProxyId.delete(editorProxy.id);
-          });
-        } else {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    }
-
-    return editor;
-  }
-
-  private async findOrCreateBufferForBufferProxy (bufferProxy: BufferProxy) : Promise<vscode.TextDocument | undefined>{
-		let buffer : vscode.TextDocument | undefined;
-    let bufferBinding = this.workspaceManager.bufferBindingsByBufferProxyId.get(bufferProxy.id);
-    if (bufferBinding) {
-      buffer = bufferBinding.buffer;
-    } else {
-			const filePath = path.join(os.tmpdir(), this.portalId, bufferProxy.uri);
-			const bufferURI = vscode.Uri.file(filePath);
-			await require('mkdirp-promise')(path.dirname(filePath));
-			fs.writeFileSync(filePath, '');
-
-			buffer = await vscode.workspace.openTextDocument(bufferURI);
-			const editor = await vscode.window.showTextDocument(buffer);
-      bufferBinding = new BufferBinding(
-        buffer, editor, false, () => this.workspaceManager.bufferBindingsByBufferProxyId.delete(bufferProxy.id)
-      );
-
-      bufferBinding.setBufferProxy(bufferProxy);
-      bufferProxy.setDelegate(bufferBinding);
-
-      this.workspaceManager.bufferBindingsByBufferProxyId.set(bufferProxy.id, bufferBinding);
-			this.workspaceManager.bufferBindingsByBuffer.set(buffer, bufferBinding);
-    }
-    return buffer;
   }
 
   activate () {
@@ -299,7 +226,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
   public leave () {
     if (this.portal) {
        this.portal.dispose(); 
-       this.portal = null;
+       this.portal = undefined;
     }
   }
 
@@ -332,8 +259,8 @@ export default class GuestPortalBinding implements IPortalDelegate {
     return this.workspaceManager.newActivePaneItem || vscode.window.activeTextEditor;
   }
 
-  onDidChange(callback: Function) {
-    // return this.emitter.on('did-change', callback);
+  onDidChange(callback: () => void) {
+    return this.emitter.on('did-change', callback);
   }
 
 	// private registerWorkspaceEvents () {

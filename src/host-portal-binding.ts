@@ -23,7 +23,7 @@ export default class HostPortalBinding implements IPortalDelegate {
   private emitter: EventEmitter;
   lastUpdateTetherPromise: Promise<void>;
   didDispose: Function | undefined;
-  portal: Portal | undefined;
+  portal?: Portal;
   uri: string | undefined;
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
@@ -121,9 +121,9 @@ export default class HostPortalBinding implements IPortalDelegate {
     return this.emitter.on('did-change', callback);
   }
 
-  didChangeActiveTextEditor (editor: vscode.TextEditor | undefined) {
+  didChangeActiveTextEditor (editor?: vscode.TextEditor) {
     if (editor && !this.workspaceManager.editorBindingsByEditor.get(editor)?.isRemote) {
-      const editorProxy = this.findOrCreateEditorProxyForEditor(editor);
+      const editorProxy = this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
       if (editorProxy !== this.portal?.activateEditorProxy) {
         this.portal?.activateEditorProxy(editorProxy);
         // this.sitePositionsComponent.show(editor.element);
@@ -162,7 +162,7 @@ export default class HostPortalBinding implements IPortalDelegate {
 
   didAddTextEditor (editor: vscode.TextEditor) {
     if (!this.workspaceManager.editorBindingsByEditor.get(editor)?.isRemote) {
-      this.findOrCreateEditorProxyForEditor(editor); 
+      this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
     }
   }
 
@@ -173,58 +173,4 @@ export default class HostPortalBinding implements IPortalDelegate {
   //     editorProxy?.dispose();
   //   }
   // }
-
-  findOrCreateEditorProxyForEditor (editor: vscode.TextEditor) : EditorProxy | undefined {
-    let editorBinding = this.workspaceManager.editorBindingsByEditor.get(editor);
-    if (editorBinding) {
-      return editorBinding.editorProxy;
-    } else {
-      if (this.portal) {
-        const bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document, editor);
-        const editorProxy = this.portal.createEditorProxy({bufferProxy});
-        editorBinding = new EditorBinding(editor, this.portal, true);
-        editorBinding.setEditorProxy(editorProxy);
-        editorProxy?.setDelegate(editorBinding);
-
-        this.workspaceManager.editorBindingsByEditor.set(editor, editorBinding);
-        this.workspaceManager.editorBindingsByEditorProxy.set(editorProxy, editorBinding);
-        this.workspaceManager.editorProxiesByEditor.set(editor, editorProxy);
-
-        // const didDestroyEditorSubscription = editor.onDidDestroy(() => editorProxy.dispose());
-        editorBinding.onDidDispose(() => {
-        //   didDestroyEditorSubscription.dispose();
-           this.workspaceManager.editorBindingsByEditor.delete(editor);
-           this.workspaceManager.editorBindingsByEditorProxy.delete(editorProxy);
-           this.workspaceManager.editorProxiesByEditor.delete(editor);
-          });
-
-        return editorProxy;
-      }
-    }
-    return undefined;
-  }
-
-  findOrCreateBufferProxyForBuffer (buffer: vscode.TextDocument, editor: vscode.TextEditor) : BufferProxy | null {
-    let bufferBinding = this.workspaceManager.bufferBindingsByBuffer.get(buffer);
-    if (bufferBinding) {
-      return bufferBinding.bufferProxy;
-    } else {
-      if(this.portal) {
-        bufferBinding = new BufferBinding(buffer, editor, true);
-        const bufferProxy = this.portal.createBufferProxy({
-          uri: bufferBinding.getBufferProxyURI(),
-          text: buffer.getText(),
-          // history: {baseText: buffer.getText(), nextCheckpointId: 0, undoStack: null, redoStack: null} // buffer.getHistory()
-        });
-        bufferBinding.setBufferProxy(bufferProxy);
-        bufferProxy.setDelegate(bufferBinding);
-
-        this.workspaceManager.bufferBindingsByBuffer.set(buffer, bufferBinding);
-
-        return bufferProxy;
-      }
-    }
-
-    return null;
-  }
 }

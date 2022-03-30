@@ -85,7 +85,7 @@ declare module '@atom/teletype-client' {
     export interface IEditorDelegate {
         dispose(): void;
         clearSelectionsForSiteId(siteId: number): void;
-        isScrollNeededToViewPosition(position: Position): void;
+        isScrollNeededToViewPosition(position: Position): boolean;
         updateActivePositions(positionsBySiteId: Position[]): void;
         updateSelectionsForSiteId(...args: any[]): void;
         updateTether(state: number, position: Position): void;

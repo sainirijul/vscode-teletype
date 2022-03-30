@@ -117,7 +117,7 @@ export default class BufferBinding implements IBufferDelegate {
               this.disableHistory = false;
             }
             // this.isUpdating = false;
-          }, { undoStopBefore: false, undoStopAfter: true });
+          }, { undoStopBefore: false, undoStopAfter: false });
         } catch(e) {
           console.log(e);
         }

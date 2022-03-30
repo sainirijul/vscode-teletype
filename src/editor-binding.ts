@@ -188,6 +188,7 @@ export default class EditorBinding implements IEditorDelegate {
     return this.emitter.on('did-resize', callback);
   }
 
+  // @override
   updateSelectionsForSiteId (siteId: number, selections: Selection[]) {
     // let markerLayer = this.markerLayersBySiteId.get(siteId);
     // if (!markerLayer) {
@@ -279,12 +280,15 @@ export default class EditorBinding implements IEditorDelegate {
 		return siteDecoration;
 	}
 
+  // @override
   isScrollNeededToViewPosition (position: Position) {
     // const isPositionVisible = this.getDirectionFromViewportToPosition(position) === 'inside';
     // const isEditorAttachedToDOM = document.body.contains(this.editor.element);
     // return isEditorAttachedToDOM && !isPositionVisible;
+    return false;
   }
 
+  // @override
   public updateTether (state: number, position: Position) {
     // const localCursorDecorationProperties = {type: 'cursor'};
 
@@ -321,6 +325,7 @@ export default class EditorBinding implements IEditorDelegate {
     // }
   }
 
+  // @override
   clearSelectionsForSiteId (siteId: number) {
     // const markerLayer = this.markerLayersBySiteId.get(siteId);
     // if (markerLayer) { markerLayer.destroy(); }
@@ -367,19 +372,19 @@ export default class EditorBinding implements IEditorDelegate {
     // }
   }
 
-  toggleFollowingForSiteId (siteId: number) {
-    // portal이 아니라 editorProxy가 맞나???
-    // if (siteId === this.editorProxy?.getFollowedSiteId()) {
-    //   this.editorProxy?.unfollow();
-    // } else {
-    //   this.editorProxy?.follow(siteId);
-    // }
-    if (siteId === this.portal?.getFollowedSiteId()) {
-      this.portal?.unfollow();
-    } else {
-      this.portal?.follow(siteId);
-    }
-  }
+  // toggleFollowingForSiteId (siteId: number) {
+  //   // portal이 아니라 editorProxy가 맞나???
+  //   // if (siteId === this.editorProxy?.getFollowedSiteId()) {
+  //   //   this.editorProxy?.unfollow();
+  //   // } else {
+  //   //   this.editorProxy?.follow(siteId);
+  //   // }
+  //   if (siteId === this.portal?.getFollowedSiteId()) {
+  //     this.portal?.unfollow();
+  //   } else {
+  //     this.portal?.follow(siteId);
+  //   }
+  // }
 
 	private createDecorationFromSiteId(siteId: number): SiteDecoration {
 		const selectionDecorationRenderOption: vscode.DecorationRenderOptions = {

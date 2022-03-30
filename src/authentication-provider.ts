@@ -10,7 +10,7 @@ export class AuthenticationProvider {
   credentialCache: CredentialCache;
   notificationManager: NotificationManager;
   workspace: vscode.WorkspaceFolder;
-  emitter: any;
+  emitter: EventEmitter;
   signingIn: boolean = false;
 
   constructor (client: TeletypeClient, notificationManager: NotificationManager, workspace: vscode.WorkspaceFolder, credentialCache: CredentialCache) {
@@ -82,7 +82,7 @@ export class AuthenticationProvider {
     return this.client.getLocalUserIdentity();
   }
 
-  onDidChange (callback: any) {
+  onDidChange (callback: () => void) {
     return this.emitter.on('did-change', callback);
   }
 
