@@ -61,6 +61,7 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
+		"vscode": "^1.1.37",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
@@ -79,7 +80,6 @@
 		"@atom/teletype-server": "github:amos42/teletype-server",
 		"google-protobuf": "^3.12.2",
 		"mkdirp-promise": "^5.0.1",
-		"vscode": "^1.1.37",
 		"wrtc": "^0.4.7"
 	}
 }
