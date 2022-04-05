@@ -74,6 +74,8 @@ export default class PortalBindingManager {
       }
       
       return portalBinding;
+    } else {
+      this.notificationManager?.addError('no workspace');
     }
     return undefined;
   }

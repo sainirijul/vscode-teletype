@@ -352,7 +352,7 @@ export default class EditorBinding implements IEditorDelegate {
     // this.batchedMarkerUpdates = null;
   }
 
-  updateSelections (updates: vscode.Selection[]) {
+  updateSelections (updates: ReadonlyArray<vscode.Selection>) {
     // if (this.isBatchingMarkerUpdates) {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {

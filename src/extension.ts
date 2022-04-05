@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// (private 서버의 경우엔 적절한 node 버전을 조정하면 해당 코드가 필요 없어짐)
 	// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+	const notificationManager = new NotificationManager();
 	globalAny.teletype = new TeletypePackage({
 		baseURL: constants.API_URL_BASE,
 		config: {}, 
@@ -56,8 +57,8 @@ export function activate(context: vscode.ExtensionContext) {
 		// vscode.commandRegistry, 
 		// credentialCache,
 		// getAtomVersion,
-		notificationManager: new NotificationManager(), 
-		workspaceManager: new WorkspaceManager(), 
+		notificationManager: notificationManager, 
+		workspaceManager: new WorkspaceManager(notificationManager), 
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,

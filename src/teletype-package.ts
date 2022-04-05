@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 //import {EventEmitter} from 'events';
 //import {CompositeDisposable} from 'atom';
-import {TeletypeClient, Errors, PusherPubSubGateway} from '@atom/teletype-client';
+import {TeletypeClient, Errors, PusherPubSubGateway, Portal} from '@atom/teletype-client';
 import PortalBindingManager from './portal-binding-manager';
 import NotificationManager from './notification-manager';
 // import PortalStatusBarIndicator from './portal-status-bar-indicator';
@@ -149,13 +149,17 @@ export default class TeletypePackage {
     }
   }
 
-  async sharePortal () {
+  async sharePortal (): Promise<Portal | undefined> {
     this.showPopover();
 
     if (await this.isSignedIn()) {
       const manager = await this.getPortalBindingManager();
       const portalBinding = await manager?.createHostPortalBinding();
-      if (portalBinding) { return portalBinding.portal; }
+      if (portalBinding) { 
+        return portalBinding.portal; 
+      } else {
+        this.notificationManager?.addError("Failed share portal.");
+      }
     }
   }
 

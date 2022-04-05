@@ -25,8 +25,9 @@ export default class WorkspaceManager {
   public newActivePaneItem: any;
 
   private emitter: EventEmitter;
+  private notificationManager?: NotificationManager;
 
-  constructor () {
+  constructor (notificationManager?: NotificationManager) {
     // this.workspace = workspace;
     // this.editor = editor;
     this.editorBindingsByEditorProxyId = new Map();
@@ -37,6 +38,7 @@ export default class WorkspaceManager {
 		this.bufferBindingsByBuffer = new Map();
     this.editorBindingsByEditor = new Map();
     this.emitter = new EventEmitter();
+    this.notificationManager = notificationManager;
   }
 
   public async initialize () {
@@ -56,7 +58,11 @@ export default class WorkspaceManager {
       return editorBinding.editorProxy;
     } else {
       if (portal) {
-        const bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document, editor);
+        const bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document, editor, portal);
+        if (!bufferProxy) {
+          this.notificationManager?.addError('bufferProxy create failed.');
+          return undefined;
+        }
         const editorProxy = portal.createEditorProxy({bufferProxy});
         editorBinding = new EditorBinding(editor, portal, true);
         editorBinding.setEditorProxy(editorProxy);
@@ -84,20 +90,22 @@ export default class WorkspaceManager {
     let bufferBinding = this.bufferBindingsByBuffer.get(buffer);
     if (bufferBinding) {
       return bufferBinding.bufferProxy;
-    } else {
-      if(portal) {
-        bufferBinding = new BufferBinding(buffer, editor, true);
-        const bufferProxy = portal.createBufferProxy({
-          uri: bufferBinding.getBufferProxyURI(),
-          text: buffer.getText(),
-          // history: {baseText: buffer.getText(), nextCheckpointId: 0, undoStack: null, redoStack: null} // buffer.getHistory()
-        });
+    } else if (portal) {
+      bufferBinding = new BufferBinding(buffer, editor, true);
+      const bufferProxy = portal.createBufferProxy({
+        uri: bufferBinding.getBufferProxyURI(),
+        text: buffer.getText(),
+        // history: {baseText: buffer.getText(), nextCheckpointId: 0, undoStack: null, redoStack: null} // buffer.getHistory()
+      });
+      if (bufferProxy) {
         bufferBinding.setBufferProxy(bufferProxy);
         bufferProxy.setDelegate(bufferBinding);
 
         this.bufferBindingsByBuffer.set(buffer, bufferBinding);
 
         return bufferProxy;
+      } else {
+        this.notificationManager?.addError('Portal.createBufferProxy() failed');
       }
     }
 
@@ -155,7 +163,8 @@ export default class WorkspaceManager {
       buffer = bufferBinding.buffer;
     } else {
       if (!portalId) { return undefined; }
-			const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri);
+			//const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri);
+			const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri.replace('\\', '/'));      
 			const bufferURI = vscode.Uri.file(filePath);
 			await require('mkdirp-promise')(path.dirname(filePath));
 			fs.writeFileSync(filePath, '');

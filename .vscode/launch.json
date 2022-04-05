@@ -4,7 +4,8 @@
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
 	"version": "0.2.0",
-	"configurations": [{
+	"configurations": [
+	{
 			"name": "Run Extension",
 			"type": "extensionHost",
 			"request": "launch",
@@ -17,7 +18,6 @@
 			],
 			"preLaunchTask": "npm: watch"
 		},
-
 		{
             "name": "Launch localhost",
             "type": "chrome",
@@ -25,6 +25,12 @@
             "url": "http://localhost/8000",
             "webRoot": "${workspaceFolder}"
         },
+		{
+			"type": "pwa-msedge",
+			"request": "attach",
+			"name": "Attach to browser",
+			"port": 9339
+   	    },		
 		{
 			"name": "Extension Tests",
 			"type": "extensionHost",
