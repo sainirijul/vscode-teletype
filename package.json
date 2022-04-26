@@ -66,8 +66,6 @@
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
 		"deep-equal": "^1.1.1",
-		"keytar": "^7.9.0",
-		"node-fetch": "^2.6.0",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",
@@ -76,10 +74,12 @@
 		"webpack-cli": "^4.9.2"
 	},
 	"dependencies": {
-		"@atom/teletype-client": "github:amos42/teletype-client",
-		"@atom/teletype-server": "github:amos42/teletype-server",
+		"@atom/teletype-client": "git+https://github.com/amos42/teletype-client",
+		"@atom/teletype-server": "git+https://github.com/amos42/teletype-server",
 		"google-protobuf": "^3.12.2",
 		"mkdirp-promise": "^5.0.1",
+		"keytar": "^7.9.0",
+		"node-fetch": "^2.6.0",
 		"wrtc": "^0.4.7"
 	}
 }

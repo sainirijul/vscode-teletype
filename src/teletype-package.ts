@@ -253,7 +253,9 @@ export default class TeletypePackage {
   }
 
   async signInUsingSavedToken () : Promise<boolean> {
+    console.log('start get auth provider...');
     const authenticationProvider = await this.getAuthenticationProvider();
+    console.log('get auth provider');
     if (authenticationProvider) {
       return await authenticationProvider.signInUsingSavedToken();
     } else {
