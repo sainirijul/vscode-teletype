@@ -11,6 +11,7 @@ import TeletypeService from './teletype-service';
 import { findPortalId } from './portal-id-helpers';
 import { CredentialCache } from './credential-cache';
 import WorkspaceManager from './workspace-manager';
+import AccountManager from './account-manager';
 // import JoinViaExternalAppDialog from './join-via-external-app-dialog';
 
 
@@ -19,6 +20,7 @@ export default class TeletypePackage {
   workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
   workspaceManager: WorkspaceManager;
+  accountManager: AccountManager;
   packageManager: any;
   commandRegistry: any;
   tooltipManager: any;
@@ -43,7 +45,7 @@ export default class TeletypePackage {
   constructor (options: any) {
     const {
       baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
-      notificationManager, packageManager, workspaceManager, peerConnectionTimeout, pubSubGateway,
+      notificationManager, packageManager, workspaceManager, accountManager, peerConnectionTimeout, pubSubGateway,
       pusherKey, pusherOptions, tetherDisconnectWindow, tooltipManager,
       workspace, subscriptions
     } = options;
@@ -52,6 +54,7 @@ export default class TeletypePackage {
     this.workspace = workspace;
     this.notificationManager = notificationManager;
     this.workspaceManager = workspaceManager;
+    this.accountManager = accountManager;
     this.packageManager = packageManager;
     this.commandRegistry = commandRegistry;
     this.tooltipManager = tooltipManager;
@@ -324,7 +327,7 @@ export default class TeletypePackage {
       this.portalBindingManagerPromise = new Promise(async (resolve, reject) => {
         const client = await this.getClient();
         if (client) {
-          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager));
+          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager, this.accountManager));
         } else {
           this.portalBindingManagerPromise = null;
           resolve(null);

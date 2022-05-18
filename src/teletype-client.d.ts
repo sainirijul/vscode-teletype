@@ -301,7 +301,7 @@ declare module '@atom/teletype-client' {
 
         follow(...args: any[]): void;
 
-        getActiveSiteIds(...args: any[]): void;
+        getActiveSiteIds(...args: any[]): string[];
 
         getEditorProxiesMetadata(...args: any[]): any[];
 
@@ -313,7 +313,7 @@ declare module '@atom/teletype-client' {
 
         getLocalSiteId(...args: any[]): void;
 
-        getSiteIdentity(...args: any[]): any;
+        getSiteIdentity(siteId: number): any;
 
         initialize(...args: any[]): void;
 

@@ -16,6 +16,8 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onView:teletype.statusView",
+		"onView:teletype.accountsView",
 		"onCommand:extension.teletype-signin",
 		"onCommand:extension.teletype-signout",
 		"onCommand:extension.join-portal",
@@ -25,6 +27,38 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "teletype",
+					"title": "Teletype",
+					"icon": "resources/teletype.svg"
+				}
+			]
+		},
+		"views": {
+			"teletype": [
+				{
+					"id": "teletype.statusView",
+					"type": "webview",
+					"name": "Teletype Status",
+					"icon": "resources/teletype.svg",
+					"contextualTitle": "Teletype"
+				},
+				{
+					"id": "teletype.targetDocumentView",
+					"name": "Teletype Target Documents",
+					"icon": "resources/teletype.svg",
+					"contextualTitle": "Teletype Target Documents"
+				},
+				{
+					"id": "teletype.accountsView",
+					"name": "Teletype Accounts",
+					"icon": "resources/teletype.svg",
+					"contextualTitle": "Teletype Accounts"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "extension.teletype-signin",

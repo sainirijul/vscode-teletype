@@ -6,6 +6,7 @@ import { TeletypeClient } from '@atom/teletype-client';
 import { findPortalId } from './portal-id-helpers';
 import WorkspaceManager from './workspace-manager';
 import NotificationManager from './notification-manager';
+import AccountManager from './account-manager';
 
 export default class PortalBindingManager {
   private emitter: EventEmitter;
@@ -13,10 +14,11 @@ export default class PortalBindingManager {
   public workspace!: vscode.WorkspaceFolder | null;
   public notificationManager: NotificationManager;
   public workspaceManager: WorkspaceManager;
+  public accountManager: AccountManager;
   private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager, workspaceManager: WorkspaceManager) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, accountManager: AccountManager) {
     this.emitter = new EventEmitter();
     this.client = client;
     if (workspace) {
@@ -25,6 +27,7 @@ export default class PortalBindingManager {
     this.notificationManager = notificationManager;
     // this.hostPortalBindingPromise = null;
     this.workspaceManager = workspaceManager;
+    this.accountManager = accountManager;
     this.promisesByGuestPortalId = new Map();
   }
 
@@ -63,12 +66,12 @@ export default class PortalBindingManager {
 
   async _createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
     if (this.workspace) {
-      const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager, this.workspaceManager,
+      const portalBinding = new HostPortalBinding(this.client, this.workspace, this.notificationManager, this.workspaceManager, this.accountManager,
         () => { this.didDisposeHostPortalBinding(); }
       );
 
       if (await portalBinding.initialize()) {
-        this.emitter.emit('did-change');
+        this.emitter.emit('did-change', {portalBinding});
       } else {
         vscode.window.showErrorMessage(`Create Portal failed`);        
       }
@@ -88,7 +91,7 @@ export default class PortalBindingManager {
 
   didDisposeHostPortalBinding () {
     this.hostPortalBindingPromise = undefined;
-    this.emitter.emit('did-change');
+    this.emitter.emit('did-change', {});
   }
 
   createGuestPortalBinding (portalId: string) {
@@ -119,7 +122,7 @@ export default class PortalBindingManager {
 
     if (await portalBinding.initialize()) {
       // this.workspace.getElement().classList.add('teletype-Guest');
-      this.emitter.emit('did-change');
+      this.emitter.emit('did-change', {portalBinding});
     }
 
     return portalBinding;
@@ -186,10 +189,10 @@ export default class PortalBindingManager {
     if (this.promisesByGuestPortalId.size === 0) {
       // this.workspace.getElement().classList.remove('teletype-Guest');
     }
-    this.emitter.emit('did-change');
+    this.emitter.emit('did-change', {portalBinding});
   }
 
-  onDidChange (callback: () => void): EventEmitter {
+  onDidChange (callback: (binding?: any) => void): EventEmitter {
     return this.emitter.on('did-change', callback);
   }
 }

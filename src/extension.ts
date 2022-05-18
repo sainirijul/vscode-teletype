@@ -11,6 +11,10 @@ import { AuthenticationProvider } from './authentication-provider';
 import TeletypePackage from './teletype-package';
 import { findPortalId } from './portal-id-helpers';
 import WorkspaceManager from './workspace-manager';
+import AccountManager from './account-manager';
+import { AccountNodeProvider } from './ui-account-node-provider';
+import { TeleteypStatusProvider } from './ui-status-provider';
+import { EditorNodeProvider } from './ui-editor-node-provider';
 
 const fetch = require('node-fetch');
 const wrtc = require('wrtc');
@@ -44,12 +48,15 @@ globalAny.notificationManager = null;
 
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	// atom 공용 서버와의 node 버전 차이로 인한 문제 임시로 피하기 위해.
 	// (private 서버의 경우엔 적절한 node 버전을 조정하면 해당 코드가 필요 없어짐)
 	// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 	const notificationManager = new NotificationManager();
+	const workspaceManager = new WorkspaceManager(notificationManager);
+	const accountManager = new AccountManager(notificationManager);
+
 	globalAny.teletype = new TeletypePackage({
 		baseURL: constants.API_URL_BASE,
 		config: {}, 
@@ -58,7 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
 		// credentialCache,
 		// getAtomVersion,
 		notificationManager: notificationManager, 
-		workspaceManager: new WorkspaceManager(notificationManager), 
+		workspaceManager: workspaceManager,
+		accountManager: accountManager,
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,
@@ -76,6 +84,9 @@ export function activate(context: vscode.ExtensionContext) {
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined
 	});
+
+	const manager = await globalAny.teletype.getPortalBindingManager();
+	createViews(workspaceManager, manager);
 
 	console.log('Great, your extension "vscode-teletype" is now active!');
 
@@ -157,6 +168,17 @@ async function getPortalID() {
 async function getTeletypeToken() {
 	let token = await vscode.window.showInputBox({ prompt: 'Enter Teletype Authentication Token' });
 	return token;
+}
+
+function createViews(workspaceManager: WorkspaceManager, portalBindingManager: PortalBindingManager) {
+	const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, portalBindingManager);
+	vscode.window.registerWebviewViewProvider('teletype.statusView', nodeDependenciesProvider0);
+
+	const nodeDependenciesProvider1 = new EditorNodeProvider(workspaceManager);
+	vscode.window.registerTreeDataProvider('teletype.targetDocumentView', nodeDependenciesProvider1);
+
+	const nodeDependenciesProvider = new AccountNodeProvider('D:/__Work2/teletype');
+	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 }
 
 export function deactivate() { }

@@ -8,6 +8,7 @@ import EditorBinding from './editor-binding';
 import {getPortalURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
+import AccountManager from './account-manager';
 
 
 export default class HostPortalBinding implements IPortalDelegate {
@@ -26,13 +27,15 @@ export default class HostPortalBinding implements IPortalDelegate {
   portal?: Portal;
   uri: string | undefined;
   // sitePositionsComponent: SitePositionsComponent | undefined;
+  accountManager: AccountManager;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function | undefined = undefined) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, accountManager: AccountManager, didDispose: Function | undefined = undefined) {
     this.client = client;
     this.workspace = workspace;
     // this.editor = editor;
     this.notificationManager = notificationManager;
     this.workspaceManager = workspaceManager;
+    this.accountManager = accountManager;
     // this.editorBindingsByEditor = new WeakMap();
     // this.editorBindingsByEditorProxy = new Map();
     // this.bufferBindingsByBuffer = new WeakMap();
@@ -44,10 +47,12 @@ export default class HostPortalBinding implements IPortalDelegate {
 
   // @override
   hostDidLoseConnection(): void {
+    this.emitter.emit('did-change');
   }
 
   // @override
   hostDidClosePortal(): void {
+    this.emitter.emit('did-change');
   }
 
   // @override
@@ -61,7 +66,7 @@ export default class HostPortalBinding implements IPortalDelegate {
 
       this.uri = getPortalURI(this.portal.id);
       // this.sitePositionsComponent = new SitePositionsComponent({portal: this.portal, workspace: this.workspace});
-      vscode.window.showInformationMessage(`Create Portal with ID ${this.uri}`);
+      this.notificationManager?.addInfo(`Create Portal with ID ${this.uri}`);
       vscode.env.clipboard.writeText(this.uri);
 
       this.portal.setDelegate(this);
@@ -92,6 +97,7 @@ export default class HostPortalBinding implements IPortalDelegate {
     }
   }
 
+  // @override
   dispose () {
     // this.workspace.getElement().classList.remove('teletype-Host');
     // this.sitePositionsComponent.destroy();
@@ -105,12 +111,14 @@ export default class HostPortalBinding implements IPortalDelegate {
     this.portal?.dispose();
   }
 
+  // @override
   siteDidJoin (siteId: number) {
     const {login} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${login} has joined your portal`);
     this.emitter.emit('did-change');
   }
 
+  // @override
   siteDidLeave (siteId: number) {
     const {login} = this.portal?.getSiteIdentity(siteId);
     this.notificationManager.addInfo(`@${login} has left your portal`);
@@ -134,10 +142,12 @@ export default class HostPortalBinding implements IPortalDelegate {
     }
   }
 
+  // @override
   updateActivePositions (positionsBySiteId: Position[]) {
     // this.sitePositionsComponent.update({positionsBySiteId});
   }
 
+  // @override
   updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (editorProxy) {
       this.lastUpdateTetherPromise = this.lastUpdateTetherPromise.then(() =>
