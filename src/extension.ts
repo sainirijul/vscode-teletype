@@ -92,12 +92,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	let disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
 
-		let token = await getTeletypeToken();
+		const token = await getTeletypeToken();
+		vscode.window.showInformationMessage("start signin...");
 		if (!token) {
 			vscode.window.showInformationMessage("No Toekn has been entered. Please try again");
 		} else {
 			vscode.window.showInformationMessage('Trying to SignIn...');
-			if (await globalAny.teletype.signIn(token)) {
+			if (await (globalAny.teletype as TeletypeClient).signIn(token)) {
 				vscode.window.showInformationMessage("SignIn successeded.");
 			} else {
 				vscode.window.showErrorMessage("SignIn failed.");
@@ -109,14 +110,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	disposable = vscode.commands.registerCommand('extension.teletype-signout', async () => {
 
-		await globalAny.teletype.signOut();
+		await (globalAny.teletype as TeletypeClient).signOut();
 
 	});
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
 
-		let portalIdInput = await getPortalID();
+		const portalIdInput = await getPortalID();
 		if (!portalIdInput) {
 			vscode.window.showInformationMessage("No Portal ID has been entered. Please try again");
 		}
@@ -155,7 +156,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	(globalAny.teletype as TeletypePackage).activate();
 }
 
-async function getPortalID() {
+async function getPortalID() : Promise<string | undefined | null> {
 	let url = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
 	if (url) {
 		let portalID = findPortalId(url);
@@ -165,8 +166,8 @@ async function getPortalID() {
 	return undefined;
 }
 
-async function getTeletypeToken() {
-	let token = await vscode.window.showInputBox({ prompt: 'Enter Teletype Authentication Token' });
+async function getTeletypeToken() : Promise<string | undefined> {
+	const token = await vscode.window.showInputBox({ prompt: 'Enter Teletype Authentication Token' });
 	return token;
 }
 

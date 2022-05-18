@@ -496,7 +496,7 @@ declare module '@atom/teletype-client' {
 
         initialize(...args: any[]): void;
 
-        isSignedIn(...args: any[]): boolean;
+        isSignedIn(): boolean;
 
         joinPortal(...args: any[]): Portal;
 
@@ -506,9 +506,9 @@ declare module '@atom/teletype-client' {
 
         peerPoolDidError(...args: any[]): void;
 
-        signIn(...args: any[]): boolean;
+        signIn(oauthToken: string): boolean;
 
-        signOut(...args: any[]): void;
+        signOut(): boolean;
 
     }
 

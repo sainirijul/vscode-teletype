@@ -23,6 +23,7 @@ export class AuthenticationProvider {
   }
 
   async signInUsingSavedToken () : Promise<boolean> {
+    console.log('start signInUsingSavedToken...');
     if (this.isSignedIn()) { return true; }
 
     const token = await this.credentialCache.get('oauth-token');
@@ -75,6 +76,7 @@ export class AuthenticationProvider {
   }
 
   isSignedIn () : boolean {
+    console.log('check signin...');
     return this.client.isSignedIn();
   }
 
