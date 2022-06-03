@@ -18,6 +18,7 @@ interface SiteDecoration {
 
 export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
+  public readonly buffer: vscode.TextDocument;
 	private portal: Portal | undefined;
 	private readonly isHost: boolean;
   private disposed: boolean = false;
@@ -33,13 +34,14 @@ export default class EditorBinding implements IEditorDelegate {
   preserveFollowState: boolean;
   positionsBySiteId: {};
   localCursorLayerDecoration: any;
-  editorProxy: EditorProxy | undefined;
+  editorProxy!: EditorProxy;
   // batchedMarkerUpdates: {} | null;
   // isBatchingMarkerUpdates: boolean;
   isRemote: boolean = false;
 
   constructor (editor: vscode.TextEditor, portal: Portal | undefined, isHost: boolean) {
     this.editor = editor;
+    this.buffer = editor.document;
     this.portal = portal;
     this.isHost = isHost;
     this.emitter = new EventEmitter();
@@ -159,14 +161,14 @@ export default class EditorBinding implements IEditorDelegate {
   async editorDidChangeScrollTop () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    this.editorProxy?.didScroll();
+    this.editorProxy.didScroll();
     this.emitter.emit('did-scroll');
   }
 
   async editorDidChangeScrollLeft () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    this.editorProxy?.didScroll();
+    this.editorProxy.didScroll();
     this.emitter.emit('did-scroll');
   }
 
@@ -265,10 +267,12 @@ export default class EditorBinding implements IEditorDelegate {
 		this.updateDecorations(siteDecoration, cursorRanges, selectionRanges);
   }
 
-	private updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
+	private async updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
 		const { cursorDecoration, selectionDecoration } = siteDecoration;
-		this.editor.setDecorations(cursorDecoration, cursorRanges);
-		this.editor.setDecorations(selectionDecoration, selectionRanges);
+    // const { bufferProxy } = this.editorProxy;
+    const editor = await vscode.window.showTextDocument(this.buffer);
+		editor.setDecorations(cursorDecoration, cursorRanges);
+		editor.setDecorations(selectionDecoration, selectionRanges);
 	}
 
 	private findSiteDecoration(siteId: number) {
@@ -356,7 +360,7 @@ export default class EditorBinding implements IEditorDelegate {
     // if (this.isBatchingMarkerUpdates) {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {
-      this.editorProxy?.updateSelections(
+      this.editorProxy.updateSelections(
         [
           {
             exclusive: true,

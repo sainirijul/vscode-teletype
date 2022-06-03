@@ -9,13 +9,14 @@ import getPathWithNativeSeparators from './get-path-with-native-separators';
 import {getEditorURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
+import { IPortalBinding, PortalBinding } from './portal-binding';
 // import * as os from 'os';
 // import * as path from 'path';
 // import * as fs from 'fs';
 
 const NOOP = () => {};
 
-export default class GuestPortalBinding implements IPortalDelegate {
+export default class GuestPortalBinding extends PortalBinding {
   client: TeletypeClient;
   portalId: string;
   // public readonly workspace: vscode.WorkspaceFolder;
@@ -33,15 +34,17 @@ export default class GuestPortalBinding implements IPortalDelegate {
   // private bufferBindingsByBufferProxyId: Map<number, BufferBinding>;
   // private editorProxiesMetadataById: Map<number, EditorProxyMetadata>;
   private workspaceManager: WorkspaceManager;
-  private emitter: EventEmitter;
+  // private emitter: EventEmitter;
   // subscriptions: any;
   lastEditorProxyChangePromise: Promise<void>;
   shouldRelayActiveEditorChanges: boolean;
-  public portal?: Portal = undefined;
+  // public portal?: Portal = undefined;
   // sitePositionsComponent: SitePositionsComponent;
   // public newActivePaneItem: any;
 
   constructor (client: TeletypeClient, portalId: string, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
+    super(client, didDispose);
+
     this.client = client;
     this.portalId = portalId;
     // this.workspace = workspace;
@@ -56,7 +59,7 @@ export default class GuestPortalBinding implements IPortalDelegate {
 		// this.bufferBindingsByBuffer = new Map();
     // this.editorBindingsByEditor = new Map();
     this.workspaceManager = workspaceManager;
-    this.emitter = new EventEmitter();
+    // this.emitter = new EventEmitter();
     // this.subscriptions = new CompositeDisposable();
     this.lastEditorProxyChangePromise = Promise.resolve();
     this.shouldRelayActiveEditorChanges = true;
@@ -136,12 +139,12 @@ export default class GuestPortalBinding implements IPortalDelegate {
     return remoteEditors;
   }
 
-  async getRemoteEditor (editorProxyId: number) : Promise<vscode.TextEditor | null> {
+  async getRemoteEditor (editorProxyId: number) : Promise<vscode.TextEditor | undefined> {
     const editorProxy = await this.portal?.findOrFetchEditorProxy(editorProxyId);
     if (this.portal && editorProxy) {
       return this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
     } else {
-      return null;
+      return undefined;
     }
   }
 
@@ -164,15 +167,19 @@ export default class GuestPortalBinding implements IPortalDelegate {
   // Private
   async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (followState === FollowState.RETRACTED) {
-      const editor = this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+      const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
       this.shouldRelayActiveEditorChanges = false;
       // await this.openPaneItem(editor);
       this.shouldRelayActiveEditorChanges = true;
     } else {
-      if (position) { this.workspaceManager.editorBindingsByEditorProxyId.forEach((a,b) => a.updateTether(followState, position)); }
+      if (position) { 
+        this.workspaceManager.editorBindingsByEditorProxy.forEach((a,_) => {
+          a.updateTether(followState, position);
+        }); 
+      }
     }
 
-    const editorBinding = this.workspaceManager.editorBindingsByEditorProxyId.get(editorProxy.id);
+    const editorBinding = this.workspaceManager.editorBindingsByEditorProxy.get(editorProxy);
     if (editorBinding && position) {
       editorBinding.updateTether(followState, position);
     }
@@ -252,14 +259,14 @@ export default class GuestPortalBinding implements IPortalDelegate {
   // }
 
   hasPaneItem(paneItem: vscode.TextEditor) : boolean {
-    return this.workspaceManager.editorProxiesByEditor.has(paneItem);
+    return this.workspaceManager.hasPaneItem(paneItem);
   }
 
-  getActivePaneItem() : vscode.TextEditor {
-    return this.workspaceManager.newActivePaneItem || vscode.window.activeTextEditor;
-  }
+  // getActivePaneItem() : vscode.TextEditor {
+  //   return this.workspaceManager.newActivePaneItem || vscode.window.activeTextEditor;
+  // }
 
-  onDidChange(callback: () => void) {
+  onDidChange(callback: (event: any) => void) {
     return this.emitter.on('did-change', callback);
   }
 

@@ -1,22 +1,40 @@
 import * as vscode from 'vscode';
+import { AuthenticationProvider } from './authentication-provider';
+import getAvatarUrl from './get-avatar-url';
 import HostPortalBinding from './host-portal-binding';
 import PortalBindingManager from './portal-binding-manager';
 
 export class TeleteypStatusProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'teletype.statusView';
     private webView?: vscode.Webview;
+    private portalBindingUri: string | undefined;
+    private identify: any;
 
-    constructor(private disp?: vscode.Disposable, private portalBindingManager?: PortalBindingManager) {
+    constructor(private disp?: vscode.Disposable, private authenticationProvider?: AuthenticationProvider, private portalBindingManager?: PortalBindingManager) {
+      authenticationProvider?.onDidChange(this.didChangeLogin.bind(this));
       portalBindingManager?.onDidChange(this.didPortalBindingChanged.bind(this));
     }
 
+    refreshIdentify(): void {
+      if (this.identify) {
+        const avatarUrl = getAvatarUrl(this.identify.login, 64);
+        this.webView?.postMessage({command: 'identify', text: {loginId: this.identify.login, avatarUrl}});
+      }
+    }
+
+    didChangeLogin(): void {
+      this.identify = this.authenticationProvider?.getIdentity();
+      this.refreshIdentify();
+    }
+
     didPortalBindingChanged(event: any): void {
-      // vscode.window.showInformationMessage(`success~~~~~~~!!!!!!! ${event.portalBinding.uri}`);
-      // if (event.type === 'share-portal') {
-        this.webView?.postMessage({command: 'host-uri', text: event.portalBinding?.uri});
-      // } else if (event.type === 'close-portal') {
-      //   this.webView?.postMessage({command: 'host-uri', text: ''});
-      // }
+      if (event.type === 'share-portal') {
+          this.portalBindingUri = event.uri;
+          this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
+      } else if (event.type === 'close-portal') {
+          this.portalBindingUri = undefined;
+          this.webView?.postMessage({command: 'host-uri', text: ''});
+      }
     }
 
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
@@ -29,7 +47,10 @@ export class TeleteypStatusProvider implements vscode.WebviewViewProvider {
 <head>
   <script>
     const vsCode = acquireVsCodeApi();
-    let state = {xxx: 'xxx'};
+    let loginId;
+    let avatarUrl;
+    let hostUrl;
+
     window.addEventListener('message', event => {
       const message = event.data; // The JSON data our extension sent
 
@@ -38,31 +59,50 @@ export class TeleteypStatusProvider implements vscode.WebviewViewProvider {
           case 'message':
             vsCode.postMessage({command: 'message', text: message.text});
             break;
-          case 'host-uri':
-            console.log(document.getElementById('host-uri'));
+          case 'identify':
             if (message.text) {
-              document.getElementById('host-uri').value = message.text;
-            } else {
-              document.getElementById('host-uri').value = '';
+              loginId = message.text.loginId;
+              avatarUrl = message.text.avatarUrl;
+              updateState();
             }
-            const btn = document.getElementById('share-portal-btn');
-            if (!btn.value) {
-              btn.value = true;
-              btn.innerText = 'Close Host Portal';
-            } else {
-              btn.value = false;
-              document.getElementById('share-portal-btn').innerText = 'Share Host Portal';
-            }
+            break;
+          case 'host-uri':
+            // if (message.text) {
+              hostUrl = message.text;
+              updateState();
+            // }
             break;
         }
     });
 
+    function updateState() {
+      const login = document.getElementById('login');
+      login.innerText = loginId;
+      const avatar = document.getElementById('avatar-img');
+      avatar.src = avatarUrl;
+
+      const btn = document.getElementById('share-portal-btn');
+      const url = document.getElementById('host-uri');
+      if (hostUrl) {
+        url.value = hostUrl;
+        btn.value = true;
+        btn.innerText = 'Close Host Portal';
+      } else {
+        url.value = '';
+        btn.value = false;
+        btn.innerText = 'Share Host Portal';
+      }
+    }
+
     function sharePortal() {
       const elem = document.getElementById('share-portal-btn');
-      if (!elem.value) {
+      //if (!elem.value) {
+      if (!hostUrl) {
         vsCode.postMessage({command: 'share-portal', text: 'share-portal'});
       } else {
-        vsCode.postMessage({command: 'close-portal', text: 'share-portal'});
+        vsCode.postMessage({command: 'close-portal', text: 'close-portal'});
+        hostUrl = '';
+        updateState();
       }
     }
 
@@ -76,10 +116,14 @@ export class TeleteypStatusProvider implements vscode.WebviewViewProvider {
       }
     }
 
+    // initialize
+    vsCode.postMessage({command: 'refresh', text: '*'});
   </script>
 </head>
 <body>
     Teletype <br>
+    <div id="login"></div>
+    <div><image id="avatar-img"></image></div>
     <div><button type="button" onclick="vsCode.postMessage({command: 'signin', text: 'signin'});">Teletype signin</button></div>
     Host <br>
     <div><button id="share-portal-btn" type="button" onclick="sharePortal()">Share Portal</button></div>
@@ -99,6 +143,10 @@ export class TeleteypStatusProvider implements vscode.WebviewViewProvider {
               } else {
                 vscode.window.showInformationMessage(message.text);
               }
+              break;
+            case 'refresh':
+              this.refreshIdentify();
+              this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
               break;
             case 'signin':
               vscode.commands.executeCommand('extension.teletype-signin');

@@ -10,6 +10,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 
 	constructor(private workspaceManager: WorkspaceManager) {
+		workspaceManager?.onDidChange(this.refresh.bind(this));
 	}
 
 	refresh(): void {
@@ -26,27 +27,34 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			return Promise.resolve([]);
 		}
 
-		// if (element) {
-		// 	return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceManager, 'node_modules', element.label, 'package.json')));
+		let xx: Dependency[] = [];
+
+		// if (!element) {
+		// 	xx.push(new Dependency('Host'));
+		// 	xx.push(new Dependency('Guest'));
 		// } else {
-		// 	const packageJsonPath = path.join(this.workspaceManager, 'package.json');
-		// 	if (this.pathExists(packageJsonPath)) {
-		// 		return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-		// 	} else {
-		// 		vscode.window.showInformationMessage('Workspace has no package.json');
-		// 		return Promise.resolve([]);
+		// 	if (element.label === 'Host') {
+		// 		this.accountManager.accountList.forEach(element => {
+		// 			xx.push(new Dependency(element.buffer.uri.toString()));
+		// 		});
+		// 	} else if (element.label === 'Guest') {
+		// 		xx.push(new Dependency('yyy'));
+		// 		// this.accountManager.accountList.forEach(element => {
+		// 		// 	xx.push(new Dependency(element.buffer.uri.toString()));
+		// 		// });
 		// 	}
 		// }
 
-		if (element) {
-			return Promise.resolve([]);
-		} else {
-			let xx: Dependency[] = [];
-			this.workspaceManager.bufferBindingsByBuffer.forEach(element => {
-				xx.push(new Dependency(element.buffer.uri.toString()));
-			});
-			return Promise.resolve(xx);
-		}
+ this.workspaceManager.editorBindingsByEditorDocument.forEach((value, key) => {
+	 if (value.isRemote){
+		xx.push(new Dependency(value.editorProxy?.bufferProxy.uri));
+	 } else {
+		xx.push(new Dependency(key.uri.fsPath));	   
+	 }
+ });
+
+
+		return Promise.resolve(xx);
 	}
 
 	/**
@@ -96,20 +104,21 @@ export class Dependency extends vscode.TreeItem {
 
 	constructor(
 		public readonly label: string,
-		private readonly version?: string,
+		public readonly iconUri?: vscode.Uri,
 		public readonly collapsibleState?: vscode.TreeItemCollapsibleState,
 		public readonly command?: vscode.Command
 	) {
 		super(label, collapsibleState);
 
-		this.tooltip = `${this.label}-${this.version}`;
-		this.description = this.version;
+		this.iconPath = iconUri;
+		this.tooltip = `${this.label}`;
+		// this.description = `${this.label}`;
 	}
 
-	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	};
+	// iconPath = {
+	// 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+	// 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+	// };
 
 	contextValue = 'dependency';
 }

@@ -11,8 +11,8 @@ import TeletypeService from './teletype-service';
 import { findPortalId } from './portal-id-helpers';
 import { CredentialCache } from './credential-cache';
 import WorkspaceManager from './workspace-manager';
-import AccountManager from './account-manager';
-// import JoinViaExternalAppDialog from './join-via-external-app-dialog';
+import { PortalBinding } from './portal-binding';
+import GuestPortalBinding from './guest-portal-binding';
 
 
 export default class TeletypePackage {
@@ -20,7 +20,6 @@ export default class TeletypePackage {
   workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
   workspaceManager: WorkspaceManager;
-  accountManager: AccountManager;
   packageManager: any;
   commandRegistry: any;
   tooltipManager: any;
@@ -45,7 +44,7 @@ export default class TeletypePackage {
   constructor (options: any) {
     const {
       baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
-      notificationManager, packageManager, workspaceManager, accountManager, peerConnectionTimeout, pubSubGateway,
+      notificationManager, packageManager, workspaceManager, peerConnectionTimeout, pubSubGateway,
       pusherKey, pusherOptions, tetherDisconnectWindow, tooltipManager,
       workspace, subscriptions
     } = options;
@@ -54,7 +53,6 @@ export default class TeletypePackage {
     this.workspace = workspace;
     this.notificationManager = notificationManager;
     this.workspaceManager = workspaceManager;
-    this.accountManager = accountManager;
     this.packageManager = packageManager;
     this.commandRegistry = commandRegistry;
     this.tooltipManager = tooltipManager;
@@ -194,12 +192,14 @@ export default class TeletypePackage {
     this.clipboard.write(hostPortalBinding?.uri);
   }
 
-  async leavePortal () {
+  async leavePortal (portalBinding?: GuestPortalBinding | undefined) {
     this.showPopover();
 
     const manager = await this.getPortalBindingManager();
-    const guestPortalBinding = await manager?.getActiveGuestPortalBinding();
-    guestPortalBinding?.leave();
+    if (!portalBinding) {
+      portalBinding = await manager?.getActiveGuestPortalBinding();
+    } 
+    portalBinding?.leave();
   }
 
   provideTeletype () {
@@ -239,14 +239,14 @@ export default class TeletypePackage {
     // }));
   }
 
-  async getRemoteEditorForURI (uri: string) {
+  async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {
     const portalBindingManager = await this.getPortalBindingManager();
     if (portalBindingManager && await this.isSignedIn()) {
       return portalBindingManager.getRemoteEditorForURI(uri);
     }
   }
 
-  async signIn (token: string) {
+  async signIn (token: string) : Promise<boolean> {
     const authenticationProvider = await this.getAuthenticationProvider();
     if (authenticationProvider) {
       return authenticationProvider.signIn(token);
@@ -329,7 +329,7 @@ export default class TeletypePackage {
       this.portalBindingManagerPromise = new Promise(async (resolve, reject) => {
         const client = await this.getClient();
         if (client) {
-          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager, this.accountManager));
+          resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager));
         } else {
           this.portalBindingManagerPromise = null;
           resolve(null);

@@ -104,11 +104,12 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   // @override
-  updateText (textUpdates: any[]) : void {
-    if (textUpdates) {
-      if (!this.editor.document.isClosed) {
+  async updateText (textUpdates: any[]) {
+    if (textUpdates && textUpdates.length > 0) {
+      if (!this.buffer.isClosed) {
         try {
-          this.editor.edit(builder => {
+          const editor = await vscode.window.showTextDocument(this.buffer);
+          editor.edit(builder => {
             this.isUpdating = true;
             for (let i = textUpdates.length - 1; i >= 0; i--) {
               const textUpdate = textUpdates[i];

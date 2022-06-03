@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import PortalBindingManager from './portal-binding-manager';
+import { PortalBinding } from './portal-binding';
+import HostPortalBinding from './host-portal-binding';
+import GuestPortalBinding from './guest-portal-binding';
 
 export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public static readonly viewType = 'teletype.accountsView';
@@ -8,7 +12,8 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 
-	constructor(private workspaceRoot: string) {
+	constructor(private portalBindingManager: PortalBindingManager) {
+		portalBindingManager?.onDidChange(this.refresh.bind(this));
 	}
 
 	refresh(): void {
@@ -19,86 +24,69 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 		return element;
 	}
 
-	getChildren(element?: Dependency): Thenable<Dependency[]> {
-		if (!this.workspaceRoot) {
+	async getChildren(element?: Dependency): Promise<Dependency[]> {
+		if (!this.portalBindingManager) {
 			vscode.window.showInformationMessage('No dependency in empty workspace');
-			return Promise.resolve([]);
+			return [];
 		}
 
-		if (element) {
-			return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')));
-		} else {
-			const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
-			if (this.pathExists(packageJsonPath)) {
-				return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-			} else {
-				vscode.window.showInformationMessage('Workspace has no package.json');
-				return Promise.resolve([]);
+		let lst: Dependency[] = [];
+
+		if (!element) {
+			const host = await this.portalBindingManager.getHostPortalBinding();
+			if (host) {
+				lst.push(new Dependency('Host', host.portal?.id, host));
+			}
+			const guest = await this.portalBindingManager.getGuestPortalBindings();
+			if (guest) {
+				guest.forEach(element => {
+					lst.push(new Dependency(element.portalId, element.portal?.id, element));
+				});
+			}
+		} else if(element.value instanceof PortalBinding){
+			const ids = element.value.portal?.getActiveSiteIds();
+			if (ids) {
+				ids.map(siteId => {
+					const identify = element.value.portal.getSiteIdentity(siteId);					
+					lst.push(new Dependency(identify.login, siteId));
+				});
 			}
 		}
 
-	}
-
-	/**
-	 * Given the path to package.json, read all its dependencies and devDependencies.
-	 */
-	private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-		if (this.pathExists(packageJsonPath)) {
-			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-
-			const toDep = (moduleName: string, version: string): Dependency => {
-				if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
-					return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
-				} else {
-					return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-						command: 'extension.openPackageOnNpm',
-						title: '',
-						arguments: [moduleName]
-					});
-				}
-			};
-
-			const deps = packageJson.dependencies
-				? Object.keys(packageJson.dependencies).map(dep => toDep(dep, packageJson.dependencies[dep]))
-				: [];
-			const devDeps = packageJson.devDependencies
-				? Object.keys(packageJson.devDependencies).map(dep => toDep(dep, packageJson.devDependencies[dep]))
-				: [];
-			return deps.concat(devDeps);
-		} else {
-			return [];
-		}
-	}
-
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
-
-		return true;
+		return lst;
 	}
 }
 
 export class Dependency extends vscode.TreeItem {
 
 	constructor(
-		public readonly label: string,
-		private readonly version: string,
-		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly command?: vscode.Command
+		label: string,
+		id?: string,
+		public readonly value?: any,
+		iconUri?: vscode.Uri,
+		collapsibleState?: vscode.TreeItemCollapsibleState
 	) {
 		super(label, collapsibleState);
 
-		this.tooltip = `${this.label}-${this.version}`;
-		this.description = this.version;
+		if (value instanceof PortalBinding) {
+			this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+			if (value instanceof HostPortalBinding) {
+				this.contextValue = 'Host';
+			} else if (value instanceof GuestPortalBinding) {
+				this.contextValue = 'Guest';
+			}
+		}
+
+		// this.id = id;
+		this.iconPath = iconUri;
+		this.tooltip = `${this.label}`;
+		// this.description = `${this.label}`;
 	}
 
-	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	};
+	// iconPath = {
+	// 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+	// 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+	// };
 
-	contextValue = 'dependency';
+	// contextValue = 'dependency';
 }

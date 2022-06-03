@@ -8,10 +8,10 @@ import EditorBinding from './editor-binding';
 import {getPortalURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
-import AccountManager from './account-manager';
+import { IPortalBinding, PortalBinding } from './portal-binding';
 
 
-export default class HostPortalBinding implements IPortalDelegate {
+export default class HostPortalBinding extends PortalBinding {
   client: TeletypeClient;
   public readonly workspace: vscode.WorkspaceFolder;
   // public readonly editor: vscode.TextEditor;
@@ -21,38 +21,38 @@ export default class HostPortalBinding implements IPortalDelegate {
   // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
   // private bufferBindingsByBuffer: WeakMap<vscode.TextDocument, BufferBinding>;
   // disposables: any;
-  private emitter: EventEmitter;
+  // private emitter: EventEmitter;
   lastUpdateTetherPromise: Promise<void>;
   didDispose: Function | undefined;
-  portal?: Portal;
+  // portal?: Portal;
   uri: string | undefined;
   // sitePositionsComponent: SitePositionsComponent | undefined;
-  accountManager: AccountManager;
 
-  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, accountManager: AccountManager, didDispose: Function | undefined = undefined) {
+  constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
+    super(client, didDispose);
+
     this.client = client;
     this.workspace = workspace;
     // this.editor = editor;
     this.notificationManager = notificationManager;
     this.workspaceManager = workspaceManager;
-    this.accountManager = accountManager;
     // this.editorBindingsByEditor = new WeakMap();
     // this.editorBindingsByEditorProxy = new Map();
     // this.bufferBindingsByBuffer = new WeakMap();
     // this.disposables = new CompositeDisposable();
-    this.emitter = new EventEmitter();
+    // this.emitter = new EventEmitter();
     this.lastUpdateTetherPromise = Promise.resolve();
     this.didDispose = didDispose;
   }
 
   // @override
   hostDidLoseConnection(): void {
-    this.emitter.emit('did-change');
+    this.emitter.emit('did-change', {type: 'close-portal'});
   }
 
   // @override
   hostDidClosePortal(): void {
-    this.emitter.emit('did-change');
+    this.emitter.emit('did-change', {type: 'close-portal'});
   }
 
   // @override
@@ -76,11 +76,18 @@ export default class HostPortalBinding implements IPortalDelegate {
       // );
       vscode.window.onDidChangeActiveTextEditor((e) => {
         const editor = e as vscode.TextEditor;
-        this.didChangeActiveTextEditor(editor);
+        const doc = editor.document as vscode.TextDocument;
+        if (doc.uri.scheme === 'file'){
+          this.didChangeActiveTextEditor(editor);
+        }
       });
       vscode.workspace.onDidOpenTextDocument(async (e) => {
-        const editor = await vscode.window.showTextDocument(e);
-        this.didAddTextEditor(editor);
+        if (e.uri.scheme === 'file'){
+          //if (e.isClosed) {
+          const editor = await vscode.window.showTextDocument(e);
+          await this.didAddTextEditor(editor);
+          //}
+        }
       });
       // vscode.workspace.onDidCloseTextDocument(async (e) => {
       //   this.didRemoveTextEditor(e);
@@ -99,6 +106,8 @@ export default class HostPortalBinding implements IPortalDelegate {
 
   // @override
   dispose () {
+    this.emitter.emit('did-change', {type: 'close-portal'});
+
     // this.workspace.getElement().classList.remove('teletype-Host');
     // this.sitePositionsComponent.destroy();
     // this.disposables.dispose();
@@ -113,25 +122,25 @@ export default class HostPortalBinding implements IPortalDelegate {
 
   // @override
   siteDidJoin (siteId: number) {
-    const {login} = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${login} has joined your portal`);
-    this.emitter.emit('did-change');
+    const site = this.portal?.getSiteIdentity(siteId);
+    this.notificationManager.addInfo(`@${site?.login} has joined your portal`);
+    this.emitter.emit('did-change', {type: 'join-portal', portal: this.portal});
   }
 
   // @override
   siteDidLeave (siteId: number) {
-    const {login} = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${login} has left your portal`);
-    this.emitter.emit('did-change');
+    const site = this.portal?.getSiteIdentity(siteId);
+    this.notificationManager.addInfo(`@${site?.login} has left your portal`);
+    this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
   }
 
   onDidChange (callback: (...args: any[]) => void) {
     return this.emitter.on('did-change', callback);
   }
 
-  didChangeActiveTextEditor (editor?: vscode.TextEditor) {
-    if (editor && !this.workspaceManager.editorBindingsByEditor.get(editor)?.isRemote) {
-      const editorProxy = this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
+  async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
+    if (editor && !this.workspaceManager.editorBindingsByEditorDocument.get(editor.document)?.isRemote) {
+      const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
       if (editorProxy !== this.portal?.activateEditorProxy) {
         this.portal?.activateEditorProxy(editorProxy);
         // this.sitePositionsComponent.show(editor.element);
@@ -170,9 +179,9 @@ export default class HostPortalBinding implements IPortalDelegate {
     }
   }
 
-  didAddTextEditor (editor: vscode.TextEditor) {
-    if (!this.workspaceManager.editorBindingsByEditor.get(editor)?.isRemote) {
-      this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
+  async didAddTextEditor (editor: vscode.TextEditor) {
+    if (!this.workspaceManager.editorBindingsByEditorDocument.get(editor.document)?.isRemote) {
+      await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
     }
   }
 

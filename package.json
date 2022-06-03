@@ -27,6 +27,32 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"commands": [
+			{
+				"command": "extension.teletype-signin",
+				"title": "SignIn Teletype"
+			},
+			{
+				"command": "extension.teletype-signout",
+				"title": "SignOut Teletype"
+			},
+			{
+				"command": "extension.join-portal",
+				"title": "Join Portal"
+			},
+			{
+				"command": "extension.leave-portal",
+				"title": "Leave Portal"
+			},
+			{
+				"command": "extension.share-portal",
+				"title": "Share Portal"
+			},
+			{
+				"command": "extension.close-host-portal",
+				"title": "Close Host Portal"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -59,32 +85,18 @@
 				}
 			]
 		},
-		"commands": [
-			{
-				"command": "extension.teletype-signin",
-				"title": "SignIn Teletype"
-			},
-			{
-				"command": "extension.teletype-signout",
-				"title": "SignOut Teletype"
-			},
-			{
-				"command": "extension.join-portal",
-				"title": "Join Portal"
-			},
-			{
-				"command": "extension.leave-portal",
-				"title": "Leave Portal"
-			},
-			{
-				"command": "extension.share-portal",
-				"title": "Share Portal"
-			},
-			{
-				"command": "extension.close-host-portal",
-				"title": "Close Host Portal"
-			}
-		]
+		"menus": {
+			"view/item/context": [
+				{
+				  "command": "extension.close-host-portal",
+				  "when": "view == teletype.accountsView && viewItem == Host"
+				},
+				{
+				  "command": "extension.leave-portal",
+				  "when": "view == teletype.accountsView && viewItem == Guest"
+				}
+			]			
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

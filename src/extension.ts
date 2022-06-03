@@ -11,8 +11,8 @@ import { AuthenticationProvider } from './authentication-provider';
 import TeletypePackage from './teletype-package';
 import { findPortalId } from './portal-id-helpers';
 import WorkspaceManager from './workspace-manager';
-import AccountManager from './account-manager';
-import { AccountNodeProvider } from './ui-account-node-provider';
+// import AccountManager from './account-manager';
+import { AccountNodeProvider, Dependency } from './ui-account-node-provider';
 import { TeleteypStatusProvider } from './ui-status-provider';
 import { EditorNodeProvider } from './ui-editor-node-provider';
 
@@ -55,9 +55,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const notificationManager = new NotificationManager();
 	const workspaceManager = new WorkspaceManager(notificationManager);
-	const accountManager = new AccountManager(notificationManager);
+	// const accountManager = new AccountManager(notificationManager);
 
-	globalAny.teletype = new TeletypePackage({
+	const teletype = new TeletypePackage({
 		baseURL: constants.API_URL_BASE,
 		config: {}, 
 		// vscode.clipboard, 
@@ -66,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		// getAtomVersion,
 		notificationManager: notificationManager, 
 		workspaceManager: workspaceManager,
-		accountManager: accountManager,
+		// accountManager: accountManager,
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,
@@ -84,9 +84,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined
 	});
+	globalAny.teletype = teletype;
 
 	const manager = await globalAny.teletype.getPortalBindingManager();
-	createViews(workspaceManager, manager);
+	createViews(await teletype.getAuthenticationProvider(), workspaceManager, manager);
 
 	console.log('Great, your extension "vscode-teletype" is now active!');
 
@@ -129,10 +130,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
-	disposable = vscode.commands.registerCommand('extension.leave-portal', async () => {
-
+	disposable = vscode.commands.registerCommand('extension.leave-portal', async (item: vscode.TreeItem) => {
 		vscode.window.showInformationMessage('Leave Portal');
-		await (globalAny.teletype as TeletypePackage).leavePortal();
+		await (globalAny.teletype as TeletypePackage).leavePortal((item as Dependency)?.value);
 
 	});
 	context.subscriptions.push(disposable);
@@ -171,14 +171,14 @@ async function getTeletypeToken() : Promise<string | undefined> {
 	return token;
 }
 
-function createViews(workspaceManager: WorkspaceManager, portalBindingManager: PortalBindingManager) {
-	const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, portalBindingManager);
+function createViews(authenticationProvider: AuthenticationProvider, workspaceManager: WorkspaceManager, portalBindingManager: PortalBindingManager) {
+	const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, authenticationProvider, portalBindingManager);
 	vscode.window.registerWebviewViewProvider('teletype.statusView', nodeDependenciesProvider0);
 
 	const nodeDependenciesProvider1 = new EditorNodeProvider(workspaceManager);
 	vscode.window.registerTreeDataProvider('teletype.targetDocumentView', nodeDependenciesProvider1);
 
-	const nodeDependenciesProvider = new AccountNodeProvider('D:/__Work2/teletype');
+	const nodeDependenciesProvider = new AccountNodeProvider(portalBindingManager);
 	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 }
 
