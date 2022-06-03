@@ -5,6 +5,7 @@ import PortalBindingManager from './portal-binding-manager';
 import { PortalBinding } from './portal-binding';
 import HostPortalBinding from './host-portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
+// import { IMemberIdentify } from '@atom/teletype-client';
 
 export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public static readonly viewType = 'teletype.accountsView';
@@ -48,7 +49,7 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 			if (ids) {
 				ids.map(siteId => {
 					const identify = element.value.portal.getSiteIdentity(siteId);					
-					lst.push(new Dependency(identify.login, siteId));
+					lst.push(new Dependency(identify.login, siteId, identify));
 				});
 			}
 		}
@@ -61,7 +62,7 @@ export class Dependency extends vscode.TreeItem {
 
 	constructor(
 		label: string,
-		id?: string,
+		id?: any,
 		public readonly value?: any,
 		iconUri?: vscode.Uri,
 		collapsibleState?: vscode.TreeItemCollapsibleState
@@ -75,12 +76,13 @@ export class Dependency extends vscode.TreeItem {
 			} else if (value instanceof GuestPortalBinding) {
 				this.contextValue = 'Guest';
 			}
+		} else if ('login' in value) {
+			this.description = (id === 1)? '(Me)' : undefined;
 		}
 
 		// this.id = id;
 		this.iconPath = iconUri;
 		this.tooltip = `${this.label}`;
-		// this.description = `${this.label}`;
 	}
 
 	// iconPath = {

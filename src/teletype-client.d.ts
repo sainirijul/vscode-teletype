@@ -5,6 +5,11 @@ declare module '@atom/teletype-client' {
         column: number;
     }
 
+    export interface IMemberIdentify {
+        id?: string;
+        login?: string;
+    }
+
     export interface IBufferDelegate {
         dispose() : void;
         setText(text: string) : void;
@@ -313,7 +318,7 @@ declare module '@atom/teletype-client' {
 
         getLocalSiteId(...args: any[]): void;
 
-        getSiteIdentity(siteId: number): any;
+        getSiteIdentity(siteId: number): IMemberIdentify;
 
         initialize(...args: any[]): void;
 

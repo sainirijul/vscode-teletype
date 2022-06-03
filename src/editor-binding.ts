@@ -395,7 +395,7 @@ export default class EditorBinding implements IEditorDelegate {
 			backgroundColor: `rgba(0,0,255,0.6)`
 		};
 
-		const { login: siteLogin } = this.portal?.getSiteIdentity(siteId);
+		const siteLogin = this.portal?.getSiteIdentity(siteId);
 
 		const nameTagStyleRules = {
 			position: 'absolute',
@@ -412,7 +412,7 @@ export default class EditorBinding implements IEditorDelegate {
 			border: 'solid rgba(0,0,255,0.6)',
 			borderWidth: '5px 5px 5px 5px',
 			after: {
-				contentText: siteLogin,
+				contentText: siteLogin?.login,
 				backgroundColor: 'rgba(0,0,255,0.6)',
 				color: 'rgba(192,192,192,30)',
 				textDecoration: `none; ${this.stringifyCssProperties(nameTagStyleRules)}`

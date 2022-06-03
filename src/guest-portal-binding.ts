@@ -97,17 +97,17 @@ export default class GuestPortalBinding extends PortalBinding {
   }
 
   siteDidJoin (siteId: number) {
-    const {login: hostLogin} = this.portal?.getSiteIdentity(1);
-    const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${siteLogin} has joined @${hostLogin}'s portal`);
+    const hostLogin = this.portal?.getSiteIdentity(1);
+    const siteLogin = this.portal?.getSiteIdentity(siteId);
+    this.notificationManager.addInfo(`@${siteLogin?.login} has joined @${hostLogin?.login}'s portal`);
     this.emitter.emit('did-change');
     vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
   }
 
   siteDidLeave (siteId: number) {
-    const {login: hostLogin} = this.portal?.getSiteIdentity(1);
-    const {login: siteLogin} = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${siteLogin} has left @${hostLogin}'s portal`);
+    const hostLogin = this.portal?.getSiteIdentity(1);
+    const siteLogin = this.portal?.getSiteIdentity(siteId);
+    this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s portal`);
     this.emitter.emit('did-change');
     vscode.window.showInformationMessage('Leaved Portal with ID' + ' ' + this.portalId + ' ');
   }
