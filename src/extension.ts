@@ -66,16 +66,23 @@ export async function activate(context: vscode.ExtensionContext) {
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,
-		pusherKey: settings.get('pusher.key'), 
-		pusherOptions: { 
-			cluster: settings.get('pusher.cluster'),
-			encrypted: true,
-			wsHost: settings.get('pusher.wsHost'),
-			wsPort: settings.get('pusher.wsPort'),
-			// forceTLS: false,
-			// disableStats: true,
-			// enabledTransports: ['ws', 'wss'],
-		},
+		pusherKey: settings.get('pusher.key'), 		
+		pusherOptions: settings.get('pusher.wsHost') ? 
+			{ 
+				cluster: settings.get('pusher.cluster'),
+				encrypted: true,
+				wsHost: settings.get('pusher.wsHost'),
+				wsPort: settings.get('pusher.wsPort'),
+				// forceTLS: false,
+				// disableStats: true,
+				// enabledTransports: ['ws', 'wss'],
+			} : { 
+				cluster: settings.get('pusher.cluster'),
+				encrypted: true,
+				// forceTLS: false,
+				// disableStats: true,
+				// enabledTransports: ['ws', 'wss'],
+			},
 		
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined,
