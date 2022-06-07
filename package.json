@@ -88,49 +88,49 @@
 		"configuration": {
 			"title": "Teletype",
 			"properties": {
-			  "teletype.settings.apiHostUrl": {
-				"type": "string",
-				"default": "https://api.teletype.atom.io",
-				"description": "API Host Url"
-			  },
-			  "teletype.settings.authToken": {
-				"type": "string",
-				"default": "",
-				"description": "Auth Token"
-			  },
-			  "teletype.settings.pusher.wsHost": {
-				"type": "string",
-				"default": "",
-				"description": "Pusher WebSocket Host"
-			  },
-			  "teletype.settings.pusher.wsPort": {
-				"type": "number",
-				"default": 80,
-				"description": "Pusher WebSocket Port"
-			  },
-			  "teletype.settings.pusher.key": {
-				"type": "string",
-				"default": "f119821248b7429bece3",
-				"description": "Pusher Key"
-			  },
-			  "teletype.settings.pusher.cluster": {
-				"type": "string",
-				"default": "mt1",
-				"description": "Pusher Cluster"
-			  }
+				"teletype.settings.apiHostUrl": {
+					"type": "string",
+					"default": "https://api.teletype.atom.io",
+					"description": "API Host Url"
+				},
+				"teletype.settings.authToken": {
+					"type": "string",
+					"default": "",
+					"description": "Auth Token"
+				},
+				"teletype.settings.pusher.wsHost": {
+					"type": "string",
+					"default": "",
+					"description": "Pusher WebSocket Host"
+				},
+				"teletype.settings.pusher.wsPort": {
+					"type": "number",
+					"default": 80,
+					"description": "Pusher WebSocket Port"
+				},
+				"teletype.settings.pusher.key": {
+					"type": "string",
+					"default": "f119821248b7429bece3",
+					"description": "Pusher Key"
+				},
+				"teletype.settings.pusher.cluster": {
+					"type": "string",
+					"default": "mt1",
+					"description": "Pusher Cluster"
+				}
 			}
 		},
 		"menus": {
 			"view/item/context": [
 				{
-				  "command": "extension.close-host-portal",
-				  "when": "view == teletype.accountsView && viewItem == Host"
+					"command": "extension.close-host-portal",
+					"when": "view == teletype.accountsView && viewItem == Host"
 				},
 				{
-				  "command": "extension.leave-portal",
-				  "when": "view == teletype.accountsView && viewItem == Guest"
+					"command": "extension.leave-portal",
+					"when": "view == teletype.accountsView && viewItem == Guest"
 				}
-			]			
+			]
 		}
 	},
 	"scripts": {
@@ -150,7 +150,7 @@
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",
-		"vsce": "^2.7.0",
+		"vsce": "<2.0.0",
 		"webpack": "^4.43.0",
 		"webpack-cli": "^4.9.2"
 	},
