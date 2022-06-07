@@ -2,16 +2,12 @@
 
 import * as vscode from 'vscode';
 import { TeletypeClient } from '@atom/teletype-client';
-import GuestPortalBinding from './guest-portal-binding';
-import HostPortalBinding from './host-portal-binding';
-import * as constants from './constants';
 import NotificationManager from './notification-manager';
 import PortalBindingManager from './portal-binding-manager';
 import { AuthenticationProvider } from './authentication-provider';
 import TeletypePackage from './teletype-package';
 import { findPortalId } from './portal-id-helpers';
 import WorkspaceManager from './workspace-manager';
-// import AccountManager from './account-manager';
 import { AccountNodeProvider, Dependency } from './ui-account-node-provider';
 import { TeleteypStatusProvider } from './ui-status-provider';
 import { EditorNodeProvider } from './ui-editor-node-provider';
@@ -53,12 +49,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	// (private 서버의 경우엔 적절한 node 버전을 조정하면 해당 코드가 필요 없어짐)
 	// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+	const settings = vscode.workspace.getConfiguration('teletype.settings');
+
 	const notificationManager = new NotificationManager();
 	const workspaceManager = new WorkspaceManager(notificationManager);
-	// const accountManager = new AccountManager(notificationManager);
 
 	const teletype = new TeletypePackage({
-		baseURL: constants.API_URL_BASE,
+		baseURL: settings.get('apiHostUrl'),
 		config: {}, 
 		// vscode.clipboard, 
 		// vscode.commandRegistry, 
@@ -66,23 +63,23 @@ export async function activate(context: vscode.ExtensionContext) {
 		// getAtomVersion,
 		notificationManager: notificationManager, 
 		workspaceManager: workspaceManager,
-		// accountManager: accountManager,
 		// packageManager, 
 		// peerConnectionTimeout, 
 		// pubSubGateway,
-		pusherKey: constants.PUSHER_KEY, 
+		pusherKey: settings.get('pusher.key'), 
 		pusherOptions: { 
-			cluster: constants.PUSHER_CLUSTER,
+			cluster: settings.get('pusher.cluster'),
 			encrypted: true,
-			// wsHost: '127.0.0.1',
-			// wsPort: 6001,
+			wsHost: settings.get('pusher.wsHost'),
+			wsPort: settings.get('pusher.wsPort'),
 			// forceTLS: false,
 			// disableStats: true,
 			// enabledTransports: ['ws', 'wss'],
 		},
 		
 		// tetherDisconnectWindow, tooltipManager,
-		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined
+		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined,
+		authToken: settings.get('authToken')
 	});
 	globalAny.teletype = teletype;
 

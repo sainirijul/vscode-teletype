@@ -85,6 +85,41 @@
 				}
 			]
 		},
+		"configuration": {
+			"title": "Teletype",
+			"properties": {
+			  "teletype.settings.apiHostUrl": {
+				"type": "string",
+				"default": "https://api.teletype.atom.io",
+				"description": "API Host Url"
+			  },
+			  "teletype.settings.authToken": {
+				"type": "string",
+				"default": "",
+				"description": "Auth Token"
+			  },
+			  "teletype.settings.pusher.wsHost": {
+				"type": "string",
+				"default": "",
+				"description": "Pusher WebSocket Host"
+			  },
+			  "teletype.settings.pusher.wsPort": {
+				"type": "number",
+				"default": 80,
+				"description": "Pusher WebSocket Port"
+			  },
+			  "teletype.settings.pusher.key": {
+				"type": "string",
+				"default": "f119821248b7429bece3",
+				"description": "Pusher Key"
+			  },
+			  "teletype.settings.pusher.cluster": {
+				"type": "string",
+				"default": "mt1",
+				"description": "Pusher Cluster"
+			  }
+			}
+		},
 		"menus": {
 			"view/item/context": [
 				{

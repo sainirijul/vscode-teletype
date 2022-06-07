@@ -3,7 +3,6 @@ import { TeletypeClient } from '@atom/teletype-client';
 import { EventEmitter } from 'events';
 import { CredentialCache } from './credential-cache';
 import NotificationManager from './notification-manager';
-import * as constants from './constants';
 
 export class AuthenticationProvider {
   client: TeletypeClient;

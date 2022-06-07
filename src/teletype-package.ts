@@ -40,13 +40,14 @@ export default class TeletypePackage {
   portalStatusBarIndicator: any;
   isClientOutdated: any;
   authenticationProviderPromise: any;
+  authToken: string;
 
   constructor (options: any) {
     const {
       baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
       notificationManager, packageManager, workspaceManager, peerConnectionTimeout, pubSubGateway,
       pusherKey, pusherOptions, tetherDisconnectWindow, tooltipManager,
-      workspace, subscriptions
+      workspace, authToken, subscriptions
     } = options;
 
     this.config = config;
@@ -64,6 +65,7 @@ export default class TeletypePackage {
     this.getAtomVersion = getAtomVersion;
     this.peerConnectionTimeout = peerConnectionTimeout;
     this.tetherDisconnectWindow = tetherDisconnectWindow;
+    this.authToken = authToken;
     this.credentialCache = credentialCache || new CredentialCache();
     this.client = new TeletypeClient({
       pusherKey: this.pusherKey,
@@ -102,9 +104,16 @@ export default class TeletypePackage {
     //   this.closeHostPortal();
     // }));
 
-    // Initiate sign-in, which will continue asynchronously, since we don't want
-    // to block here.
-    if (await this.signInUsingSavedToken()) {
+    // Initiate sign-in, which will continue asynchronously, since we don't want to block here.
+    let result;
+      
+    if (this.authToken) {
+      result = await this.signIn(this.authToken);
+    } else {
+      result = await this.signInUsingSavedToken();
+    }
+
+    if (result) {
       this.registerRemoteEditorOpener();
     } else {
       this.notificationManager?.addWarn("Session expired. Try sign-in.");
