@@ -54,6 +54,27 @@ export async function activate(context: vscode.ExtensionContext) {
 	const notificationManager = new NotificationManager();
 	const workspaceManager = new WorkspaceManager(notificationManager);
 
+	let pusherOptions: any = { 
+		cluster: settings.get('pusher.cluster'),
+		encrypted: true,
+		// forceTLS: false,
+		// disableStats: true,
+		// enabledTransports: ['ws', 'wss'],
+	};
+	
+	if (settings.get('pusher.wsHost')) {
+		pusherOptions.wsHost = settings.get('pusher.wsHost');
+		if (settings.get('pusher.wsPort')) {
+			pusherOptions.wsPort = settings.get('pusher.wsPort');
+		}
+		pusherOptions.forceTLS = false;
+		pusherOptions.disableStats = true;
+		pusherOptions.enabledTransports = ['ws', 'wss'];
+	} else {
+		// pusherOptions.encrypted = true;
+	}
+
+
 	const teletype = new TeletypePackage({
 		baseURL: settings.get('apiHostUrl'),
 		config: {}, 
@@ -67,22 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		// peerConnectionTimeout, 
 		// pubSubGateway,
 		pusherKey: settings.get('pusher.key'), 		
-		pusherOptions: settings.get('pusher.wsHost') ? 
-			{ 
-				cluster: settings.get('pusher.cluster'),
-				encrypted: true,
-				wsHost: settings.get('pusher.wsHost'),
-				wsPort: settings.get('pusher.wsPort'),
-				// forceTLS: false,
-				// disableStats: true,
-				// enabledTransports: ['ws', 'wss'],
-			} : { 
-				cluster: settings.get('pusher.cluster'),
-				encrypted: true,
-				// forceTLS: false,
-				// disableStats: true,
-				// enabledTransports: ['ws', 'wss'],
-			},
+		pusherOptions: pusherOptions,
 		
 		// tetherDisconnectWindow, tooltipManager,
 		workspace: (vscode.workspace.workspaceFolders)? vscode.workspace.workspaceFolders[0] : undefined,
