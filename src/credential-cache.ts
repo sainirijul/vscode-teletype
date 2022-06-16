@@ -18,12 +18,12 @@ export class CredentialCache {
 
   async set(key: string, value: string) {
     const strategy = await this.getStrategy();
-    return strategy.set(SERVICE_NAME, key, value);
+    return await strategy.set(SERVICE_NAME, key, value);
   }
 
   async delete(key: string) {
     const strategy = await this.getStrategy();
-    return strategy.delete(SERVICE_NAME, key);
+    return await strategy.delete(SERVICE_NAME, key);
   }
 
   async getStrategy() {
@@ -64,16 +64,21 @@ export class KeytarStrategy {
     }
   }
 
-  get(service: string, key: string): Promise<string | null> {
-    return keytar.getPassword(service, key);
+  async get(service: string, key: string): Promise<string | null> {
+    return await keytar.getPassword(service, key);
   }
 
-  set(service: string, key: string, value: string) {
-    return keytar.setPassword(service, key, value);
+  async set(service: string, key: string, value: string) {
+    return await keytar.setPassword(service, key, value);
   }
 
-  delete(service: string, key: string) {
-    return keytar.deletePassword(service, key);
+  async delete(service: string, key: string): Promise<boolean> {
+    try {
+      return await keytar.deletePassword(service, key);
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
   }
 }
 
@@ -91,15 +96,16 @@ export class SecurityBinaryStrategy {
     }
   }
 
-  set(service: string, key: string, value: string) {
-    return this.execSecurityBinary(['add-generic-password', '-s', service, '-a', key, '-w', value, '-U']);
+  async set(service: string, key: string, value: string) {
+    return await this.execSecurityBinary(['add-generic-password', '-s', service, '-a', key, '-w', value, '-U']);
   }
 
-  delete(service: string, key: string) {
-    return this.execSecurityBinary(['delete-generic-password', '-s', service, '-a', key]);
+  async delete(service: string, key: string): Promise<boolean> {
+    await this.execSecurityBinary(['delete-generic-password', '-s', service, '-a', key]);
+    return true;
   }
 
-  execSecurityBinary(args: ReadonlyArray<string> | undefined | null): Promise<string> {
+  async execSecurityBinary(args: ReadonlyArray<string> | undefined | null): Promise<string> {
     return new Promise((resolve, reject) => {
       execFile('security', args, (error, stdout) => {
         if (error) { return reject(error); }
@@ -115,7 +121,7 @@ export class InMemoryStrategy {
     this.credentials = new Map();
   }
 
-  get(service: string, key: string): Promise<string | null> {
+  async get(service: string, key: string): Promise<string | null> {
     const valuesByKey = this.credentials.get(service);
     if (valuesByKey) {
       return Promise.resolve(valuesByKey.get(key));
@@ -124,7 +130,7 @@ export class InMemoryStrategy {
     }
   }
 
-  set(service: string, key: string, value: string) {
+  async set(service: string, key: string, value: string) {
     let valuesByKey = this.credentials.get(service);
     if (!valuesByKey) {
       valuesByKey = new Map();
@@ -135,10 +141,10 @@ export class InMemoryStrategy {
     return Promise.resolve();
   }
 
-  delete(service: string, key: string) {
+  async delete(service: string, key: string) {
     const valuesByKey = this.credentials.get(service);
     if (valuesByKey) { valuesByKey.delete(key); }
-    return Promise.resolve();
+    return Promise.resolve(true);
   }
 }
 

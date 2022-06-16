@@ -47,8 +47,9 @@ export class AuthenticationProvider {
   async signOut () {
     if (!this.isSignedIn()) { return; }
 
-    await this.credentialCache.delete('oauth-token');
     this.client.signOut();
+    
+    await this.credentialCache.delete('oauth-token');
   }
 
   private async _signIn (token: string) : Promise<boolean> {

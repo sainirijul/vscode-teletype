@@ -12,18 +12,21 @@
 	"engines": {
 		"vscode": "^1.50.0"
 	},
+	"enabledApiProposals": [
+		"contribViewsWelcome"
+	],
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
-		"onView:teletype.statusView",
 		"onView:teletype.accountsView",
 		"onCommand:extension.teletype-signin",
 		"onCommand:extension.teletype-signout",
-		"onCommand:extension.join-portal",
-		"onCommand:extension.leave-portal",
 		"onCommand:extension.share-portal",
-		"onCommand:extension.close-host-portal"
+		"onCommand:extension.close-host-portal",
+		"onCommand:extension.copy-portal-url",
+		"onCommand:extension.join-portal",
+		"onCommand:extension.leave-portal"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -51,6 +54,10 @@
 			{
 				"command": "extension.close-host-portal",
 				"title": "Close Host Portal"
+			},
+			{
+				"command": "extension.copy-portal-url",
+				"title": "Copy Portal URL to Clipboard"
 			}
 		],
 		"viewsContainers": {
@@ -65,23 +72,16 @@
 		"views": {
 			"teletype": [
 				{
-					"id": "teletype.statusView",
-					"type": "webview",
-					"name": "Teletype Status",
+					"id": "teletype.accountsView",
+					"name": "Teletype Accounts",
 					"icon": "resources/teletype.svg",
-					"contextualTitle": "Teletype"
+					"contextualTitle": "Teletype Accounts"
 				},
 				{
 					"id": "teletype.targetDocumentView",
 					"name": "Teletype Target Documents",
 					"icon": "resources/teletype.svg",
 					"contextualTitle": "Teletype Target Documents"
-				},
-				{
-					"id": "teletype.accountsView",
-					"name": "Teletype Accounts",
-					"icon": "resources/teletype.svg",
-					"contextualTitle": "Teletype Accounts"
 				}
 			]
 		},
@@ -120,15 +120,50 @@
 				}
 			}
 		},
+		"viewsWelcome": [
+			{
+				"view": "teletype.accountsView",
+				"contents": "No Singned. [get auth token](https://teletype.atom.io/login).\n[SignIn Teletype](command:extension.teletype-signin)"
+		  	}
+		  ],
 		"menus": {
+			"view/title": [
+				{
+					"command": "extension.teletype-signin",
+					"when": "view == teletype.accountsView && !isSignin",
+					"group": "identify"
+				},
+				{
+					"command": "extension.teletype-signout",
+					"when": "view == teletype.accountsView && isSignin",
+					"group": "identify"
+				}
+			],			
 			"view/item/context": [
 				{
+					"command": "extension.share-portal",
+					"when": "view == teletype.accountsView && viewItem == Identify",
+					"group": "portal"
+				},
+				{
 					"command": "extension.close-host-portal",
-					"when": "view == teletype.accountsView && viewItem == Host"
+					"when": "view == teletype.accountsView && viewItem == Host",
+					"group": "portal"
+				},
+				{
+					"command": "extension.copy-portal-url",
+					"when": "view == teletype.accountsView && viewItem == Host",
+					"group": "portal"
+				},
+				{
+					"command": "extension.join-portal",
+					"when": "view == teletype.accountsView && viewItem == Identify",
+					"group": "portal"
 				},
 				{
 					"command": "extension.leave-portal",
-					"when": "view == teletype.accountsView && viewItem == Guest"
+					"when": "view == teletype.accountsView && viewItem == Guest",
+					"group": "portal"
 				}
 			]
 		}

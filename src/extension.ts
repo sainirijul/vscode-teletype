@@ -78,7 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const teletype = new TeletypePackage({
 		baseURL: settings.get('apiHostUrl'),
 		config: {}, 
-		// vscode.clipboard, 
+		clipboard: vscode.env.clipboard,
 		// vscode.commandRegistry, 
 		// credentialCache,
 		// getAtomVersion,
@@ -163,6 +163,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand('extension.copy-portal-url', async () => {
+
+		vscode.window.showInformationMessage('Copy Portal URL to Clipboard');
+		await (globalAny.teletype as TeletypePackage).copyHostPortalURI();
+
+	});
+	context.subscriptions.push(disposable);
+
 	(globalAny.teletype as TeletypePackage).activate();
 }
 
@@ -182,14 +190,14 @@ async function getTeletypeToken() : Promise<string | undefined> {
 }
 
 function createViews(authenticationProvider: AuthenticationProvider, workspaceManager: WorkspaceManager, portalBindingManager: PortalBindingManager) {
-	const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, authenticationProvider, portalBindingManager);
-	vscode.window.registerWebviewViewProvider('teletype.statusView', nodeDependenciesProvider0);
+	// const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, authenticationProvider, portalBindingManager);
+	// vscode.window.registerTreeDataProvider('teletype.statusView', nodeDependenciesProvider0);
+
+	const nodeDependenciesProvider = new AccountNodeProvider(authenticationProvider, portalBindingManager);
+	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 
 	const nodeDependenciesProvider1 = new EditorNodeProvider(workspaceManager);
 	vscode.window.registerTreeDataProvider('teletype.targetDocumentView', nodeDependenciesProvider1);
-
-	const nodeDependenciesProvider = new AccountNodeProvider(portalBindingManager);
-	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 }
 
 export function deactivate() { }

@@ -4,56 +4,22 @@ import getAvatarUrl from './get-avatar-url';
 import HostPortalBinding from './host-portal-binding';
 import PortalBindingManager from './portal-binding-manager';
 
-export class TeleteypStatusProvider implements vscode.TreeDataProvider<DependencyX> {
-    public static readonly viewType = 'teletype.statusView';
+export class TeleteypStatusProviderOld implements vscode.WebviewViewProvider {
+    public static readonly viewType = 'teletype.statusView.old';
     private webView?: vscode.Webview;
     private portalBindingUri: string | undefined;
     private identify: any;
-    private items: DependencyX[] = [];
 
-    private _onDidChangeTreeData: vscode.EventEmitter<DependencyX | undefined | void> = new vscode.EventEmitter<DependencyX | undefined | void>();
-    readonly onDidChangeTreeData: vscode.Event<DependencyX | undefined | void> = this._onDidChangeTreeData.event;
-  
     constructor(private disp?: vscode.Disposable, private authenticationProvider?: AuthenticationProvider, private portalBindingManager?: PortalBindingManager) {
       authenticationProvider?.onDidChange(this.didChangeLogin.bind(this));
       portalBindingManager?.onDidChange(this.didPortalBindingChanged.bind(this));
-
-      this.refreshIdentify();
-    }
-
-    refresh(): void {
-      this._onDidChangeTreeData.fire();
-    }
-  
-    getTreeItem(element: DependencyX): vscode.TreeItem | Thenable<vscode.TreeItem> {
-      return element;
-    }
-
-    getChildren(element?: DependencyX): vscode.ProviderResult<DependencyX[]> {
-      if (!element) {
-        if (!this.identify) {
-          // return Promise.resolve([new DependencyX('<not identified>')]);
-          return Promise.resolve([]);
-          // return Promise.resolve(null);
-        } else {
-          return Promise.resolve([
-            this.items[0],
-            new DependencyX('Share Portal'),
-            new DependencyX('Join Portal')
-          ]);  
-        }
-      }
     }
 
     refreshIdentify(): void {
       if (this.identify) {
         const avatarUrl = getAvatarUrl(this.identify.login, 64);
-        //this.webView?.postMessage({command: 'identify', text: {loginId: this.identify.login, avatarUrl}});
-        this.items =[new DependencyX(this.identify.login, null, null, vscode.Uri.parse(avatarUrl))];
-      } else {
-        this.items =[];
+        this.webView?.postMessage({command: 'identify', text: {loginId: this.identify.login, avatarUrl}});
       }
-      this.refresh();
     }
 
     didChangeLogin(): void {
@@ -209,41 +175,4 @@ export class TeleteypStatusProvider implements vscode.TreeDataProvider<Dependenc
 
         this.webView = webviewView.webview;    
     }
-}
-
-export class DependencyX extends vscode.TreeItem {
-
-	constructor(
-		label: string,
-		id?: any,
-		public readonly value?: any,
-		iconUri?: vscode.Uri,
-		collapsibleState?: vscode.TreeItemCollapsibleState
-	) {
-		super(label, collapsibleState);
-
-		// if (value instanceof PortalBinding) {
-		// 	this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-		// 	if (value instanceof HostPortalBinding) {
-		// 		this.contextValue = 'Host';
-		// 	} else if (value instanceof GuestPortalBinding) {
-		// 		this.contextValue = 'Guest';
-		// 	}
-		// } else if ('login' in value) {
-		// 	this.description = (id === 1)? '(Me)' : undefined;
-		// }
-
-    this.contextValue = 'Host';    
-
-		// this.id = id;
-		this.iconPath = iconUri;
-		this.tooltip = `${this.label}`;
-	}
-
-	// iconPath = {
-	// 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-	// 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	// };
-
-	// contextValue = 'dependency';
 }

@@ -5,35 +5,83 @@ import PortalBindingManager from './portal-binding-manager';
 import { PortalBinding } from './portal-binding';
 import HostPortalBinding from './host-portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
+import getAvatarUrl from './get-avatar-url';
+import { AuthenticationProvider } from './authentication-provider';
 // import { IMemberIdentify } from '@atom/teletype-client';
 
 export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public static readonly viewType = 'teletype.accountsView';
 
+    private portalBindingUri: string | undefined;
+    private identify: any;
+    //private items: Dependency[] = [];
+
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 
-	constructor(private portalBindingManager: PortalBindingManager) {
-		portalBindingManager?.onDidChange(this.refresh.bind(this));
+	constructor(private authenticationProvider?: AuthenticationProvider, private portalBindingManager?: PortalBindingManager) {
+		authenticationProvider?.onDidChange(this.didChangeLogin.bind(this));
+		portalBindingManager?.onDidChange(this.didPortalBindingChanged.bind(this));
+  
+		//this.refreshIdentify();
 	}
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
 	}
 
+    // refreshIdentify(): void {
+	// 	if (this.identify) {
+	// 	  //const avatarUrl = getAvatarUrl(this.identify.login, 64);
+	// 	  //this.webView?.postMessage({command: 'identify', text: {loginId: this.identify.login, avatarUrl}});
+	// 	  //this.items =[new Dependency(this.identify.login, null, this.identify, vscode.Uri.parse(avatarUrl))];
+	// 	} else {
+	// 	  //this.items =[];
+	// 	}
+	// 	this.refresh();
+	// }
+
+	didChangeLogin(): void {
+		this.identify = this.authenticationProvider?.getIdentity();
+		this.refresh();
+	}
+
+	didPortalBindingChanged(event: any): void {
+		if (event.type === 'share-portal') {
+			this.portalBindingUri = event.uri;
+			//this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
+			vscode.commands.executeCommand('extension.copy-portal-url');			
+		} else if (event.type === 'close-portal') {
+			this.portalBindingUri = undefined;
+			//this.webView?.postMessage({command: 'host-uri', text: ''});
+		}
+		this.refresh();
+	}
+
+	copyPortalBindingUrl() {
+
+	}
+
 	getTreeItem(element: Dependency): vscode.TreeItem {
 		return element;
 	}
 
-	async getChildren(element?: Dependency): Promise<Dependency[]> {
+	async getChildren(element?: Dependency): Promise<Dependency[] | null> {
 		if (!this.portalBindingManager) {
 			vscode.window.showInformationMessage('No dependency in empty workspace');
 			return [];
 		}
 
+		if (!this.identify) {
+			return null;
+		}
+
 		let lst: Dependency[] = [];
 
 		if (!element) {
+			// lst.push(new Dependency(this.identify.login, undefined, this.identify, vscode.Uri.parse(getAvatarUrl(this.identify.login, 32))));
+			lst.push(new Dependency(this.identify.login, undefined, null, vscode.Uri.parse(getAvatarUrl(this.identify.login, 32))));
+
 			const host = await this.portalBindingManager.getHostPortalBinding();
 			if (host) {
 				lst.push(new Dependency('Host', host.portal?.id, host));
@@ -49,7 +97,8 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 			if (ids) {
 				ids.map(siteId => {
 					const identify = element.value.portal.getSiteIdentity(siteId);					
-					lst.push(new Dependency(identify.login, siteId, identify));
+					const avatarUrl = getAvatarUrl(identify.login, 32);
+					lst.push(new Dependency(identify.login, siteId, identify, vscode.Uri.parse(avatarUrl)));
 				});
 			}
 		}
@@ -69,15 +118,21 @@ export class Dependency extends vscode.TreeItem {
 	) {
 		super(label, collapsibleState);
 
-		if (value instanceof PortalBinding) {
-			this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-			if (value instanceof HostPortalBinding) {
-				this.contextValue = 'Host';
-			} else if (value instanceof GuestPortalBinding) {
-				this.contextValue = 'Guest';
+		if (value) {
+			if (value instanceof PortalBinding) {
+				this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+				if (value instanceof HostPortalBinding) {
+					this.contextValue = 'Host';
+				} else if (value instanceof GuestPortalBinding) {
+					this.contextValue = 'Guest';
+				}
+			} else if ('login' in value) {
+				this.description = (id === 1)? '(me)' : undefined;
 			}
-		} else if ('login' in value) {
-			this.description = (id === 1)? '(Me)' : undefined;
+		} else {
+			this.description = '(signed)';
+			this.contextValue = 'Identify';
+			console.log(this);
 		}
 
 		// this.id = id;
