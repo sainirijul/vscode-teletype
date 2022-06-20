@@ -53,12 +53,10 @@ export class AuthenticationProvider {
   }
 
   private async _signIn (token: string) : Promise<boolean> {
+    let signedIn = false;
     try {
       this.signingIn = true;
-      this.didChangeSignIn();
-
-      const signedIn = await this.client.signIn(token);
-      return signedIn;
+      signedIn = await this.client.signIn(token);
     } catch (error) {
       this.notificationManager.addError('Failed to authenticate to teletype', {
         description: `Signing in failed with error: <code>${(error as Error).message}</code>`,
@@ -66,9 +64,8 @@ export class AuthenticationProvider {
       });
     } finally {
       this.signingIn = false;
-      this.didChangeSignIn();
     }
-    return this.signingIn;
+    return signedIn;
   }
 
   isSigningIn () : boolean {
