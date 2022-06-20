@@ -23,7 +23,7 @@ export default class TeletypePackage {
   packageManager: any;
   commandRegistry: any;
   tooltipManager: any;
-  clipboard: any;
+  clipboard: vscode.Clipboard;
   pubSubGateway: PusherPubSubGateway;
   pusherKey: string;
   pusherOptions: any;
@@ -198,7 +198,9 @@ export default class TeletypePackage {
   async copyHostPortalURI () {
     const manager = await this.getPortalBindingManager();
     const hostPortalBinding = await manager?.getHostPortalBinding();
-    this.clipboard.write(hostPortalBinding?.uri);
+    if (hostPortalBinding?.uri) {
+      this.clipboard.writeText(hostPortalBinding.uri);
+    }
   }
 
   async leavePortal (portalBinding?: GuestPortalBinding | undefined) {
