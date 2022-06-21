@@ -47,13 +47,15 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 	}
 
 	didPortalBindingChanged(event: any): void {
-		if (event.type === 'share-portal') {
-			this.portalBindingUri = event.uri;
-			//this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
-			vscode.commands.executeCommand('extension.copy-portal-url');			
-		} else if (event.type === 'close-portal') {
-			this.portalBindingUri = undefined;
-			//this.webView?.postMessage({command: 'host-uri', text: ''});
+		if (event) {
+			if (event.type === 'share-portal') {
+				this.portalBindingUri = event.uri;
+				//this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
+				vscode.commands.executeCommand('extension.copy-portal-url');			
+			} else if (event.type === 'close-portal') {
+				this.portalBindingUri = undefined;
+				//this.webView?.postMessage({command: 'host-uri', text: ''});
+			}
 		}
 		this.refresh();
 	}
