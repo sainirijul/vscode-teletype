@@ -262,22 +262,28 @@ export default class BufferBinding implements IBufferDelegate {
 	}
 
 	changeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
-		//this.bufferProxy.onDidChangeBuffer(changes.map(change => {
-    // this.bufferProxy.onDidUpdateText(changes.map(change => {
-		 	const { start, end } = changes[0].range;
+    if (!changes) {
+      return;
+    }
 
-		// 	return {
-		// 		oldStart: { row: start.line, column: start.character },
-		// 		oldEnd: { row: end.line, column: end.character },
-		// 		newText: change.text
-		// 	};
-		// }));
-    this.bufferProxy.setTextInRange(
-      { row: start.line, column: start.character },
-      { row: end.line, column: end.character },
-      changes[0].text
-    );
-	}
+    changes.forEach(change => {
+      //this.bufferProxy.onDidChangeBuffer(changes.map(change => {
+      // this.bufferProxy.onDidUpdateText(changes.map(change => {
+        const { start, end } = change.range;
+
+      // 	return {
+      // 		oldStart: { row: start.line, column: start.character },
+      // 		oldEnd: { row: end.line, column: end.character },
+      // 		newText: change.text
+      // 	};
+      // }));
+      this.bufferProxy.setTextInRange(
+        { row: start.line, column: start.character },
+        { row: end.line, column: end.character },
+        changes[0].text
+      );
+    });
+  }
 
   //requestSavePromise(): Promise<vscode.TextEditor[]> {
   requestSavePromise(): Promise<void> {
