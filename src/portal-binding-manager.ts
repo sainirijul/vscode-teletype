@@ -126,6 +126,8 @@ export default class PortalBindingManager {
         this.emitter.emit('did-change', event);
       });
       this.emitter.emit('did-change', {type: 'join-portal', portal: portalBinding?.portal});
+    } else {
+      portalBinding.dispose();
     }
 
     return portalBinding;

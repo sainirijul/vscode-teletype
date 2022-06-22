@@ -22,7 +22,7 @@ export default class GuestPortalBinding extends PortalBinding {
   // public readonly workspace: vscode.WorkspaceFolder;
 	// public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
-  emitDidDispose: any;
+  // emitDidDispose: any;
   lastActivePaneItem: null;
 	// private editorBindingsByEditorProxy : Map<EditorProxy, EditorBinding>;
   // private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
@@ -50,7 +50,7 @@ export default class GuestPortalBinding extends PortalBinding {
     // this.workspace = workspace;
     // this.editor = editor;
     this.notificationManager = notificationManager;
-    this.emitDidDispose = didDispose || NOOP;
+    // this.emitDidDispose = didDispose || NOOP;
     this.lastActivePaneItem = null;
     // this.editorBindingsByEditorProxyId = new Map();
     // this.bufferBindingsByBufferProxyId = new Map();
@@ -65,7 +65,7 @@ export default class GuestPortalBinding extends PortalBinding {
     this.shouldRelayActiveEditorChanges = true;
   }
 
-  async initialize () {
+  async initialize () : Promise<boolean> {
     try {
       this.portal = await this.client.joinPortal(this.portalId);
       if (!this.portal) { return false; }
@@ -90,10 +90,12 @@ export default class GuestPortalBinding extends PortalBinding {
   }
 
   dispose () {
-    // this.subscriptions.dispose();
-    // this.sitePositionsComponent.destroy();
+  //   // this.subscriptions.dispose();
+  //   // this.sitePositionsComponent.destroy();
 
-    this.emitDidDispose();
+  //  this.emitDidDispose();
+    this.portal = undefined;
+    super.dispose();
   }
 
   siteDidJoin (siteId: number) {
@@ -192,6 +194,7 @@ export default class GuestPortalBinding extends PortalBinding {
     //   pane.activateItem(paneItem);
     //   pane.activate();
     // }
+    this.emitter.emit('did-change');
   }
 
   didFailToJoin (error: Error) {

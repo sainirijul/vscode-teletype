@@ -173,7 +173,7 @@ export default class TeletypePackage {
     }
   }
 
-  async joinPortal (id: string = '') {
+  async joinPortal (id: string = ''): Promise<Portal | undefined> {
     this.showPopover();
 
     if (await this.isSignedIn()) {

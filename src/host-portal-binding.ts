@@ -23,7 +23,7 @@ export default class HostPortalBinding extends PortalBinding {
   // disposables: any;
   // private emitter: EventEmitter;
   lastUpdateTetherPromise: Promise<void>;
-  didDispose: Function | undefined;
+  // didDispose: Function | undefined;
   // portal?: Portal;
   uri: string | undefined;
   // sitePositionsComponent: SitePositionsComponent | undefined;
@@ -42,7 +42,7 @@ export default class HostPortalBinding extends PortalBinding {
     // this.disposables = new CompositeDisposable();
     // this.emitter = new EventEmitter();
     this.lastUpdateTetherPromise = Promise.resolve();
-    this.didDispose = didDispose;
+    // this.didDispose = didDispose;
   }
 
   // @override
@@ -111,9 +111,10 @@ export default class HostPortalBinding extends PortalBinding {
     // this.workspace.getElement().classList.remove('teletype-Host');
     // this.sitePositionsComponent.destroy();
     // this.disposables.dispose();
-    if(this.didDispose) {
-      this.didDispose();
-    }
+    // if(this.didDispose) {
+    //   this.didDispose();
+    // }
+    super.dispose();
   }
 
   close () {
