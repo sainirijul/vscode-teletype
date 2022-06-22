@@ -177,7 +177,6 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
-		"@atom/teletype-client": "github:amos42/teletype-client.git",
 		"@mapbox/node-pre-gyp": "^1.0.9",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
@@ -193,10 +192,11 @@
 		"vsce": "<2.0.0",
 		"vscode": "^1.1.37",
 		"webpack": "^4.43.0",
-		"webpack-cli": "^4.9.2",
-		"wrtc": "^0.4.7",
-		"domexception": "^4.0.0"
+		"webpack-cli": "^4.9.2"
 	},
 	"dependencies": {
+		"@atom/teletype-client": "github:amos42/teletype-client.git",
+		"wrtc": "^0.4.7",
+		"domexception": "^4.0.0"
 	}
 }
