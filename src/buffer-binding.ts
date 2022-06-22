@@ -28,7 +28,7 @@ export default class BufferBinding implements IBufferDelegate {
 
 	constructor(buffer: vscode.TextDocument, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
     this.buffer = buffer;
-    this.path = path;
+    this.path = path ?? buffer.uri.toString();
     this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
@@ -224,7 +224,8 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   getBufferProxyURI () {
-    if (!this.buffer.uri.fsPath) { return 'untitled'; }
+    return this.path ?? 'untitled';
+    // if (!this.buffer.uri.fsPath) { return 'untitled'; }
     // const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
     // if (projectPath) {
     //   const projectName = path.basename(projectPath);
@@ -232,8 +233,8 @@ export default class BufferBinding implements IBufferDelegate {
     // } else {
     //   return relativePath;
     // }
-    // return this.buffer.uri.fsPath;
-    return path.basename(this.buffer.fileName);
+    // return this.buffer.uri.toString();
+    // return path.basename(this.buffer.fileName);
   }
 
   serialize (options: any[]) {
