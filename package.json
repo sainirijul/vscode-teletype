@@ -124,8 +124,8 @@
 			{
 				"view": "teletype.accountsView",
 				"contents": "No Singned. [get auth token](https://teletype.atom.io/login).\n[SignIn Teletype](command:extension.teletype-signin)"
-		  	}
-		  ],
+			}
+		],
 		"menus": {
 			"view/title": [
 				{
@@ -138,7 +138,7 @@
 					"when": "view == teletype.accountsView && isSignin",
 					"group": "identify"
 				}
-			],			
+			],
 			"view/item/context": [
 				{
 					"command": "extension.share-portal",
@@ -177,25 +177,26 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
+		"@atom/teletype-client": "github:amos42/teletype-client.git",
+		"@mapbox/node-pre-gyp": "^1.0.9",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
 		"deep-equal": "^1.1.1",
+		"google-protobuf": "^3.12.2",
+		"keytar": "^7.9.0",
+		"mkdirp-promise": "^5.0.1",
+		"node-fetch": "^2.6.0",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",
 		"vsce": "<2.0.0",
 		"vscode": "^1.1.37",
 		"webpack": "^4.43.0",
-		"webpack-cli": "^4.9.2"
+		"webpack-cli": "^4.9.2",
+		"wrtc": "^0.4.7",
+		"domexception": "^4.0.0"
 	},
 	"dependencies": {
-		"@atom/teletype-client": "git+https://github.com/amos42/teletype-client",
-		"@atom/teletype-server": "git+https://github.com/amos42/teletype-server",
-		"google-protobuf": "^3.12.2",
-		"keytar": "^7.9.0",
-		"mkdirp-promise": "^5.0.1",
-		"node-fetch": "^2.6.0",
-		"wrtc": "^0.4.7"
 	}
 }
