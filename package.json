@@ -183,8 +183,6 @@
 		"awesome-typescript-loader": "^5.2.1",
 		"deep-equal": "^1.1.1",
 		"google-protobuf": "^3.12.2",
-		"keytar": "^7.9.0",
-		"mkdirp-promise": "^5.0.1",
 		"node-fetch": "^2.6.0",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
@@ -197,6 +195,8 @@
 	"dependencies": {
 		"@atom/teletype-client": "github:amos42/teletype-client.git",
 		"wrtc": "^0.4.7",
-		"domexception": "^4.0.0"
+		"domexception": "^4.0.0",
+		"mkdirp-promise": "^5.0.1",
+		"keytar": "^7.9.0"
 	}
 }
