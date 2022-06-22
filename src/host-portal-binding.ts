@@ -76,9 +76,11 @@ export default class HostPortalBinding extends PortalBinding {
       // );
       vscode.window.onDidChangeActiveTextEditor((e) => {
         const editor = e as vscode.TextEditor;
-        const doc = editor.document as vscode.TextDocument;
-        if (doc.uri.scheme === 'file'){
-          this.didChangeActiveTextEditor(editor);
+        if (editor) {
+          const doc = editor.document as vscode.TextDocument;
+          if (doc.uri.scheme === 'file'){
+            this.didChangeActiveTextEditor(editor);
+          }
         }
       });
       vscode.workspace.onDidOpenTextDocument(async (e) => {
@@ -181,7 +183,7 @@ export default class HostPortalBinding extends PortalBinding {
   }
 
   async didAddTextEditor (editor: vscode.TextEditor) {
-    if (!this.workspaceManager.editorBindingsByEditorDocument.get(editor.document)?.isRemote) {
+    if (!this.workspaceManager.editorBindingsByEditorDocument.get(editor?.document)?.isRemote) {
       await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
     }
   }
