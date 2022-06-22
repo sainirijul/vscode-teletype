@@ -19,6 +19,7 @@ interface SiteDecoration {
 export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
   public readonly buffer: vscode.TextDocument;
+  public readonly path: string;
 	private portal: Portal | undefined;
 	private readonly isHost: boolean;
   private disposed: boolean = false;
@@ -39,9 +40,10 @@ export default class EditorBinding implements IEditorDelegate {
   // isBatchingMarkerUpdates: boolean;
   isRemote: boolean = false;
 
-  constructor (editor: vscode.TextEditor, portal: Portal | undefined, isHost: boolean) {
+  constructor (editor: vscode.TextEditor, path?: string, portal?: Portal, isHost: boolean = false) {
     this.editor = editor;
     this.buffer = editor.document;
+    this.path = path ?? this.buffer.uri.fsPath;
     this.portal = portal;
     this.isHost = isHost;
     this.emitter = new EventEmitter();

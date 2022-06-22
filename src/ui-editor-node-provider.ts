@@ -45,12 +45,13 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		// 	}
 		// }
 
- this.workspaceManager.editorBindingsByEditorDocument.forEach((value, key) => {
-	 if (value.isRemote){
-		xx.push(new Dependency(value.editorProxy?.bufferProxy.uri));
-	 } else {
-		xx.push(new Dependency(key.uri.fsPath));	   
-	 }
+ this.workspaceManager.bufferBindingsByBuffer.forEach((value, key) => {
+	//  if (value.getBufferProxyURI()){
+	// 	xx.push(new Dependency(value.editorProxy?.bufferProxy.uri));
+	//  } else {
+	// 	xx.push(new Dependency(key.uri.fsPath));
+	//  }
+	xx.push(new Dependency(value.getBufferProxyURI()));
  });
 
 
@@ -60,8 +61,8 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	/**
 	 * Given the path to package.json, read all its dependencies and devDependencies.
 	 */
-	private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-		return [];
+	// private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
+		// return [];
 		// if (this.pathExists(packageJsonPath)) {
 		// 	const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
@@ -87,7 +88,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		// } else {
 		// 	return [];
 		// }
-	}
+	// }
 
 	// private pathExists(p: string): boolean {
 	// 	try {

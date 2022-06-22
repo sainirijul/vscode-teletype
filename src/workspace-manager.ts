@@ -56,7 +56,7 @@ export default class WorkspaceManager {
       }
     }
     
-    const editorBinding = new EditorBinding(editor, portal, isHost);
+    const editorBinding = new EditorBinding(editor, undefined, portal, isHost);
     if (!editorProxy){
       editorProxy = portal.createEditorProxy({bufferProxy});
     }
@@ -85,7 +85,7 @@ export default class WorkspaceManager {
     if (bufferBinding) {
       return bufferBinding.bufferProxy;
     } else if (portal) {
-      bufferBinding = new BufferBinding(buffer, editor, true);
+      bufferBinding = new BufferBinding(buffer, undefined, editor, true);
       const bufferProxy = portal.createBufferProxy({
         uri: bufferBinding.getBufferProxyURI(),
         text: buffer.getText(),
@@ -132,7 +132,7 @@ export default class WorkspaceManager {
         editor = await vscode.window.showTextDocument(document);
         if (editor) {
           this.addEditor(editor, portal, false, bufferProxy, editorProxy);
-          // editorBinding = new EditorBinding(editor, portal, false);
+          // editorBinding = new EditorBinding(editor, undefined, portal, false);
           // editorBinding.setEditorProxy(editorProxy);
           // editorProxy.setDelegate(editorBinding);
 
@@ -176,7 +176,7 @@ export default class WorkspaceManager {
 			buffer = await vscode.workspace.openTextDocument(bufferURI);
 			const editor = await vscode.window.showTextDocument(buffer);
       bufferBinding = new BufferBinding(
-        buffer, editor, false, () => this.bufferBindingsByBufferProxy.delete(bufferProxy)
+        buffer, undefined, editor, false, () => this.bufferBindingsByBufferProxy.delete(bufferProxy)
       );
 
       bufferBinding.setBufferProxy(bufferProxy);

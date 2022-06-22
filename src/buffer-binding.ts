@@ -13,6 +13,7 @@ function doNothing () {}
 export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
 	public buffer!: vscode.TextDocument;
+  public path: string | undefined;
 	public editor!: vscode.TextEditor;
 	private readonly isHost: boolean;
   emitDidDispose: Function;
@@ -25,8 +26,9 @@ export default class BufferBinding implements IBufferDelegate {
   remoteFile: any;
   isUpdating: boolean = false;
 
-	constructor(buffer: vscode.TextDocument, editor: vscode.TextEditor, isHost: boolean, didDispose: Function = doNothing) {
+	constructor(buffer: vscode.TextDocument, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
     this.buffer = buffer;
+    this.path = path;
     this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
@@ -230,7 +232,8 @@ export default class BufferBinding implements IBufferDelegate {
     // } else {
     //   return relativePath;
     // }
-    return this.buffer.uri.fsPath;
+    // return this.buffer.uri.fsPath;
+    return path.basename(this.buffer.fileName);
   }
 
   serialize (options: any[]) {
