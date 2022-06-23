@@ -26,7 +26,8 @@
 		"onCommand:extension.close-host-portal",
 		"onCommand:extension.copy-portal-url",
 		"onCommand:extension.join-portal",
-		"onCommand:extension.leave-portal"
+		"onCommand:extension.leave-portal",
+		"onCommand:extension.test"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -58,6 +59,10 @@
 			{
 				"command": "extension.copy-portal-url",
 				"title": "Copy Portal URL to Clipboard"
+			},
+			{
+				"command": "extension.test",
+				"title": "test"
 			}
 		],
 		"viewsContainers": {

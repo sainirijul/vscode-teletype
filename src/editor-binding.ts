@@ -20,7 +20,7 @@ export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
   public readonly buffer: vscode.TextDocument;
   public readonly path: string;
-	private portal: Portal | undefined;
+	public portal: Portal | undefined;
 	private readonly isHost: boolean;
   private disposed: boolean = false;
   private emitter: EventEmitter;

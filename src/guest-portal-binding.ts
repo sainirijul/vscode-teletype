@@ -16,7 +16,7 @@ import { IPortalBinding, PortalBinding } from './portal-binding';
 
 const NOOP = () => {};
 
-export default class GuestPortalBinding extends PortalBinding {
+export default class GuestPortalBinding extends PortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   portalId: string;
   // public readonly workspace: vscode.WorkspaceFolder;
@@ -33,7 +33,7 @@ export default class GuestPortalBinding extends PortalBinding {
   // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
   // private bufferBindingsByBufferProxyId: Map<number, BufferBinding>;
   // private editorProxiesMetadataById: Map<number, EditorProxyMetadata>;
-  private workspaceManager: WorkspaceManager;
+  // private workspaceManager: WorkspaceManager;
   // private emitter: EventEmitter;
   // subscriptions: any;
   lastEditorProxyChangePromise: Promise<void>;
@@ -43,7 +43,7 @@ export default class GuestPortalBinding extends PortalBinding {
   // public newActivePaneItem: any;
 
   constructor (client: TeletypeClient, portalId: string, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
-    super(client, didDispose);
+    super(workspaceManager, client, didDispose);
 
     this.client = client;
     this.portalId = portalId;
@@ -58,7 +58,7 @@ export default class GuestPortalBinding extends PortalBinding {
     // this.editorProxiesMetadataById = new Map();
 		// this.bufferBindingsByBuffer = new Map();
     // this.editorBindingsByEditor = new Map();
-    this.workspaceManager = workspaceManager;
+    // this.workspaceManager = workspaceManager;
     // this.emitter = new EventEmitter();
     // this.subscriptions = new CompositeDisposable();
     this.lastEditorProxyChangePromise = Promise.resolve();
@@ -89,15 +89,17 @@ export default class GuestPortalBinding extends PortalBinding {
     }
   }
 
+  // @override
   dispose () {
   //   // this.subscriptions.dispose();
   //   // this.sitePositionsComponent.destroy();
 
   //  this.emitDidDispose();
-    this.portal = undefined;
+    // this.portal = undefined;
     super.dispose();
   }
 
+  // @override
   siteDidJoin (siteId: number) {
     const hostLogin = this.portal?.getSiteIdentity(1);
     const siteLogin = this.portal?.getSiteIdentity(siteId);
@@ -106,6 +108,7 @@ export default class GuestPortalBinding extends PortalBinding {
     vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
   }
 
+  // @override
   siteDidLeave (siteId: number) {
     const hostLogin = this.portal?.getSiteIdentity(1);
     const siteLogin = this.portal?.getSiteIdentity(siteId);
@@ -216,6 +219,7 @@ export default class GuestPortalBinding extends PortalBinding {
     });
   }
 
+  // @override
   hostDidClosePortal () {
     this.notificationManager.addInfo('Portal closed', {
       description: 'Your host stopped sharing their editor.',
@@ -223,6 +227,7 @@ export default class GuestPortalBinding extends PortalBinding {
     });
   }
 
+  // @override
   hostDidLoseConnection () {
     this.notificationManager.addInfo('Portal closed', {
       description: (
@@ -234,10 +239,7 @@ export default class GuestPortalBinding extends PortalBinding {
   }
 
   public leave () {
-    if (this.portal) {
-       this.portal.dispose(); 
-       this.portal = undefined;
-    }
+    this.close();
   }
 
   // async openPaneItem (newActivePaneItem) {
@@ -272,54 +274,5 @@ export default class GuestPortalBinding extends PortalBinding {
   onDidChange(callback: (event: any) => void) {
     return this.emitter.on('did-change', callback);
   }
-
-	// private registerWorkspaceEvents () {
-	// 	vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
-	// 	vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-	// 	vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
-  //   vscode.window.onDidChangeTextEditorVisibleRanges(this.triggerViewRangeChanges.bind(this));
-	// }
-
-	// private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
-	// 	if (this.workspaceManager.bufferBindingsByBuffer) {
-	// 		const bufferBinding = this.workspaceManager.bufferBindingsByBuffer.get(event.document);
-	// 		if (bufferBinding) {
-  //       if(!bufferBinding.isUpdating) {
-	// 			  const doc = bufferBinding.changeBuffer(event.contentChanges);
-	// 		  } else {
-  //         bufferBinding.isUpdating = false;
-  //       }
-  //     }
-	// 	}
-	// }
-
-	// private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
-	// 	if(this.workspaceManager.bufferBindingsByBuffer){
-  //     const bufferBinding = this.workspaceManager.bufferBindingsByBuffer.get(event.document);
-  //     if (bufferBinding) {
-  //       event.waitUntil(bufferBinding.requestSavePromise());
-  //     }
-  //   }
-  // }
-
-	// private triggerSelectionChanges (event: vscode.TextEditorSelectionChangeEvent) {
-	// 	if (this.workspaceManager.editorBindingsByEditor){
-  //     const editorBinding = this.workspaceManager.editorBindingsByEditor.get(event.textEditor);
-  //     if (editorBinding) {
-  //       editorBinding.updateSelections(event.selections);
-  //     }
-  //   }
-  // }
-
-	// private triggerViewRangeChanges (event: vscode.TextEditorVisibleRangesChangeEvent) {
-	// 	if (this.workspaceManager.editorBindingsByEditor){
-  //     const editorBinding = this.workspaceManager.editorBindingsByEditor.get(event.textEditor);
-  //     if (editorBinding) {
-  //       // editorBinding.editorDidChangeScrollTop(event.visibleRanges);
-  //       // editorBinding.editorDidChangeScrollLeft(event.visibleRanges);
-  //       // editorBinding.editorDidResize(event.visibleRanges);
-  //     }
-  //   }
-  // }
 
 }

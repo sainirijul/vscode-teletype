@@ -5,7 +5,7 @@ import * as path from 'path';
 import {EventEmitter} from 'events';
 // const {Emitter, Range, CompositeDisposable, TextBuffer} = require('atom')
 import { Position, Range, TextUdpate } from './teletype-types';
-import { BufferProxy, Checkpoint, IBufferDelegate } from '@atom/teletype-client';
+import { BufferProxy, Checkpoint, IBufferDelegate, Portal } from '@atom/teletype-client';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
 
 function doNothing () {}
@@ -13,6 +13,7 @@ function doNothing () {}
 export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
 	public buffer!: vscode.TextDocument;
+  public portal!: Portal;
   public path: string | undefined;
 	public editor!: vscode.TextEditor;
 	private readonly isHost: boolean;
@@ -26,8 +27,9 @@ export default class BufferBinding implements IBufferDelegate {
   remoteFile: any;
   isUpdating: boolean = false;
 
-	constructor(buffer: vscode.TextDocument, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
+	constructor(buffer: vscode.TextDocument, portal: Portal, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
     this.buffer = buffer;
+    this.portal = portal;
     this.path = path ?? buffer.uri.toString();
     this.editor = editor;
     this.isHost = isHost;
@@ -76,10 +78,10 @@ export default class BufferBinding implements IBufferDelegate {
 
   // @override
   setText (text: string) : void {
-    // this.disableHistory = true;
+    this.disableHistory = true;
     // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
-    // this.disableHistory = false;
 		fs.writeFileSync(this.buffer.uri.fsPath, text);
+    this.disableHistory = false;
   }
 
   pushChange (change: vscode.TextDocumentContentChangeEvent | undefined) {
@@ -91,7 +93,7 @@ export default class BufferBinding implements IBufferDelegate {
         {row: change.range.start.line, column: change.range.start.character},
         {row: change.range.end.line, column: change.range.end.character},
         change.text
-      );
+      ); 
     } else {
       this.pendingChanges.push(change);
     }
@@ -209,6 +211,7 @@ export default class BufferBinding implements IBufferDelegate {
 
   // @override
   save () : void {
+    // 수신이 완료됨
     if (this.buffer?.uri) { 
       this.buffer.save(); 
     }
@@ -266,9 +269,7 @@ export default class BufferBinding implements IBufferDelegate {
 	}
 
 	changeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
-    if (!changes) {
-      return;
-    }
+    if (!changes) { return; }
 
     changes.forEach(change => {
       //this.bufferProxy.onDidChangeBuffer(changes.map(change => {
@@ -284,7 +285,7 @@ export default class BufferBinding implements IBufferDelegate {
       this.bufferProxy.setTextInRange(
         { row: start.line, column: start.character },
         { row: end.line, column: end.character },
-        changes[0].text
+        change.text
       );
     });
   }

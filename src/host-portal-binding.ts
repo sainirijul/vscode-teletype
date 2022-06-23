@@ -11,12 +11,12 @@ import WorkspaceManager from './workspace-manager';
 import { IPortalBinding, PortalBinding } from './portal-binding';
 
 
-export default class HostPortalBinding extends PortalBinding {
+export default class HostPortalBinding extends PortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   public readonly workspace: vscode.WorkspaceFolder;
   // public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
-  workspaceManager: WorkspaceManager;
+  // workspaceManager: WorkspaceManager;
   // private editorBindingsByEditor: WeakMap<vscode.TextEditor, EditorBinding>;
   // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
   // private bufferBindingsByBuffer: WeakMap<vscode.TextDocument, BufferBinding>;
@@ -26,16 +26,18 @@ export default class HostPortalBinding extends PortalBinding {
   // didDispose: Function | undefined;
   // portal?: Portal;
   uri: string | undefined;
+  changeActiveEditorEvent?: vscode.Disposable;
+  openEditorEvent?: vscode.Disposable;
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
-    super(client, didDispose);
+    super(workspaceManager, client, didDispose);
 
     this.client = client;
     this.workspace = workspace;
     // this.editor = editor;
     this.notificationManager = notificationManager;
-    this.workspaceManager = workspaceManager;
+    // this.workspaceManager = workspaceManager;
     // this.editorBindingsByEditor = new WeakMap();
     // this.editorBindingsByEditorProxy = new Map();
     // this.bufferBindingsByBuffer = new WeakMap();
@@ -74,7 +76,7 @@ export default class HostPortalBinding extends PortalBinding {
       //   this.workspace.observeTextEditors(this.didAddTextEditor.bind(this)),
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
-      vscode.window.onDidChangeActiveTextEditor((e) => {
+      this.changeActiveEditorEvent = vscode.window.onDidChangeActiveTextEditor((e) => {
         const editor = e as vscode.TextEditor;
         if (editor) {
           const doc = editor.document as vscode.TextDocument;
@@ -83,7 +85,7 @@ export default class HostPortalBinding extends PortalBinding {
           }
         }
       });
-      vscode.workspace.onDidOpenTextDocument(async (e) => {
+      this.openEditorEvent = vscode.workspace.onDidOpenTextDocument(async (e) => {
         if (e.uri.scheme === 'file'){
           //if (e.isClosed) {
           const editor = await vscode.window.showTextDocument(e);
@@ -110,6 +112,9 @@ export default class HostPortalBinding extends PortalBinding {
   dispose () {
     this.emitter.emit('did-change', {type: 'close-portal'});
 
+    this.changeActiveEditorEvent?.dispose();
+    this.openEditorEvent?.dispose();
+
     // this.workspace.getElement().classList.remove('teletype-Host');
     // this.sitePositionsComponent.destroy();
     // this.disposables.dispose();
@@ -117,10 +122,6 @@ export default class HostPortalBinding extends PortalBinding {
     //   this.didDispose();
     // }
     super.dispose();
-  }
-
-  close () {
-    this.portal?.dispose();
   }
 
   // @override
@@ -142,7 +143,7 @@ export default class HostPortalBinding extends PortalBinding {
   }
 
   async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
-    if (editor && !this.workspaceManager.editorBindingsByEditorDocument.get(editor.document)?.isRemote) {
+    if (editor && !this.workspaceManager.editorBindingsByBuffer.get(editor.document)?.isRemote) {
       const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
       if (editorProxy !== this.portal?.activateEditorProxy) {
         this.portal?.activateEditorProxy(editorProxy);
@@ -183,7 +184,7 @@ export default class HostPortalBinding extends PortalBinding {
   }
 
   async didAddTextEditor (editor: vscode.TextEditor) {
-    if (!this.workspaceManager.editorBindingsByEditorDocument.get(editor?.document)?.isRemote) {
+    if (!this.workspaceManager.editorBindingsByBuffer.get(editor?.document)?.isRemote) {
       await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
     }
   }

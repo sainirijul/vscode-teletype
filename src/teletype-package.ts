@@ -13,9 +13,11 @@ import { CredentialCache } from './credential-cache';
 import WorkspaceManager from './workspace-manager';
 import { PortalBinding } from './portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
+//import * as fs from 'fs';
 
 
 export default class TeletypePackage {
+  fs: vscode.FileSystemProvider;
   config: any;
   workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
@@ -44,12 +46,13 @@ export default class TeletypePackage {
 
   constructor (options: any) {
     const {
-      baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
+      fs, baseURL, config, clipboard, commandRegistry, credentialCache, getAtomVersion,
       notificationManager, packageManager, workspaceManager, peerConnectionTimeout, pubSubGateway,
       pusherKey, pusherOptions, tetherDisconnectWindow, tooltipManager,
       workspace, authToken, subscriptions
     } = options;
 
+    this.fs = fs;
     this.config = config;
     this.workspace = workspace;
     this.notificationManager = notificationManager;
@@ -365,6 +368,12 @@ export default class TeletypePackage {
         this.notificationManager.addError('client initialize error');
         this.initializationError = error;
       }
+    }
+  }
+
+  async test() {
+    if (vscode.window.activeTextEditor) {
+      // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');
     }
   }
 }

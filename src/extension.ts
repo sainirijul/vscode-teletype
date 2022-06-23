@@ -11,6 +11,7 @@ import WorkspaceManager from './workspace-manager';
 import { AccountNodeProvider, Dependency } from './ui-account-node-provider';
 import { TeleteypStatusProvider } from './ui-status-provider';
 import { EditorNodeProvider } from './ui-editor-node-provider';
+import { MemFS } from './memfs-filesystem-provider';
 
 const fetch = require('node-fetch');
 const wrtc = require('wrtc');
@@ -51,8 +52,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const settings = vscode.workspace.getConfiguration('teletype.settings');
 
+	const memFs = new MemFS();
+    context.subscriptions.push(vscode.workspace.registerFileSystemProvider('memfs', memFs, { isCaseSensitive: true }));
+		
 	const notificationManager = new NotificationManager();
-	const workspaceManager = new WorkspaceManager(notificationManager);
+	const workspaceManager = new WorkspaceManager(memFs, notificationManager);
 
 	let pusherOptions: any = { 
 		cluster: settings.get('pusher.cluster'),
@@ -76,6 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
 	const teletype = new TeletypePackage({
+		fs: memFs,
 		baseURL: settings.get('apiHostUrl'),
 		config: {}, 
 		clipboard: vscode.env.clipboard,
@@ -157,7 +162,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	  
 	disposable = vscode.commands.registerCommand('extension.close-host-portal', async () => {
 
-		vscode.window.showInformationMessage('Cose Host Portal');
+		vscode.window.showInformationMessage('Close Host Portal');
 		await (globalAny.teletype as TeletypePackage).closeHostPortal();
 
 	});
@@ -167,6 +172,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		vscode.window.showInformationMessage('Copy Portal URL to Clipboard');
 		await (globalAny.teletype as TeletypePackage).copyHostPortalURI();
+
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.test', async () => {
+
+		vscode.window.showInformationMessage('test');
+		await (globalAny.teletype as TeletypePackage).test();
 
 	});
 	context.subscriptions.push(disposable);
