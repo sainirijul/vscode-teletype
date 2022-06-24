@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
-//import {CompositeDisposable, Emitter} from 'atom';
 import { SelectionMap, Selection, Position, Range } from './teletype-types';
 import {TeletypeClient, EditorProxy, BufferProxy, FollowState, Portal, IPortalDelegate} from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
@@ -9,6 +8,7 @@ import {getPortalURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 import { IPortalBinding, PortalBinding } from './portal-binding';
+import * as path from 'path';
 
 
 export default class HostPortalBinding extends PortalBinding implements IPortalDelegate {
@@ -143,7 +143,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   }
 
   async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
-    if (editor && !this.workspaceManager.editorBindingsByBuffer.get(editor.document)?.isRemote) {
+    if (editor && this.isWorkspaceFiles(editor.document.uri.fsPath) && !this.workspaceManager.editorBindingsByBuffer.get(editor.document)?.isRemote) {
       const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
       if (editorProxy !== this.portal?.activateEditorProxy) {
         this.portal?.activateEditorProxy(editorProxy);
@@ -153,6 +153,13 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       this.portal?.activateEditorProxy(null);
       // this.sitePositionsComponent.hide();
     }
+  }
+
+  isWorkspaceFiles(fsPath: string) : boolean {
+    fsPath = path.normalize(fsPath);
+    const parentPath = path.normalize(this.workspace.uri.fsPath);
+    const relPath = path.relative(this.workspace.uri.fsPath, fsPath);
+    return fsPath.startsWith(parentPath);
   }
 
   // @override

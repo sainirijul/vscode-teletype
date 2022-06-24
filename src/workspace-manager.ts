@@ -99,7 +99,7 @@ export default class WorkspaceManager {
     if (bufferBinding) {
       return bufferBinding.bufferProxy;
     } else if (portal) {
-      const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);      
+      const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, false);
       bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, true);
       const bufferProxy = portal.createBufferProxy({
         uri: bufferBinding.getBufferProxyURI(),
