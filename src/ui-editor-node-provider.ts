@@ -27,78 +27,16 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			return Promise.resolve([]);
 		}
 
-		let xx: Dependency[] = [];
+		let lst: Dependency[] = [];
 
-		// if (!element) {
-		// 	xx.push(new Dependency('Host'));
-		// 	xx.push(new Dependency('Guest'));
-		// } else {
-		// 	if (element.label === 'Host') {
-		// 		this.accountManager.accountList.forEach(element => {
-		// 			xx.push(new Dependency(element.buffer.uri.toString()));
-		// 		});
-		// 	} else if (element.label === 'Guest') {
-		// 		xx.push(new Dependency('yyy'));
-		// 		// this.accountManager.accountList.forEach(element => {
-		// 		// 	xx.push(new Dependency(element.buffer.uri.toString()));
-		// 		// });
-		// 	}
-		// }
+		if (!element) {
+			this.workspaceManager.editorBindingsByBuffer.forEach((value, key) => {
+				lst.push(new Dependency(value.bufferBinding.getBufferProxyURI()));
+			});
+		}
 
- this.workspaceManager.editorBindingsByBuffer.forEach((value, key) => {
-	//  if (value.getBufferProxyURI()){
-	// 	xx.push(new Dependency(value.editorProxy?.bufferProxy.uri));
-	//  } else {
-	// 	xx.push(new Dependency(key.uri.fsPath));
-	//  }
-	xx.push(new Dependency(value.bufferBinding.getBufferProxyURI()));
- });
-
-
-		return Promise.resolve(xx);
+		return Promise.resolve(lst);
 	}
-
-	/**
-	 * Given the path to package.json, read all its dependencies and devDependencies.
-	 */
-	// private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
-		// return [];
-		// if (this.pathExists(packageJsonPath)) {
-		// 	const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-
-		// 	const toDep = (moduleName: string, version: string): Dependency => {
-		// 		if (this.pathExists(path.join(this.workspaceManager, 'node_modules', moduleName))) {
-		// 			return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
-		// 		} else {
-		// 			return new Dependency(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-		// 				command: 'extension.openPackageOnNpm',
-		// 				title: '',
-		// 				arguments: [moduleName]
-		// 			});
-		// 		}
-		// 	};
-
-		// 	const deps = packageJson.dependencies
-		// 		? Object.keys(packageJson.dependencies).map(dep => toDep(dep, packageJson.dependencies[dep]))
-		// 		: [];
-		// 	const devDeps = packageJson.devDependencies
-		// 		? Object.keys(packageJson.devDependencies).map(dep => toDep(dep, packageJson.devDependencies[dep]))
-		// 		: [];
-		// 	return deps.concat(devDeps);
-		// } else {
-		// 	return [];
-		// }
-	// }
-
-	// private pathExists(p: string): boolean {
-	// 	try {
-	// 		fs.accessSync(p);
-	// 	} catch (err) {
-	// 		return false;
-	// 	}
-
-	// 	return true;
-	// }
 }
 
 export class Dependency extends vscode.TreeItem {

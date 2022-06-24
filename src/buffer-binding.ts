@@ -26,6 +26,7 @@ export default class BufferBinding implements IBufferDelegate {
   bufferDestroySubscription: any;
   remoteFile: any;
   isUpdating: boolean = false;
+  changeCnt: number = 0;
 
 	constructor(buffer: vscode.TextDocument, portal: Portal, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
     this.buffer = buffer;
@@ -81,6 +82,7 @@ export default class BufferBinding implements IBufferDelegate {
     this.disableHistory = true;
     // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
 		fs.writeFileSync(this.buffer.uri.fsPath, text);
+    this.changeCnt++;
     this.disableHistory = false;
   }
 
@@ -94,6 +96,7 @@ export default class BufferBinding implements IBufferDelegate {
         {row: change.range.end.line, column: change.range.end.character},
         change.text
       ); 
+      this.changeCnt++;
     } else {
       this.pendingChanges.push(change);
     }
@@ -255,33 +258,28 @@ export default class BufferBinding implements IBufferDelegate {
   //   return serializedDefaultHistoryProvider;
   // }
 
-	onDidChangeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
-		this.bufferProxy.onDidChangeBuffer(changes.map(change => {
-    // this.bufferProxy.onDidUpdateText(changes.map(change => {
-		 	const { start, end } = changes[0].range;
+	// onDidChangeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
+	// 	this.bufferProxy.onDidChangeBuffer(changes.map(change => {
+	// 	 	const { start, end } = change.range;
 
-			return {
-				oldStart: { row: start.line, column: start.character },
-				oldEnd: { row: end.line, column: end.character },
-				newText: change.text
-			};
-		}));
-	}
+	// 		return {
+	// 			oldStart: { row: start.line, column: start.character },
+	// 			oldEnd: { row: end.line, column: end.character },
+	// 			newText: change.text
+	// 		};
+	// 	}));
+	// }
 
 	changeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
     if (!changes) { return; }
 
-    changes.forEach(change => {
-      //this.bufferProxy.onDidChangeBuffer(changes.map(change => {
-      // this.bufferProxy.onDidUpdateText(changes.map(change => {
-        const { start, end } = change.range;
+    if (this.changeCnt <= 1) {
+      return;
+    }
 
-      // 	return {
-      // 		oldStart: { row: start.line, column: start.character },
-      // 		oldEnd: { row: end.line, column: end.character },
-      // 		newText: change.text
-      // 	};
-      // }));
+    changes.forEach(change => {
+      const { start, end } = change.range;
+
       this.bufferProxy.setTextInRange(
         { row: start.line, column: start.character },
         { row: end.line, column: end.character },

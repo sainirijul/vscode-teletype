@@ -9,7 +9,6 @@ import TeletypePackage from './teletype-package';
 import { findPortalId } from './portal-id-helpers';
 import WorkspaceManager from './workspace-manager';
 import { AccountNodeProvider, Dependency } from './ui-account-node-provider';
-import { TeleteypStatusProvider } from './ui-status-provider';
 import { EditorNodeProvider } from './ui-editor-node-provider';
 import { MemFS } from './memfs-filesystem-provider';
 
@@ -24,24 +23,6 @@ globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
 
 globalAny.portalBindingManagerPromise = null;
 globalAny.notificationManager = null;
-
-// module.exports = new TeletypePackage({
-// 	config: atom.config,
-// 	workspace: atom.workspace,
-// 	notificationManager: atom.notifications,
-// 	packageManager: atom.packages,
-// 	commandRegistry: atom.commands,
-// 	tooltipManager: atom.tooltips,
-// 	clipboard: atom.clipboard,
-// 	pusherKey: atom.config.get('teletype.dev.pusherKey'),
-// 	pusherOptions: {
-// 	  cluster: atom.config.get('teletype.dev.pusherCluster'),
-// 	  disableStats: true
-// 	},
-// 	baseURL: atom.config.get('teletype.dev.baseURL'),
-// 	getAtomVersion: atom.getVersion.bind(atom)
-//   })
-
 
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
@@ -203,9 +184,6 @@ async function getTeletypeToken() : Promise<string | undefined> {
 }
 
 function createViews(authenticationProvider: AuthenticationProvider, workspaceManager: WorkspaceManager, portalBindingManager: PortalBindingManager) {
-	// const nodeDependenciesProvider0 = new TeleteypStatusProvider(undefined, authenticationProvider, portalBindingManager);
-	// vscode.window.registerTreeDataProvider('teletype.statusView', nodeDependenciesProvider0);
-
 	const nodeDependenciesProvider = new AccountNodeProvider(authenticationProvider, portalBindingManager);
 	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 

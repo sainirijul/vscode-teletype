@@ -211,7 +211,7 @@ export default class WorkspaceManager {
   }
 
 	private registerWorkspaceEvents () {
-		vscode.workspace.onDidChangeTextDocument(this.onDidChangeTextDocument.bind(this));
+		vscode.workspace.onDidChangeTextDocument(this.didChangeTextDocument.bind(this));
 		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
 		vscode.window.onDidChangeTextEditorSelection(this.triggerSelectionChanges.bind(this));
     vscode.window.onDidChangeTextEditorVisibleRanges(this.triggerViewRangeChanges.bind(this));
@@ -230,7 +230,7 @@ export default class WorkspaceManager {
     });
 	}
 
-	private onDidChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
+	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
 		if (this.bufferBindingsByBuffer) {
 			const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
 			if (bufferBinding) {
