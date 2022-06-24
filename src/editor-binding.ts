@@ -10,6 +10,7 @@ import path = require('path');
 // const {Range, Emitter, Disposable, CompositeDisposable, TextBuffer} = require('atom')
 import { getEditorURI } from './uri-helpers';
 import { FollowState } from '@atom/teletype-client';
+import BufferBinding from './buffer-binding';
 
 interface SiteDecoration {
 	cursorDecoration: vscode.TextEditorDecorationType;
@@ -18,7 +19,6 @@ interface SiteDecoration {
 
 export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
-  public readonly buffer: vscode.TextDocument;
   public readonly path: string;
 	public portal: Portal | undefined;
 	private readonly isHost: boolean;
@@ -39,11 +39,12 @@ export default class EditorBinding implements IEditorDelegate {
   // batchedMarkerUpdates: {} | null;
   // isBatchingMarkerUpdates: boolean;
   isRemote: boolean = false;
+  bufferBinding: BufferBinding;
 
-  constructor (editor: vscode.TextEditor, path?: string, portal?: Portal, isHost: boolean = false) {
+  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, path?: string, portal?: Portal, isHost: boolean = false) {
     this.editor = editor;
-    this.buffer = editor.document;
-    this.path = path ?? this.buffer.uri.fsPath;
+    this.bufferBinding = bufferBinding;
+    this.path = path ?? editor.document.uri.fsPath;
     this.portal = portal;
     this.isHost = isHost;
     this.emitter = new EventEmitter();
@@ -76,7 +77,7 @@ export default class EditorBinding implements IEditorDelegate {
     if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
     this.emitter.emit('did-dispose');
-    // this.emitter.dispose();
+    // this.emitter.dispose();    
   }
 
 	public isDisposed() {
@@ -272,7 +273,7 @@ export default class EditorBinding implements IEditorDelegate {
 	private async updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
 		const { cursorDecoration, selectionDecoration } = siteDecoration;
     // const { bufferProxy } = this.editorProxy;
-    const editor = await vscode.window.showTextDocument(this.buffer);
+    const editor = await vscode.window.showTextDocument(this.bufferBinding.buffer);
 		editor.setDecorations(cursorDecoration, cursorRanges);
 		editor.setDecorations(selectionDecoration, selectionRanges);
 	}

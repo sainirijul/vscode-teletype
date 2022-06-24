@@ -61,18 +61,18 @@ export default class WorkspaceManager {
     });
   }
 
-  public addEditor(editor: vscode.TextEditor, portal: Portal, isHost: boolean, bufferProxy?: BufferProxy | null, editorProxy?: EditorProxy | undefined): EditorProxy | undefined {
-    if (!bufferProxy) {
-      bufferProxy = this.findOrCreateBufferProxyForBuffer(editor.document, editor, portal);
-      if (!bufferProxy) {
+  public addEditor(editor: vscode.TextEditor, portal: Portal, isHost: boolean, bufferBinding?: BufferBinding, editorProxy?: EditorProxy | undefined): EditorProxy | undefined {
+    if (!bufferBinding) {
+      bufferBinding = this.findOrCreateBufferBindingForBuffer(editor.document, editor, portal);
+      if (!bufferBinding) {
         this.notificationManager?.addError('bufferProxy create failed.');
         return undefined;
       }
     }
     
-    const editorBinding = new EditorBinding(editor, undefined, portal, isHost);
+    const editorBinding = new EditorBinding(editor, bufferBinding, undefined, portal, isHost);
     if (!editorProxy){
-      editorProxy = portal.createEditorProxy({bufferProxy});
+      editorProxy = portal.createEditorProxy({bufferProxy: bufferBinding.bufferProxy});
     }
     editorProxy?.setDelegate(editorBinding);
     editorBinding.setEditorProxy(editorProxy);
@@ -94,31 +94,37 @@ export default class WorkspaceManager {
     return editorProxy;
   }
 
-  public findOrCreateBufferProxyForBuffer (buffer: vscode.TextDocument, editor: vscode.TextEditor, portal?: Portal) : BufferProxy | null {
+  public findOrCreateBufferBindingForBuffer (buffer: vscode.TextDocument, editor: vscode.TextEditor, portal?: Portal) : BufferBinding | undefined {
     let bufferBinding = this.bufferBindingsByBuffer.get(buffer);
     if (bufferBinding) {
-      return bufferBinding.bufferProxy;
-    } else if (portal) {
-      const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, false);
-      bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, true);
-      const bufferProxy = portal.createBufferProxy({
-        uri: bufferBinding.getBufferProxyURI(),
-        text: buffer.getText(),
-        // history: {baseText: buffer.getText(), nextCheckpointId: 0, undoStack: null, redoStack: null} // buffer.getHistory()
-      });
-      if (bufferProxy) {
-        bufferBinding.setBufferProxy(bufferProxy);
-        bufferProxy.setDelegate(bufferBinding);
-
-        this.bufferBindingsByBuffer.set(buffer, bufferBinding);
-
-        return bufferProxy;
-      } else {
-        this.notificationManager?.addError('Portal.createBufferProxy() failed');
-      }
+      return bufferBinding;
+    } 
+    
+    if (!portal) {
+      return undefined;
     }
 
-    return null;
+    const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, false);
+    bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, true, () => {
+      this.bufferBindingsByBuffer.delete(buffer);
+    });
+    const bufferProxy = portal.createBufferProxy({
+      uri: bufferBinding.getBufferProxyURI(),
+      text: buffer.getText(),
+      // history: {baseText: buffer.getText(), nextCheckpointId: 0, undoStack: null, redoStack: null} // buffer.getHistory()
+    });
+   
+    if (!bufferProxy) {
+      this.notificationManager?.addError('Portal.createBufferProxy() failed');
+      return undefined;
+    }
+
+    bufferBinding.setBufferProxy(bufferProxy);
+    bufferProxy.setDelegate(bufferBinding);
+
+    this.bufferBindingsByBuffer.set(buffer, bufferBinding);
+
+    return bufferBinding;
   }
   
   public async findOrCreateEditorProxyForEditor (editor: vscode.TextEditor, portal: Portal | undefined) : Promise<EditorProxy | undefined> {
@@ -127,7 +133,7 @@ export default class WorkspaceManager {
       return editorBinding.editorProxy;
     } else {
       if (portal) {
-        const editorProxy = this.addEditor(editor, portal, true, null);
+        const editorProxy = this.addEditor(editor, portal, true);
         return editorProxy;
       }
     }
@@ -143,10 +149,10 @@ export default class WorkspaceManager {
       const {bufferProxy} = editorProxy;
       const buffer = await this.findOrCreateBufferForBufferProxy(bufferProxy, portal);
       if (buffer && portal) {
-        const document = await vscode.workspace.openTextDocument(buffer.uri);
+        const document = await vscode.workspace.openTextDocument(buffer.buffer.uri);
         editor = await vscode.window.showTextDocument(document);
         if (editor) {
-          this.addEditor(editor, portal, false, bufferProxy, editorProxy);
+          this.addEditor(editor, portal, false, buffer, editorProxy);
         }
       }
     }
@@ -154,38 +160,41 @@ export default class WorkspaceManager {
     return editor;
   }
 
-  private async findOrCreateBufferForBufferProxy (bufferProxy: BufferProxy, portal?: Portal) : Promise<vscode.TextDocument | undefined>{
+  private async findOrCreateBufferForBufferProxy (bufferProxy: BufferProxy, portal?: Portal) : Promise<BufferBinding | undefined>{
 		let buffer : vscode.TextDocument | undefined;
     let bufferBinding = this.bufferBindingsByBufferProxy.get(bufferProxy);
     if (bufferBinding) {
-      buffer = bufferBinding.buffer;
-    } else {
-      if (!portal?.id) { return undefined; }
-			// const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri);
-			const filePath = path.join(os.tmpdir(), portal.id, bufferProxy.uri.replace(/\\/g, '/'));
-      // const filePath = path.join(portalId, bufferProxy.uri);
-			const bufferURI = vscode.Uri.file(filePath);
-      // const bufferURI = vscode.Uri.parse(`memfs:/${filePath.replace(/\\/g, '/')}`);
-			await require('mkdirp-promise')(path.dirname(filePath));
-      // this.fs.createDirectory(vscode.Uri.parse(`memfs:${path.dirname(filePath)}`));
-			// this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
-      fs.writeFileSync(filePath, '');
-
-			buffer = await vscode.workspace.openTextDocument(bufferURI);
-			const editor = await vscode.window.showTextDocument(buffer);
-      //const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);
-      const bufferPath = bufferProxy.uri;
-      bufferBinding = new BufferBinding(
-        buffer, portal, bufferPath, editor, false, () => this.bufferBindingsByBufferProxy.delete(bufferProxy)
-      );
-
-      bufferBinding.setBufferProxy(bufferProxy);
-      bufferProxy.setDelegate(bufferBinding);
-
-      this.bufferBindingsByBufferProxy.set(bufferProxy, bufferBinding);
-			this.bufferBindingsByBuffer.set(buffer, bufferBinding);
+      return bufferBinding;
     }
-    return buffer;
+
+    if (!portal?.id) { return undefined; }
+
+    // const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri);
+    const filePath = path.join(os.tmpdir(), portal.id, bufferProxy.uri.replace(/\\/g, '/'));
+    // const filePath = path.join(portalId, bufferProxy.uri);
+    const bufferURI = vscode.Uri.file(filePath);
+    // const bufferURI = vscode.Uri.parse(`memfs:/${filePath.replace(/\\/g, '/')}`);
+    await require('mkdirp-promise')(path.dirname(filePath));
+    // this.fs.createDirectory(vscode.Uri.parse(`memfs:${path.dirname(filePath)}`));
+    // this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
+    fs.writeFileSync(filePath, '');
+
+    buffer = await vscode.workspace.openTextDocument(bufferURI);
+    const editor = await vscode.window.showTextDocument(buffer);
+    //const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);
+    const bufferPath = bufferProxy.uri;
+    bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, false, () => {
+        this.bufferBindingsByBufferProxy.delete(bufferProxy);
+        this.emitter.emit('did-change');
+    });
+
+    bufferBinding.setBufferProxy(bufferProxy);
+    bufferProxy.setDelegate(bufferBinding);
+
+    this.bufferBindingsByBufferProxy.set(bufferProxy, bufferBinding);
+    this.bufferBindingsByBuffer.set(buffer, bufferBinding);
+
+    return bufferBinding;
   }
 
   hasPaneItem(paneItem: vscode.TextEditor) : boolean {
