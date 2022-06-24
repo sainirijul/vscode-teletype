@@ -26,8 +26,9 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   // didDispose: Function | undefined;
   // portal?: Portal;
   uri: string | undefined;
-  changeActiveEditorEvent?: vscode.Disposable;
-  openEditorEvent?: vscode.Disposable;
+  closeEditorEventListener?: vscode.Disposable;
+  changeActiveEditorEventListener?: vscode.Disposable;
+  openEditorEventListener?: vscode.Disposable;
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
@@ -76,7 +77,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       //   this.workspace.observeTextEditors(this.didAddTextEditor.bind(this)),
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
-      this.changeActiveEditorEvent = vscode.window.onDidChangeActiveTextEditor((e) => {
+      this.changeActiveEditorEventListener = vscode.window.onDidChangeActiveTextEditor((e) => {
         const editor = e as vscode.TextEditor;
         if (editor) {
           const doc = editor.document as vscode.TextDocument;
@@ -85,7 +86,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
           }
         }
       });
-      this.openEditorEvent = vscode.workspace.onDidOpenTextDocument(async (e) => {
+      this.openEditorEventListener = vscode.workspace.onDidOpenTextDocument(async (e) => {
         if (e.uri.scheme === 'file'){
           //if (e.isClosed) {
           const editor = await vscode.window.showTextDocument(e);
@@ -93,9 +94,9 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
           //}
         }
       });
-      // vscode.workspace.onDidCloseTextDocument(async (e) => {
-      //   this.didRemoveTextEditor(e);
-      // });
+      this.closeEditorEventListener = vscode.workspace.onDidCloseTextDocument(async (e) => {
+         this.didRemoveTextEditor(e);
+      });
 
       // this.workspace.getElement().classList.add('teletype-Host');
       return true;
@@ -112,15 +113,10 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   dispose () {
     this.emitter.emit('did-change', {type: 'close-portal'});
 
-    this.changeActiveEditorEvent?.dispose();
-    this.openEditorEvent?.dispose();
+    this.closeEditorEventListener?.dispose();
+    this.changeActiveEditorEventListener?.dispose();
+    this.openEditorEventListener?.dispose();
 
-    // this.workspace.getElement().classList.remove('teletype-Host');
-    // this.sitePositionsComponent.destroy();
-    // this.disposables.dispose();
-    // if(this.didDispose) {
-    //   this.didDispose();
-    // }
     super.dispose();
   }
 
@@ -196,11 +192,11 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
     }
   }
 
-  // didRemoveTextEditor (buffer: vscode.TextDocument) {
-  //   const bufferBiding = this.workspaceManager.bufferBindingsByBuffer.get(buffer);
-  //   if (bufferBiding?.editor){
-  //     const editorProxy = this.workspaceManager.editorProxiesByEditor.get(bufferBiding.editor);
-  //     editorProxy?.dispose();
-  //   }
-  // }
+  didRemoveTextEditor (buffer: vscode.TextDocument) {
+    const bufferBiding = this.workspaceManager.bufferBindingsByBuffer.get(buffer);
+    if (bufferBiding){
+      // const editorProxy = this.workspaceManager.editorBindingsByBuffer.get(bufferBiding.buffer);
+      // editorProxy?.dispose();
+    }
+  }
 }

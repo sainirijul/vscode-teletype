@@ -292,7 +292,7 @@ declare module '@atom/teletype-client' {
 
         didChangeTetherState(...args: any[]): void;
 
-        dispose(...args: any[]): void;
+        dispose(): void;
 
         extendTether(...args: any[]): void;
 
@@ -316,13 +316,13 @@ declare module '@atom/teletype-client' {
 
         getLocalActiveEditorProxy(...args: any[]): void;
 
-        getLocalSiteId(...args: any[]): void;
+        getLocalSiteId(): number;
 
         getSiteIdentity(siteId: number): IMemberIdentify;
 
-        initialize(...args: any[]): void;
+        initialize(): void;
 
-        join(...args: any[]): void;
+        join(): void;
 
         leaderDidUpdate(...args: any[]): void;
 

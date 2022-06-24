@@ -16,17 +16,16 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding {
         this.emitter = new EventEmitter();
     }
 
-    dispose() {
+    // @override
+    dispose(): any {
         this.workspaceManager.removeDocument(this.portal?.id);
-        // this.close();
         this.portal = undefined;
-        super.dispose();        
+        return super.dispose();        
     }
 
     close () {
         if (this.portal) {
             this.portal.dispose();
-            this.portal = undefined;
         }
     }
 }
