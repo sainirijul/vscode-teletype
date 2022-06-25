@@ -13,16 +13,22 @@ import * as fs from 'fs';
 const NOOP = () => {};
 
 export default class WorkspaceManager {
-  public bufferBindingsByBuffer : Map<vscode.TextDocument, BufferBinding>;
-  public bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
+  private bufferBindings: BufferBinding[];
+  private editorBindings: EditorBinding[];
+
+  // return this.editorProxiesByEditor.has(paneItem);
+  private bufferBindingsByBuffer : Map<vscode.TextDocument, BufferBinding>;
+  private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
 	// public editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
-	public editorBindingsByBuffer : Map<vscode.TextDocument, EditorBinding>;
-  public editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
+	private editorBindingsByBuffer : Map<vscode.TextDocument, EditorBinding>;
+  private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
 
   private emitter: EventEmitter;
 
   constructor (public fs: vscode.FileSystemProvider, private notificationManager?: NotificationManager) {  
-    // this.workspace = workspace;
+    this.bufferBindings = [];
+    this.editorBindings = [];
+      // this.workspace = workspace;
     this.bufferBindingsByBufferProxy = new Map();
     this.editorBindingsByEditorProxy = new Map();
 		this.bufferBindingsByBuffer = new Map();
@@ -48,15 +54,10 @@ export default class WorkspaceManager {
   removeDocument(id: string | undefined): void {
     if (!id) { return; }
 
-    this.bufferBindingsByBuffer.forEach((value, key) => {
-      if (value.portal?.id === id) {
-        this.bufferBindingsByBuffer.delete(key);
-        this.bufferBindingsByBufferProxy.delete(value.bufferProxy);
-        const editorBinding = this.editorBindingsByBuffer.get(key);
-        if (editorBinding) {
-          this.editorBindingsByBuffer.delete(key);
-          this.editorBindingsByEditorProxy.delete(editorBinding.editorProxy);
-        }
+    this.bufferBindings.forEach(bufferBinding => {
+      if (bufferBinding.portal?.id === id) {
+        this.removeEditorBinding(this.editorBindingsByBuffer.get(bufferBinding.buffer));
+        this.removeBufferBinding(bufferBinding);
       }
     });
   }
@@ -77,15 +78,11 @@ export default class WorkspaceManager {
     editorProxy?.setDelegate(editorBinding);
     editorBinding.setEditorProxy(editorProxy);
 
-    this.editorBindingsByBuffer.set(editor.document, editorBinding);
-    this.editorBindingsByEditorProxy.set(editorProxy, editorBinding);
+    this.addEditorBinding(editorBinding);
 
     editorBinding?.onDidDispose(() => {
       //   didDestroyEditorSubscription.dispose();
-         this.editorBindingsByBuffer.delete(editor.document);
-         if (editorProxy) {
-           this.editorBindingsByEditorProxy.delete(editorProxy);
-         }
+      this.removeEditorBinding(editorBinding);
          this.emitter.emit('did-change');
     });
 
@@ -106,7 +103,7 @@ export default class WorkspaceManager {
 
     const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, false);
     bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, true, () => {
-      this.bufferBindingsByBuffer.delete(buffer);
+      this.removeBufferBinding(bufferBinding);
     });
     const bufferProxy = portal.createBufferProxy({
       uri: bufferBinding.getBufferProxyURI(),
@@ -122,7 +119,7 @@ export default class WorkspaceManager {
     bufferBinding.setBufferProxy(bufferProxy);
     bufferProxy.setDelegate(bufferBinding);
 
-    this.bufferBindingsByBuffer.set(buffer, bufferBinding);
+    this.addBufferBinding(bufferBinding);
 
     return bufferBinding;
   }
@@ -184,15 +181,14 @@ export default class WorkspaceManager {
     //const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);
     const bufferPath = bufferProxy.uri;
     bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, false, () => {
-        this.bufferBindingsByBufferProxy.delete(bufferProxy);
-        this.emitter.emit('did-change');
+      this.removeBufferBinding(bufferBinding);
+      this.emitter.emit('did-change');
     });
 
     bufferBinding.setBufferProxy(bufferProxy);
     bufferProxy.setDelegate(bufferBinding);
 
-    this.bufferBindingsByBufferProxy.set(bufferProxy, bufferBinding);
-    this.bufferBindingsByBuffer.set(buffer, bufferBinding);
+    this.addBufferBinding(bufferBinding);
 
     return bufferBinding;
   }
@@ -256,15 +252,11 @@ export default class WorkspaceManager {
     if (bufferBiding){
       const editorBinding = this.editorBindingsByBuffer.get(bufferBiding?.editor.document);
       if (editorBinding) {
-        if (editorBinding.editorProxy) {
-          this.editorBindingsByEditorProxy.delete(editorBinding.editorProxy);
-          editorBinding.editorProxy.dispose();
-        }
-        this.editorBindingsByBuffer.delete(bufferBiding.editor.document);
+        editorBinding.editorProxy?.dispose();
+        this.removeEditorBinding(editorBinding);
       }
-      this.bufferBindingsByBuffer.delete(buffer);
+      this.emitter.emit('did-change');
     }
-    this.emitter.emit('did-change');
   }
 
 	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
@@ -293,4 +285,58 @@ export default class WorkspaceManager {
       console.log(event.visibleRanges[0]);
     }
   }
+
+  addBufferBinding(bufferBinding: BufferBinding) {
+    if (this.bufferBindings.indexOf(bufferBinding) >= 0) { return; }
+    this.bufferBindings.push(bufferBinding);
+    this.bufferBindingsByBuffer.set(bufferBinding.buffer, bufferBinding);
+    this.bufferBindingsByBufferProxy.set(bufferBinding.bufferProxy, bufferBinding);
+  }
+
+  addEditorBinding(editorBinding: EditorBinding) {
+    if (this.editorBindings.indexOf(editorBinding) >= 0) { return; }
+    this.editorBindings.push(editorBinding);
+    this.editorBindingsByBuffer.set(editorBinding.editor.document, editorBinding);
+    this.editorBindingsByEditorProxy.set(editorBinding.editorProxy, editorBinding);
+  }
+
+  removeBufferBinding(bufferBinding?: BufferBinding) {
+    if (!bufferBinding) { return; }
+    const idx = this.bufferBindings.indexOf(bufferBinding);
+    if (idx < 0) { return; }
+    this.bufferBindings.splice(idx, 1);
+    this.bufferBindingsByBuffer.delete(bufferBinding.buffer);
+    this.bufferBindingsByBufferProxy.delete(bufferBinding.bufferProxy);
+  }
+
+  removeEditorBinding(editorBinding?: EditorBinding) {
+    if (!editorBinding) { return; }
+    const idx = this.editorBindings.indexOf(editorBinding);
+    if (idx < 0) { return; }
+    this.editorBindings.splice(idx, 1);
+    this.editorBindingsByBuffer.delete(editorBinding.editor.document);
+    this.editorBindingsByEditorProxy.delete(editorBinding.editorProxy);
+  }
+
+	getBufferBindings() : Array<BufferBinding> {
+		return this.bufferBindings;
+	}
+
+  getEditorBindings() : Array<EditorBinding> {
+		return this.editorBindings;
+	}
+
+  getEditorBindingByBuffer(buffer: vscode.TextDocument) : EditorBinding | undefined {
+    return this.editorBindingsByBuffer.get(buffer);
+  }
+
+  getEditorBindingByEditorProxy(editorProxy: EditorProxy) : EditorBinding | undefined {
+    return this.editorBindingsByEditorProxy.get(editorProxy);
+  }
+
+  getBufferBindingByBuffer(buffer: vscode.TextDocument) : BufferBinding | undefined {
+    return this.bufferBindingsByBuffer.get(buffer);
+  }
+
+  
 }

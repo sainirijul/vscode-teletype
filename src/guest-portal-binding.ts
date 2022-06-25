@@ -178,13 +178,13 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
       this.shouldRelayActiveEditorChanges = true;
     } else {
       if (position) { 
-        this.workspaceManager.editorBindingsByEditorProxy.forEach((a,_) => {
-          a.updateTether(followState, position);
+        this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+          editorBinding.updateTether(followState, position);
         }); 
       }
     }
 
-    const editorBinding = this.workspaceManager.editorBindingsByEditorProxy.get(editorProxy);
+    const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
     if (editorBinding && position) {
       editorBinding.updateTether(followState, position);
     }

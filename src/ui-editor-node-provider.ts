@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import WorkspaceManager from './workspace-manager';
+import EditorBinding from './editor-binding';
 
 export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public static readonly viewType = 'teletype.accountsView';
@@ -30,8 +31,8 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		let lst: Dependency[] = [];
 
 		if (!element) {
-			this.workspaceManager.editorBindingsByBuffer.forEach((value, key) => {
-				lst.push(new Dependency(value.bufferBinding.getBufferProxyURI()));
+			this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+				lst.push(new Dependency(editorBinding.bufferBinding.getBufferProxyURI()));
 			});
 		}
 

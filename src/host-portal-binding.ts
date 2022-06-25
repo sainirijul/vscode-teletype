@@ -139,7 +139,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   }
 
   async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
-    if (editor && this.isWorkspaceFiles(editor.document.uri.fsPath) && !this.workspaceManager.editorBindingsByBuffer.get(editor.document)?.isRemote) {
+    if (editor && this.isWorkspaceFiles(editor.document.uri.fsPath) && !this.workspaceManager.getEditorBindingByBuffer(editor.document)?.isRemote) {
       const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
       if (editorProxy !== this.portal?.activateEditorProxy) {
         this.portal?.activateEditorProxy(editorProxy);
@@ -176,24 +176,30 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
 
   // Private
   async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    const editorBinding = this.workspaceManager.editorBindingsByEditorProxy.get(editorProxy);
+    const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
 
     if (followState === FollowState.RETRACTED) {
       // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});
-      if (position) { editorBinding?.updateTether(followState, position); }
+      if (position) { 
+        editorBinding?.updateTether(followState, position); 
+      }
     } else {
-      if (position) { this.workspaceManager.editorBindingsByEditorProxy.forEach((a,b) => a?.updateTether(followState, position)); }
+      if (position) { 
+        this.workspaceManager.getEditorBindings().forEach(editorBindings => {
+          editorBindings.updateTether(followState, position);
+        });
+      }
     }
   }
 
   async didAddTextEditor (editor: vscode.TextEditor) {
-    if (!this.workspaceManager.editorBindingsByBuffer.get(editor?.document)?.isRemote) {
+    if (!this.workspaceManager.getEditorBindingByBuffer(editor?.document)?.isRemote) {
       await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
     }
   }
 
   didRemoveTextEditor (buffer: vscode.TextDocument) {
-    const bufferBiding = this.workspaceManager.bufferBindingsByBuffer.get(buffer);
+    const bufferBiding = this.workspaceManager.getBufferBindingByBuffer(buffer);
     if (bufferBiding){
       // const editorProxy = this.workspaceManager.editorBindingsByBuffer.get(bufferBiding.buffer);
       // editorProxy?.dispose();
