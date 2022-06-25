@@ -66,7 +66,7 @@ export default class EditorBinding implements IEditorDelegate {
   }
 
   // @override
-  dispose () {
+  async dispose () {
     if (this.disposed) { return; }
 
     this.disposed = true;
@@ -77,8 +77,10 @@ export default class EditorBinding implements IEditorDelegate {
     if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
     if (!this.editor.document.isClosed) {
-      vscode.window.showTextDocument(this.editor.document);
-      vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+      if (vscode.window.activeTextEditor !== this.editor){
+        await vscode.window.showTextDocument(this.editor.document);
+      }
+      await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
     }
 
     this.emitter.emit('did-dispose');
@@ -101,7 +103,7 @@ export default class EditorBinding implements IEditorDelegate {
     // );
 
     // const markers = this.selectionsMarkerLayer.getMarkers();
-    // for (let i = 0; i < markers.length; i++) {
+    // for (let i = 0; i < markers.length; i++) { 
     //   this.observeMarker(markers[i], false);
     // }
     
