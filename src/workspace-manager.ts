@@ -51,13 +51,23 @@ export default class WorkspaceManager {
 
   didChangeEditorProxies () {}
 
-  removeDocument(id: string | undefined): void {
+  removeDocumentByBufferBinding(bufferBinding: BufferBinding): void {
+      const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
+      if (editorBinding?.isRemote) {
+        //vscode. editorBinding.editor.document
+        vscode.window.showTextDocument(editorBinding.editor.document);
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+      }
+      this.removeEditorBinding(editorBinding);
+      this.removeBufferBinding(bufferBinding);
+  }
+
+  removeDocuments(id: string | undefined): void {
     if (!id) { return; }
 
     this.bufferBindings.forEach(bufferBinding => {
       if (bufferBinding.portal?.id === id) {
-        this.removeEditorBinding(this.editorBindingsByBuffer.get(bufferBinding.buffer));
-        this.removeBufferBinding(bufferBinding);
+        this.removeDocumentByBufferBinding(bufferBinding);
       }
     });
   }
