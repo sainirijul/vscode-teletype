@@ -182,10 +182,10 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
-		"@mapbox/node-pre-gyp": "^1.0.9",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
+		"node-pre-gyp": "^0.13.0",
 		"deep-equal": "^1.1.1",
 		"google-protobuf": "^3.12.2",
 		"source-map-loader": "^0.2.4",
@@ -198,10 +198,10 @@
 	},
 	"dependencies": {
 		"@atom/teletype-client": "github:amos42/teletype-client.git",
-		"node-fetch": "^2.6.0",
-		"wrtc": "^0.4.7",
 		"domexception": "^4.0.0",
+		"keytar": "^7.9.0",
 		"mkdirp-promise": "^5.0.1",
-		"keytar": "^7.9.0"
+		"node-fetch": "^2.6.0",
+		"wrtc": "^0.4.7"
 	}
 }
