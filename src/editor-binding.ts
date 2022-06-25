@@ -76,8 +76,10 @@ export default class EditorBinding implements IEditorDelegate {
     // this.markerLayersBySiteId.clear();
     if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
-    vscode.window.showTextDocument(this.editor.document);
-    vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    if (!this.editor.document.isClosed) {
+      vscode.window.showTextDocument(this.editor.document);
+      vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    }
 
     this.emitter.emit('did-dispose');
     // this.emitter.dispose();    

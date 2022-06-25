@@ -53,7 +53,7 @@ export default class WorkspaceManager {
 
   removeDocumentByBufferBinding(bufferBinding: BufferBinding): void {
       const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
-      if (editorBinding?.isRemote) {
+      if (editorBinding?.isRemote && !editorBinding.editor.document.isClosed) {
         //vscode. editorBinding.editor.document
         vscode.window.showTextDocument(editorBinding.editor.document);
         vscode.commands.executeCommand("workbench.action.closeActiveEditor");
@@ -147,6 +147,7 @@ export default class WorkspaceManager {
     return undefined;
   }
 
+  // host에서 파일 열기
   public async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy, portal?: Portal) : Promise<vscode.TextEditor | undefined> {
     let editor: vscode.TextEditor | undefined;
     let editorBinding = this.editorBindingsByEditorProxy.get(editorProxy);
@@ -167,6 +168,7 @@ export default class WorkspaceManager {
     return editor;
   }
 
+  // guest에서 리모트 파일 연결 된 에디터 열기
   private async findOrCreateBufferForBufferProxy (bufferProxy: BufferProxy, portal?: Portal) : Promise<BufferBinding | undefined>{
 		let buffer : vscode.TextDocument | undefined;
     let bufferBinding = this.bufferBindingsByBufferProxy.get(bufferProxy);

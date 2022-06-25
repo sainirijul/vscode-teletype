@@ -89,8 +89,11 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       this.openEditorEventListener = vscode.workspace.onDidOpenTextDocument(async (e) => {
         if (e.uri.scheme === 'file'){
           //if (e.isClosed) {
-          const editor = await vscode.window.showTextDocument(e);
-          await this.didAddTextEditor(editor);
+          // const editor = await vscode.window.showTextDocument(e);
+          const editor = this.workspaceManager.getEditorBindingByBuffer(e);
+          if (editor) {
+            await this.didAddTextEditor(editor.editor);
+          }
           //}
         }
       });
