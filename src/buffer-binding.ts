@@ -7,6 +7,7 @@ import {EventEmitter} from 'events';
 import { Position, Range, TextUdpate } from './teletype-types';
 import { BufferProxy, Checkpoint, IBufferDelegate, Portal } from '@atom/teletype-client';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
+import WorkspaceManager from './workspace-manager';
 
 function doNothing () {}
 
@@ -14,7 +15,7 @@ export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
 	public buffer!: vscode.TextDocument;
   public portal!: Portal;
-  public path: string | undefined;
+  public title: string | undefined;
 	public editor!: vscode.TextEditor;
 	private readonly isHost: boolean;
   emitDidDispose: Function;
@@ -30,11 +31,11 @@ export default class BufferBinding implements IBufferDelegate {
   public activate: boolean = false;
   fsPath: string | undefined;
 
-	constructor(buffer: vscode.TextDocument | null, portal: Portal, path: string | undefined, editor: vscode.TextEditor | null, isHost: boolean = false, didDispose: Function = doNothing) {
+	constructor(buffer: vscode.TextDocument | null, portal: Portal, title: string | undefined, editor: vscode.TextEditor | null, isHost: boolean = false, didDispose: Function = doNothing) {
     // this.buffer = buffer;
     this.portal = portal;
     // this.path = path ?? buffer.uri.toString();
-    this.path = path;
+    this.title = title;
     // this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
@@ -49,8 +50,8 @@ export default class BufferBinding implements IBufferDelegate {
   assignEditor(buffer: vscode.TextDocument, editor: vscode.TextEditor) {
     this.buffer = buffer;
     this.editor = editor;
-    if (!this.path) {
-      this.path = buffer.uri.toString();
+    if (!this.title) {
+      this.title = buffer.uri.toString();
     }
   }
 
@@ -125,24 +126,22 @@ export default class BufferBinding implements IBufferDelegate {
 
   // @override
   async updateText (textUpdates: any[]) {
-    if (textUpdates && textUpdates.length > 0) {
-      if (!this.buffer.isClosed) {
-        try {
-          const editor = await vscode.window.showTextDocument(this.buffer);
-          editor.edit(builder => {
-            this.isUpdating = true;
-            for (let i = textUpdates.length - 1; i >= 0; i--) {
-              const textUpdate = textUpdates[i];
-              this.disableHistory = true;
-              builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-              this.disableHistory = false;
-            }
-            // this.isUpdating = false;
-          }, { undoStopBefore: false, undoStopAfter: false });
-        } catch(e) {
-          console.log(e);
-        }
-      }
+    if (!textUpdates || textUpdates.length <= 0) { return; }
+
+    if (this.buffer.isClosed) { return; }
+
+    try {
+      this.editor.edit(builder => {
+          this.isUpdating = true;
+          textUpdates.forEach(textUpdate => {
+            this.disableHistory = true;
+            builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+            this.disableHistory = false;
+          });
+          // this.isUpdating = false;
+        }, { undoStopBefore: false, undoStopAfter: false });
+    } catch(e) {
+      console.log(e);
     }
   }
 
@@ -243,7 +242,7 @@ export default class BufferBinding implements IBufferDelegate {
   }
 
   getBufferProxyURI () {
-    return this.path ?? 'untitled';
+    return this.title ?? 'untitled';
     // if (!this.buffer.uri.fsPath) { return 'untitled'; }
     // const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
     // if (projectPath) {

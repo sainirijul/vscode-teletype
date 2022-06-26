@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as converter from './teletype-converter';
 import {EventEmitter} from 'events';
 import {EditorProxy, IEditorDelegate, Portal} from '@atom/teletype-client';
@@ -11,6 +12,7 @@ import path = require('path');
 import { getEditorURI } from './uri-helpers';
 import { FollowState } from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
+import { fstat } from 'fs';
 
 interface SiteDecoration {
 	cursorDecoration: vscode.TextEditorDecorationType;
@@ -19,7 +21,7 @@ interface SiteDecoration {
 
 export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
-  public readonly path: string;
+  public readonly title: string;
 	public portal: Portal | undefined;
 	private readonly isHost: boolean;
   private disposed: boolean = false;
@@ -41,10 +43,10 @@ export default class EditorBinding implements IEditorDelegate {
   isRemote: boolean = false;
   bufferBinding: BufferBinding;
 
-  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, path?: string, portal?: Portal, isHost: boolean = false) {
+  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
     this.editor = editor;
     this.bufferBinding = bufferBinding;
-    this.path = path ?? editor.document.uri.fsPath;
+    this.title = title ?? editor.document.uri.fsPath;
     this.portal = portal;
     this.isHost = isHost;
     this.emitter = new EventEmitter();
@@ -68,6 +70,10 @@ export default class EditorBinding implements IEditorDelegate {
   // @override
   async dispose () {
     if (this.disposed) { return; }
+
+    if (this.isRemote && this.bufferBinding.fsPath) {
+      fs.unlinkSync(this.bufferBinding.fsPath);
+    }
 
     this.disposed = true;
     // this.subscriptions.dispose();
@@ -372,17 +378,17 @@ export default class EditorBinding implements IEditorDelegate {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {
       this.editorProxy.updateSelections(
-        [
-          {
-            exclusive: true,
-            range: {
-              start: {row: updates[0].start.line, column: updates[0].start.character},
-              end: {row: updates[0].end.line, column: updates[0].end.character},
-            },
-            reversed: false,
-            tailed: false
+        updates.map(update => {
+          return {
+              exclusive: true,
+              range: {
+                start: {row: update.start.line, column: update.start.character},
+                end: {row: update.end.line, column: update.end.character},
+              },
+              reversed: false,
+              tailed: false
           }
-        ]
+        })
       );
     // }
   }

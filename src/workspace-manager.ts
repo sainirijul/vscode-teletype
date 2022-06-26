@@ -304,8 +304,8 @@ export default class WorkspaceManager {
       // editorBinding.editorDidChangeScrollTop(event.visibleRanges);
       // editorBinding.editorDidChangeScrollLeft(event.visibleRanges);
       // editorBinding.editorDidResize(event.visibleRanges);
-      console.log(event.textEditor.visibleRanges[0]);
-      console.log(event.visibleRanges[0]);
+      // console.log(event.textEditor.visibleRanges[0]);
+      // console.log(event.visibleRanges[0]);
     }
   }
 
