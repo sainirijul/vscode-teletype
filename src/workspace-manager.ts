@@ -115,6 +115,7 @@ export default class WorkspaceManager {
     bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, true, () => {
       this.removeBufferBinding(bufferBinding);
     });
+    bufferBinding.fsPath = buffer.uri.fsPath;
     const bufferProxy = portal.createBufferProxy({
       uri: bufferBinding.getBufferProxyURI(),
       text: buffer.getText(),
@@ -129,7 +130,11 @@ export default class WorkspaceManager {
     bufferBinding.setBufferProxy(bufferProxy);
     bufferProxy.setDelegate(bufferBinding);
 
+    bufferBinding.assignEditor(buffer, editor);
+
     this.addBufferBinding(bufferBinding);
+
+    bufferBinding.activate = true;
 
     return bufferBinding;
   }
@@ -188,19 +193,24 @@ export default class WorkspaceManager {
     // this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
     fs.writeFileSync(filePath, '');
 
-    buffer = await vscode.workspace.openTextDocument(bufferURI);
-    const editor = await vscode.window.showTextDocument(buffer);
     //const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);
     const bufferPath = bufferProxy.uri;
-    bufferBinding = new BufferBinding(buffer, portal, bufferPath, editor, false, () => {
+    bufferBinding = new BufferBinding(null, portal, bufferPath, null, false, () => {
       this.removeBufferBinding(bufferBinding);
       this.emitter.emit('did-change');
     });
+    bufferBinding.fsPath = filePath;
 
     bufferBinding.setBufferProxy(bufferProxy);
     bufferProxy.setDelegate(bufferBinding);
 
+    buffer = await vscode.workspace.openTextDocument(bufferURI);
+    const editor = await vscode.window.showTextDocument(buffer);
+    bufferBinding.assignEditor(buffer, editor);
+
     this.addBufferBinding(bufferBinding);
+
+    bufferBinding.activate = true;
 
     return bufferBinding;
   }
@@ -239,18 +249,19 @@ export default class WorkspaceManager {
 	}
 
 	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
-		if (this.bufferBindingsByBuffer) {
-			const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
-			if (bufferBinding) {
-        if(!bufferBinding.isUpdating) {
-          // if (!bufferBinding.disableHistory) {
-				    const doc = bufferBinding.changeBuffer(event.contentChanges);
-          // }
-			  } else {
-          bufferBinding.isUpdating = false;
-        }
+		if (!this.bufferBindingsByBuffer) { return; }
+
+    const bufferBinding = this.bufferBindingsByBuffer.get(event.document);
+    if (bufferBinding) {
+      if (bufferBinding.activate && !bufferBinding.isUpdating) {
+        // if (!bufferBinding.disableHistory) {
+          const doc = bufferBinding.changeBuffer(event.contentChanges);
+        // }
+      } else {
+        bufferBinding.isUpdating = false;
       }
-		}
+      bufferBinding.activate = true;
+    }
 	}
 
   // private didAddTextEditor (editor: vscode.TextEditor) {

@@ -27,12 +27,15 @@ export default class BufferBinding implements IBufferDelegate {
   remoteFile: any;
   isUpdating: boolean = false;
   changeCnt: number = 0;
+  public activate: boolean = false;
+  fsPath: string | undefined;
 
-	constructor(buffer: vscode.TextDocument, portal: Portal, path: string | undefined, editor: vscode.TextEditor, isHost: boolean = false, didDispose: Function = doNothing) {
-    this.buffer = buffer;
+	constructor(buffer: vscode.TextDocument | null, portal: Portal, path: string | undefined, editor: vscode.TextEditor | null, isHost: boolean = false, didDispose: Function = doNothing) {
+    // this.buffer = buffer;
     this.portal = portal;
-    this.path = path ?? buffer.uri.toString();
-    this.editor = editor;
+    // this.path = path ?? buffer.uri.toString();
+    this.path = path;
+    // this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
     this.pendingChanges = [];
@@ -40,6 +43,14 @@ export default class BufferBinding implements IBufferDelegate {
     this.disableHistory = false;
     if (isHost) {
       // this.subscriptions.add(buffer.onDidChangePath(this.relayURIChange.bind(this)));
+    }
+  }
+
+  assignEditor(buffer: vscode.TextDocument, editor: vscode.TextEditor) {
+    this.buffer = buffer;
+    this.editor = editor;
+    if (!this.path) {
+      this.path = buffer.uri.toString();
     }
   }
 
@@ -81,7 +92,9 @@ export default class BufferBinding implements IBufferDelegate {
   setText (text: string) : void {
     this.disableHistory = true;
     // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
-		fs.writeFileSync(this.buffer.uri.fsPath, text);
+    if (this.fsPath) {
+		  fs.writeFileSync(this.fsPath, text);
+    }
     this.changeCnt++;
     this.disableHistory = false;
   }
@@ -273,9 +286,9 @@ export default class BufferBinding implements IBufferDelegate {
 	changeBuffer(changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
     if (!changes) { return; }
 
-    if (this.changeCnt <= 1) {
-      return;
-    }
+    // if (this.changeCnt <= 1) {
+    //   return;
+    // }
 
     changes.forEach(change => {
       const { start, end } = change.range;
