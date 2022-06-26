@@ -280,9 +280,10 @@ export default class EditorBinding implements IEditorDelegate {
 	private async updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
 		const { cursorDecoration, selectionDecoration } = siteDecoration;
     // const { bufferProxy } = this.editorProxy;
-    const editor = await vscode.window.showTextDocument(this.bufferBinding.buffer);
-		editor.setDecorations(cursorDecoration, cursorRanges);
-		editor.setDecorations(selectionDecoration, selectionRanges);
+    if (this.editor) {
+      this.editor.setDecorations(cursorDecoration, cursorRanges);
+      this.editor.setDecorations(selectionDecoration, selectionRanges);
+    }
 	}
 
 	private findSiteDecoration(siteId: number) {
