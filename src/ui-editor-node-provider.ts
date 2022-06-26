@@ -32,7 +32,12 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 
 		if (!element) {
 			this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-				lst.push(new Dependency(editorBinding.bufferBinding.getBufferProxyURI()));
+				const filePath = editorBinding.bufferBinding.getBufferProxyURI();
+				if (!editorBinding.isRemote) {
+					lst.push(new Dependency(filePath));
+				} else {
+					lst.push(new Dependency(`* ${filePath}`));
+				}
 			});
 		}
 

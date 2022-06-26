@@ -13,10 +13,10 @@ function doNothing () {}
 
 export default class BufferBinding implements IBufferDelegate {
   // private uri: string;
-	public buffer!: vscode.TextDocument;
+	public buffer?: vscode.TextDocument;
   public portal!: Portal;
   public title: string | undefined;
-	public editor!: vscode.TextEditor;
+	public editor?: vscode.TextEditor;
 	private readonly isHost: boolean;
   emitDidDispose: Function;
   private pendingChanges: vscode.TextDocumentContentChangeEvent[];
@@ -25,18 +25,18 @@ export default class BufferBinding implements IBufferDelegate {
   // subscriptions: Disposable;
   public bufferProxy!: BufferProxy;
   bufferDestroySubscription: any;
-  remoteFile: any;
+  remoteFile?: RemoteFile;
+  fsPath?: string;
   isUpdating: boolean = false;
   changeCnt: number = 0;
   public activate: boolean = false;
-  fsPath: string | undefined;
 
-	constructor(buffer: vscode.TextDocument | null, portal: Portal, title: string | undefined, editor: vscode.TextEditor | null, isHost: boolean = false, didDispose: Function = doNothing) {
-    // this.buffer = buffer;
+	constructor(buffer: vscode.TextDocument | undefined, portal: Portal, title: string | undefined, editor: vscode.TextEditor | undefined, isHost: boolean = false, didDispose: Function = doNothing) {
+    this.buffer = buffer;
     this.portal = portal;
     // this.path = path ?? buffer.uri.toString();
     this.title = title;
-    // this.editor = editor;
+    this.editor = editor;
     this.isHost = isHost;
     this.emitDidDispose = didDispose || doNothing;
     this.pendingChanges = [];
@@ -51,8 +51,10 @@ export default class BufferBinding implements IBufferDelegate {
     this.buffer = buffer;
     this.editor = editor;
     if (!this.title) {
-      this.title = buffer.uri.toString();
+      this.title = buffer?.uri.toString();
     }
+
+    this.monkeyPatchBufferMethods(this.buffer, this.bufferProxy);
   }
 
   // @override
@@ -72,6 +74,7 @@ export default class BufferBinding implements IBufferDelegate {
 
   setBufferProxy (bufferProxy: BufferProxy) {
     this.bufferProxy = bufferProxy;
+
     // // this.buffer?.setHistoryProvider(this);
     while (this.pendingChanges.length > 0) {
       this.pushChange(this.pendingChanges.shift());
@@ -80,6 +83,7 @@ export default class BufferBinding implements IBufferDelegate {
       this.remoteFile = new RemoteFile(bufferProxy.uri);
       // this.buffer?.setFile(this.remoteFile);
     }
+
     // this.bufferDestroySubscription = this.buffer?.onDidDestroy(() => {
     //   if (this.isHost) {
     //     bufferProxy.dispose();
@@ -89,6 +93,11 @@ export default class BufferBinding implements IBufferDelegate {
     // });
   }
 
+  monkeyPatchBufferMethods (buffer: any, bufferProxy: BufferProxy) {
+    // vscode의 document는 extensible하지 않기 때문에 monkey patch가 안 된다.
+
+  }
+    
   // @override
   setText (text: string) : void {
     this.disableHistory = true;
@@ -128,18 +137,21 @@ export default class BufferBinding implements IBufferDelegate {
   async updateText (textUpdates: any[]) {
     if (!textUpdates || textUpdates.length <= 0) { return; }
 
+    if (!this.buffer) { return; }
     if (this.buffer.isClosed) { return; }
 
     try {
-      this.editor.edit(builder => {
-          this.isUpdating = true;
-          textUpdates.forEach(textUpdate => {
-            this.disableHistory = true;
-            builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-            this.disableHistory = false;
-          });
-          // this.isUpdating = false;
-        }, { undoStopBefore: false, undoStopAfter: false });
+      if (this.editor) {
+        this.editor.edit(builder => {
+            this.isUpdating = true;
+            textUpdates.forEach(textUpdate => {
+              this.disableHistory = true;
+              builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+              this.disableHistory = false;
+            });
+            // this.isUpdating = false;
+          }, { undoStopBefore: false, undoStopAfter: false });
+        }
     } catch(e) {
       console.log(e);
     }
@@ -309,10 +321,10 @@ export default class BufferBinding implements IBufferDelegate {
 }
 
 class RemoteFile {
-  uri: vscode.Uri;
+  uri: string;
   emitter: EventEmitter | null;
 
-  constructor (uri: vscode.Uri) {
+  constructor (uri: string) {
     this.uri = uri;
     this.emitter = new EventEmitter();
   }
@@ -323,10 +335,10 @@ class RemoteFile {
   }
 
   getPath (): string {
-    return getPathWithNativeSeparators(this.uri.path);
+    return getPathWithNativeSeparators(this.uri);
   }
 
-  setURI (uri: vscode.Uri) {
+  setURI (uri: string) {
     this.uri = uri;
     this.emitter?.emit('did-rename');
   }

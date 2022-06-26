@@ -52,14 +52,16 @@ export default class WorkspaceManager {
   didChangeEditorProxies () {}
 
   removeDocumentByBufferBinding(bufferBinding: BufferBinding): void {
-      const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
-      if (editorBinding?.isRemote && !editorBinding.editor.document.isClosed) {
-        //vscode. editorBinding.editor.document
-        vscode.window.showTextDocument(editorBinding.editor.document);
-        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
-      }
-      this.removeEditorBinding(editorBinding);
-      this.removeBufferBinding(bufferBinding);
+    if (!bufferBinding.buffer) { return; }
+  
+    const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
+    if (editorBinding?.isRemote && !editorBinding.editor.document.isClosed) {
+      //vscode. editorBinding.editor.document
+      vscode.window.showTextDocument(editorBinding.editor.document);
+      vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    }
+    this.removeEditorBinding(editorBinding);
+    this.removeBufferBinding(bufferBinding);
   }
 
   removeDocuments(id: string | undefined): void {
@@ -162,10 +164,12 @@ export default class WorkspaceManager {
       const {bufferProxy} = editorProxy;
       const buffer = await this.findOrCreateBufferForBufferProxy(bufferProxy, portal);
       if (buffer && portal) {
-        const document = await vscode.workspace.openTextDocument(buffer.buffer.uri);
-        editor = await vscode.window.showTextDocument(document);
-        if (editor) {
-          this.addEditor(editor, portal, false, buffer, editorProxy);
+        if (buffer.buffer) {
+          const document = await vscode.workspace.openTextDocument(buffer.buffer.uri);
+          editor = await vscode.window.showTextDocument(document);
+          if (editor) {
+            this.addEditor(editor, portal, false, buffer, editorProxy);
+          }
         }
       }
     }
@@ -195,7 +199,7 @@ export default class WorkspaceManager {
 
     //const bufferPath = vscode.workspace.asRelativePath(buffer.uri.fsPath, true);
     const bufferPath = bufferProxy.uri;
-    bufferBinding = new BufferBinding(null, portal, bufferPath, null, false, () => {
+    bufferBinding = new BufferBinding(undefined, portal, bufferPath, undefined, false, () => {
       this.removeBufferBinding(bufferBinding);
       this.emitter.emit('did-change');
     });
@@ -272,8 +276,8 @@ export default class WorkspaceManager {
 
   private didRemoveTextEditor (buffer: vscode.TextDocument) {
     const bufferBiding = this.bufferBindingsByBuffer.get(buffer);
-    if (bufferBiding){
-      const editorBinding = this.editorBindingsByBuffer.get(bufferBiding?.editor.document);
+    if (bufferBiding && bufferBiding.editor){
+      const editorBinding = this.editorBindingsByBuffer.get(bufferBiding.editor.document);
       if (editorBinding) {
         editorBinding.editorProxy?.dispose();
         this.removeEditorBinding(editorBinding);
@@ -312,7 +316,9 @@ export default class WorkspaceManager {
   addBufferBinding(bufferBinding: BufferBinding) {
     if (this.bufferBindings.indexOf(bufferBinding) >= 0) { return; }
     this.bufferBindings.push(bufferBinding);
-    this.bufferBindingsByBuffer.set(bufferBinding.buffer, bufferBinding);
+    if (bufferBinding.buffer) {
+      this.bufferBindingsByBuffer.set(bufferBinding.buffer, bufferBinding);
+    }
     this.bufferBindingsByBufferProxy.set(bufferBinding.bufferProxy, bufferBinding);
   }
 
@@ -328,7 +334,9 @@ export default class WorkspaceManager {
     const idx = this.bufferBindings.indexOf(bufferBinding);
     if (idx < 0) { return; }
     this.bufferBindings.splice(idx, 1);
-    this.bufferBindingsByBuffer.delete(bufferBinding.buffer);
+    if (bufferBinding.buffer) {
+      this.bufferBindingsByBuffer.delete(bufferBinding.buffer);
+    }
     this.bufferBindingsByBufferProxy.delete(bufferBinding.bufferProxy);
   }
 

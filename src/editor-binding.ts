@@ -100,6 +100,7 @@ export default class EditorBinding implements IEditorDelegate {
   setEditorProxy (editorProxy: EditorProxy) {
     this.editorProxy = editorProxy;
     if (!this.isHost) {
+      this.isRemote = true;
       this.monkeyPatchEditorMethods(this.editor, this.editorProxy);
     }
 
@@ -120,23 +121,24 @@ export default class EditorBinding implements IEditorDelegate {
     this.relayLocalSelections();
   }
 
-  monkeyPatchEditorMethods (editor: vscode.TextEditor, editorProxy: EditorProxy) {
-    const remoteBuffer = editor.document;
-    const originalRemoteBufferGetPath = remoteBuffer.uri.fsPath;
-    const {bufferProxy} = editorProxy;
-    const hostIdentity = this.portal?.getSiteIdentity(1);
-    const prefix = hostIdentity ? `@${hostIdentity.login}` : 'remote';
+  monkeyPatchEditorMethods (editor: any, editorProxy: EditorProxy) {
+    // vscode의 editor는 extensible하지 않기 때문에 monkey patch가 안 된다.
+    
+    // const remoteBuffer = editor.document;
+    // const originalRemoteBufferGetPath = remoteBuffer.uri.fsPath;
+    // const {bufferProxy} = editorProxy;
+    // const hostIdentity = this.portal?.getSiteIdentity(1);
+    // const prefix = hostIdentity ? `@${hostIdentity.login}` : 'remote';
 
     // editor.getTitle = () => `${prefix}: ${path.basename(originalRemoteBufferGetPath())}`;
     // editor.getURI = () => getEditorURI(this.portal.id, editorProxy.id);
     // editor.copy = () => null;
     // editor.serialize = () => null;
-    this.isRemote = true;
 
     // let remoteEditorCountForBuffer = remoteBuffer.remoteEditorCount || 0;
     // remoteBuffer.remoteEditorCount = ++remoteEditorCountForBuffer;
     // remoteBuffer.getPath = () => `${prefix}:${originalRemoteBufferGetPath()}`;
-    //remoteBuffer.save = () => { bufferProxy.requestSave(); };
+    // remoteBuffer.save = () => { bufferProxy.requestSave(); };
     // remoteBuffer.isModified = () => false;
 
     // editor.element.classList.add('teletype-RemotePaneItem');
