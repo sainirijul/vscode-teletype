@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { EventEmitter } from 'events';
-import { Portal, TeletypeClient } from "@atom/teletype-client";
+import { IPortalDelegate, Portal, TeletypeClient } from "@atom/teletype-client";
 import WorkspaceManager from './workspace-manager';
 
 export interface IPortalBinding {

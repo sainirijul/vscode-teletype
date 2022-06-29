@@ -144,14 +144,14 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
     return remoteEditors;
   }
 
-  async getRemoteEditor (editorProxyId: number) : Promise<vscode.TextEditor | undefined> {
-    const editorProxy = await this.portal?.findOrFetchEditorProxy(editorProxyId);
-    if (this.portal && editorProxy) {
-      return this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
-    } else {
-      return undefined;
-    }
-  }
+  // async getRemoteEditor (editorProxyId: number) : Promise<vscode.TextEditor | undefined> {
+  //   const editorProxy = await this.portal?.findOrFetchEditorProxy(editorProxyId);
+  //   if (this.portal && editorProxy) {
+  //     return this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+  //   } else {
+  //     return undefined;
+  //   }
+  // }
 
   updateActivePositions (positionsBySiteId: Position[]) : void {
     // this.sitePositionsComponent.update({positionsBySiteId});
@@ -177,11 +177,11 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
       // await this.openPaneItem(editor);
       this.shouldRelayActiveEditorChanges = true;
     } else {
-      if (position) { 
-        this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-          editorBinding.updateTether(followState, position);
-        }); 
-      }
+      // if (position) { 
+      //   this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+      //     editorBinding.updateTether(followState, position);
+      //   }); 
+      // }
     }
 
     const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);

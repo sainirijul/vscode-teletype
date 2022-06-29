@@ -182,12 +182,13 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
+		"@types/event-kit": "^2.4.1",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
 		"awesome-typescript-loader": "^5.2.1",
-		"node-pre-gyp": "^0.13.0",
 		"deep-equal": "^1.1.1",
 		"google-protobuf": "^3.12.2",
+		"node-pre-gyp": "^0.13.0",
 		"source-map-loader": "^0.2.4",
 		"tslint": "^5.20.1",
 		"typescript": "^3.9.5",

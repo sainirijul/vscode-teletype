@@ -171,23 +171,23 @@ export default class PortalBindingManager {
     return (hostPortalBinding) || (guestPortalBindings.length > 0);
   }
 
-  async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {
-    const uriComponents = uri.replace('atom://teletype/', '').split('/');
+  // async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {
+  //   const uriComponents = uri.replace('atom://teletype/', '').split('/');
 
-    const portalId = findPortalId(uriComponents[1]);
-    if (uriComponents[0] !== 'portal' || !portalId) { return undefined; }
+  //   const portalId = findPortalId(uriComponents[1]);
+  //   if (uriComponents[0] !== 'portal' || !portalId) { return undefined; }
 
-    const editorProxyId = Number(uriComponents[3]);
-    if (uriComponents[2] !== 'editor' || Number.isNaN(editorProxyId)) { return undefined; }
+  //   const editorProxyId = Number(uriComponents[3]);
+  //   if (uriComponents[2] !== 'editor' || Number.isNaN(editorProxyId)) { return undefined; }
 
-    const guestPortalBindingPromise = this.promisesByGuestPortalId.get(portalId);
-    if (guestPortalBindingPromise) {
-      const guestPortalBinding = await guestPortalBindingPromise;
-      return await guestPortalBinding.getRemoteEditor(editorProxyId);
-    } else {
-      throw new Error('Cannot open an editor belonging to a portal that has not been joined');
-    }
-  }
+  //   const guestPortalBindingPromise = this.promisesByGuestPortalId.get(portalId);
+  //   if (guestPortalBindingPromise) {
+  //     const guestPortalBinding = await guestPortalBindingPromise;
+  //     return await guestPortalBinding.getRemoteEditor(editorProxyId);
+  //   } else {
+  //     throw new Error('Cannot open an editor belonging to a portal that has not been joined');
+  //   }
+  // }
 
   didDisposeGuestPortalBinding (portalBinding: GuestPortalBinding) {
     this.promisesByGuestPortalId.delete(portalBinding.portalId);

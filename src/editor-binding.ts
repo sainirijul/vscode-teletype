@@ -71,9 +71,9 @@ export default class EditorBinding implements IEditorDelegate {
   async dispose () {
     if (this.disposed) { return; }
 
-    if (this.isRemote && this.bufferBinding.fsPath) {
-      fs.unlinkSync(this.bufferBinding.fsPath);
-    }
+    // if (this.isRemote && this.bufferBinding.fsPath) {
+    //   fs.unlinkSync(this.bufferBinding.fsPath);
+    // }
 
     this.disposed = true;
     // this.subscriptions.dispose();
@@ -123,7 +123,7 @@ export default class EditorBinding implements IEditorDelegate {
 
   monkeyPatchEditorMethods (editor: any, editorProxy: EditorProxy) {
     // vscode의 editor는 extensible하지 않기 때문에 monkey patch가 안 된다.
-    
+
     // const remoteBuffer = editor.document;
     // const originalRemoteBufferGetPath = remoteBuffer.uri.fsPath;
     // const {bufferProxy} = editorProxy;
@@ -380,7 +380,7 @@ export default class EditorBinding implements IEditorDelegate {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {
       this.editorProxy.updateSelections(
-        updates.map(update => {
+        updates.map<any>(update => {
           return {
               exclusive: true,
               range: {
@@ -389,7 +389,7 @@ export default class EditorBinding implements IEditorDelegate {
               },
               reversed: false,
               tailed: false
-          }
+          };
         })
       );
     // }

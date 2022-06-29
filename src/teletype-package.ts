@@ -253,12 +253,12 @@ export default class TeletypePackage {
     // }));
   }
 
-  async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {
-    const portalBindingManager = await this.getPortalBindingManager();
-    if (portalBindingManager && await this.isSignedIn()) {
-      return portalBindingManager.getRemoteEditorForURI(uri);
-    }
-  }
+  // async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {
+  //   const portalBindingManager = await this.getPortalBindingManager();
+  //   if (portalBindingManager && await this.isSignedIn()) {
+  //     return portalBindingManager.getRemoteEditorForURI(uri);
+  //   }
+  // }
 
   async signIn (token: string) : Promise<boolean> {
     const authenticationProvider = await this.getAuthenticationProvider();

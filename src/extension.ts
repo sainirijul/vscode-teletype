@@ -187,7 +187,7 @@ function createViews(authenticationProvider: AuthenticationProvider, workspaceMa
 	const nodeDependenciesProvider = new AccountNodeProvider(authenticationProvider, portalBindingManager);
 	vscode.window.registerTreeDataProvider('teletype.accountsView', nodeDependenciesProvider);
 
-	const nodeDependenciesProvider1 = new EditorNodeProvider(workspaceManager);
+	const nodeDependenciesProvider1 = new EditorNodeProvider(portalBindingManager, workspaceManager);
 	vscode.window.registerTreeDataProvider('teletype.targetDocumentView', nodeDependenciesProvider1);
 }
 

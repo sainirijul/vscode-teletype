@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import WorkspaceManager from './workspace-manager';
 import EditorBinding from './editor-binding';
+import PortalBindingManager from './portal-binding-manager';
 
 export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	public static readonly viewType = 'teletype.accountsView';
@@ -10,8 +11,9 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 
-	constructor(private workspaceManager: WorkspaceManager) {
-		workspaceManager?.onDidChange(this.refresh.bind(this));
+	constructor(private portalBindingManager: PortalBindingManager, private workspaceManager: WorkspaceManager) {
+		portalBindingManager.onDidChange(this.refresh.bind(this));
+		workspaceManager.onDidChange(this.refresh.bind(this));
 	}
 
 	refresh(): void {
@@ -22,7 +24,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		return element;
 	}
 
-	getChildren(element?: Dependency): Thenable<Dependency[]> {
+	async getChildren(element?: Dependency): Promise<Dependency[]> {
 		if (!this.workspaceManager) {
 			vscode.window.showInformationMessage('No dependency in empty workspace');
 			return Promise.resolve([]);
@@ -31,14 +33,30 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 		let lst: Dependency[] = [];
 
 		if (!element) {
-			this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-				const filePath = editorBinding.bufferBinding.getBufferProxyURI();
-				if (!editorBinding.isRemote) {
-					lst.push(new Dependency(filePath));
-				} else {
-					lst.push(new Dependency(`* ${filePath}`));
-				}
-			});
+			const host = await this.portalBindingManager.getHostPortalBinding();
+
+			if (host) {
+				host.portal?.bufferProxiesById.forEach((a,_) => {
+					lst.push(new Dependency(a.uri));
+				});
+			}
+			const guests = await this.portalBindingManager.getGuestPortalBindings();
+			if (guests) {
+				guests.forEach(guest => {
+					guest.portal?.bufferProxiesById.forEach((a,_) => {
+						lst.push(new Dependency(`* ${a.uri}`));
+					});
+				});				
+			}
+
+			// this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+			// 	const filePath = editorBinding.bufferBinding.getBufferProxyURI();
+			// 	if (!editorBinding.isRemote) {
+			// 		lst.push(new Dependency(filePath));
+			// 	} else {
+			// 		lst.push(new Dependency(`* ${filePath}`));
+			// 	}
+			// });
 		}
 
 		return Promise.resolve(lst);

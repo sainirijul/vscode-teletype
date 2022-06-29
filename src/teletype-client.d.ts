@@ -1,5 +1,8 @@
-//import { Position } from "./teletype-types";
+
 declare module '@atom/teletype-client' {
+    // import { Position } from "./teletype-types";
+    import {CompositeDisposable, Emitter} from 'event-kit';
+
     export interface Position {
         row: number;
         column: number;
@@ -22,8 +25,12 @@ declare module '@atom/teletype-client' {
         id: number;
         uri: any;
 		onDidChangeBuffer: any;
+        isHost: boolean;
+        hostPeerId: string; 
+        subscriptions: CompositeDisposable;
+
         // constructor({id, uri, text, history, operations, router, hostPeerId, siteId, didDispose});
-        constructor(...args: any[]);
+        constructor(options: any);
 
         applyGroupingInterval(applyGroupingInterval: number): void;
 
@@ -257,7 +264,15 @@ declare module '@atom/teletype-client' {
 
     export class Portal {
         id: string;
-        
+        hostPeerId: string;
+        isHost: boolean;
+        router: Router;
+        siteIdsByPeerId: Map<string, number>;
+        peerIdsBySiteId: Map<number, string>;
+        editorProxiesById: Map<string, EditorProxy>;
+        bufferProxiesById: Map<string, BufferProxy>;
+        activeEditorProxiesBySiteId: Map<number, EditorProxy>;
+            
         constructor(...args: any[]);
 
         activateEditorProxy(...args: any[]): void;
@@ -280,9 +295,9 @@ declare module '@atom/teletype-client' {
 
         broadcastEditorProxySwitch(...args: any[]): void;
 
-        createBufferProxy(...args: any[]): BufferProxy;
+        createBufferProxy(props: any): BufferProxy;
 
-        createEditorProxy(...args: any[]): EditorProxy;
+        createEditorProxy(props: any): EditorProxy;
 
         deserializeBufferProxy(...args: any[]): void;
 
@@ -404,7 +419,7 @@ declare module '@atom/teletype-client' {
     }
 
     export class Router {
-        constructor(...args: any[]);
+        constructor(network: any);
 
         dispose(...args: any[]): void;
 

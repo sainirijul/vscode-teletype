@@ -11,14 +11,16 @@ import WorkspaceManager from './workspace-manager';
 
 function doNothing () {}
 
-export default class BufferBinding implements IBufferDelegate {
+export default class BufferBinding extends vscode.Disposable implements IBufferDelegate {
   // private uri: string;
-	public buffer?: vscode.TextDocument;
+  // public textBuffer: string = '';
+	public buffer!: vscode.TextDocument;
   public portal!: Portal;
   public title: string | undefined;
-	public editor?: vscode.TextEditor;
-	private readonly isHost: boolean;
-  emitDidDispose: Function;
+	// public editor?: vscode.TextEditor;
+	// private readonly isHost: boolean;
+  // emitDidDispose: Function;
+  public pendingUpdates: any[];
   private pendingChanges: vscode.TextDocumentContentChangeEvent[];
   disposed: boolean;
   disableHistory: boolean;
@@ -29,27 +31,32 @@ export default class BufferBinding implements IBufferDelegate {
   fsPath?: string;
   isUpdating: boolean = false;
   changeCnt: number = 0;
-  public activate: boolean = false;
+  private emitter: EventEmitter;
 
 	constructor(buffer: vscode.TextDocument | undefined, portal: Portal, title: string | undefined, editor: vscode.TextEditor | undefined, isHost: boolean = false, didDispose: Function = doNothing) {
-    this.buffer = buffer;
+    super(didDispose);
+
+    // this.buffer = buffer;
     this.portal = portal;
     // this.path = path ?? buffer.uri.toString();
     this.title = title;
-    this.editor = editor;
-    this.isHost = isHost;
-    this.emitDidDispose = didDispose || doNothing;
+    // this.editor = editor;
+    // this.isHost = isHost;
+    // this.emitDidDispose = didDispose || doNothing;
     this.pendingChanges = [];
     this.disposed = false;
     this.disableHistory = false;
     if (isHost) {
       // this.subscriptions.add(buffer.onDidChangePath(this.relayURIChange.bind(this)));
     }
+    this.pendingUpdates = [];
+
+    this.emitter = new EventEmitter();
   }
 
-  assignEditor(buffer: vscode.TextDocument, editor: vscode.TextEditor) {
+  assignEditor(buffer: vscode.TextDocument, editor: vscode.TextEditor | undefined) {
     this.buffer = buffer;
-    this.editor = editor;
+    // this.editor = editor;
     if (!this.title) {
       this.title = buffer?.uri.toString();
     }
@@ -61,15 +68,24 @@ export default class BufferBinding implements IBufferDelegate {
   dispose () {
     if (this.disposed) { return; }
 
-    this.disposed = true;
+    this.unbinding(this.bufferProxy.isHost);
+
     // this.subscriptions.dispose();
-    if (this.buffer) {
+    // if (this.buffer) {
       // this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(this.buffer.maxUndoEntries));
       // this.buffer = undefined;
-    }
+    // }
     if (this.bufferDestroySubscription) { this.bufferDestroySubscription.dispose(); }
     if (this.remoteFile) { this.remoteFile.dispose(); }
-    this.emitDidDispose();
+    // this.emitDidDispose();
+
+    this.disposed = true;
+  }
+
+  unbinding(isHost: boolean) {
+    if (!isHost && this.fsPath) {
+      fs.unlinkSync(this.fsPath);
+    }
   }
 
   setBufferProxy (bufferProxy: BufferProxy) {
@@ -79,7 +95,7 @@ export default class BufferBinding implements IBufferDelegate {
     while (this.pendingChanges.length > 0) {
       this.pushChange(this.pendingChanges.shift());
     }
-    if (!this.isHost) {
+    if (!this.bufferProxy.isHost) {
       this.remoteFile = new RemoteFile(bufferProxy.uri);
       // this.buffer?.setFile(this.remoteFile);
     }
@@ -137,24 +153,37 @@ export default class BufferBinding implements IBufferDelegate {
   async updateText (textUpdates: any[]) {
     if (!textUpdates || textUpdates.length <= 0) { return; }
 
-    if (!this.buffer) { return; }
-    if (this.buffer.isClosed) { return; }
+    // if (!this.buffer) { return; }
+    // if (this.buffer.isClosed) { return; }
 
     try {
-      if (this.editor) {
-        this.editor.edit(builder => {
-            this.isUpdating = true;
-            textUpdates.forEach(textUpdate => {
-              this.disableHistory = true;
-              builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-              this.disableHistory = false;
-            });
-            // this.isUpdating = false;
-          }, { undoStopBefore: false, undoStopAfter: false });
-        }
+      // if (this.editor) {
+        // this.editor.edit(builder => {
+        //     this.isUpdating = true;
+        //     textUpdates.forEach(textUpdate => {
+        //       this.disableHistory = true;
+        //       builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
+        //       this.disableHistory = false;
+        //     });
+        //     // this.isUpdating = false;
+        //   }, { undoStopBefore: false, undoStopAfter: false });
+
+        textUpdates.forEach(textUpdate => {
+          // this.bufferHistory.push(textUpdate.oldStart, textUpdate.oldEnd, textUpdate.newText);
+          // this.textBuffer = (textUpdate.oldStart > 0) ? this.textBuffer.substring(0, textUpdate.oldStart) : ''
+          //                 + textUpdate.newText 
+          //                 + (textUpdate.oldEnd < this.textBuffer.length) ? this.textBuffer.substring(textUpdate.oldEnd) : '';
+          this.pendingUpdates.push({oldStart: textUpdate.oldStart, oldEnd: textUpdate.oldEnd, newText: textUpdate.newText});
+        });
+        this.emitter.emit('require-update', this);
+      // }
     } catch(e) {
       console.log(e);
     }
+  }
+
+  onRequireUpdate(callback: (bufferBinding: BufferBinding) => void) {
+    this.emitter.on('require-update', callback);
   }
 
   undo () {
@@ -239,9 +268,10 @@ export default class BufferBinding implements IBufferDelegate {
   // @override
   save () : void {
     // 수신이 완료됨
-    if (this.buffer?.uri) { 
-      this.buffer.save(); 
-    }
+    //if (this.buffer?.uri) { 
+      //this.buffer.save();
+    //}
+    this.emitter.emit('did-save', this);
   }
 
   relayURIChange () {
@@ -310,6 +340,7 @@ export default class BufferBinding implements IBufferDelegate {
         change.text
       );
     });
+    
   }
 
   //requestSavePromise(): Promise<vscode.TextEditor[]> {

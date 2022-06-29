@@ -26,9 +26,9 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   // didDispose: Function | undefined;
   // portal?: Portal;
   uri: string | undefined;
-  closeEditorEventListener?: vscode.Disposable;
+  closeDocumentEventListener?: vscode.Disposable;
   changeActiveEditorEventListener?: vscode.Disposable;
-  openEditorEventListener?: vscode.Disposable;
+  openDocumentEventListener?: vscode.Disposable;
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
@@ -77,29 +77,10 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       //   this.workspace.observeTextEditors(this.didAddTextEditor.bind(this)),
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
-      this.changeActiveEditorEventListener = vscode.window.onDidChangeActiveTextEditor((e) => {
-        const editor = e as vscode.TextEditor;
-        if (editor) {
-          const doc = editor.document as vscode.TextDocument;
-          if (doc.uri.scheme === 'file'){
-            this.didChangeActiveTextEditor(editor);
-          }
-        }
-      });
-      this.openEditorEventListener = vscode.workspace.onDidOpenTextDocument(async (e) => {
-        if (e.uri.scheme === 'file'){
-          //if (e.isClosed) {
-          // const editor = await vscode.window.showTextDocument(e);
-          const editor = this.workspaceManager.getEditorBindingByBuffer(e);
-          if (editor) {
-            await this.didAddTextEditor(editor.editor);
-          }
-          //}
-        }
-      });
-      this.closeEditorEventListener = vscode.workspace.onDidCloseTextDocument(async (e) => {
-         this.didRemoveTextEditor(e);
-      });
+
+      this.changeActiveEditorEventListener = vscode.window.onDidChangeActiveTextEditor(this.didChangeActiveTextEditor.bind(this));
+      this.openDocumentEventListener = vscode.workspace.onDidOpenTextDocument(this.didOpenTextDocument.bind(this));
+      this.closeDocumentEventListener = vscode.workspace.onDidCloseTextDocument(this.didCloseTextDocument.bind(this));
 
       // this.workspace.getElement().classList.add('teletype-Host');
       return true;
@@ -116,9 +97,9 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   dispose () {
     this.emitter.emit('did-change', {type: 'close-portal'});
 
-    this.closeEditorEventListener?.dispose();
+    this.closeDocumentEventListener?.dispose();
     this.changeActiveEditorEventListener?.dispose();
-    this.openEditorEventListener?.dispose();
+    this.openDocumentEventListener?.dispose();
 
     super.dispose();
   }
@@ -139,19 +120,6 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
 
   onDidChange (callback: (...args: any[]) => void) {
     return this.emitter.on('did-change', callback);
-  }
-
-  async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
-    if (editor && this.isWorkspaceFiles(editor.document.uri.fsPath) && !this.workspaceManager.getEditorBindingByBuffer(editor.document)?.isRemote) {
-      const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
-      if (editorProxy !== this.portal?.activateEditorProxy) {
-        this.portal?.activateEditorProxy(editorProxy);
-        // this.sitePositionsComponent.show(editor.element);
-      }
-    } else {
-      this.portal?.activateEditorProxy(null);
-      // this.sitePositionsComponent.hide();
-    }
   }
 
   isWorkspaceFiles(fsPath: string) : boolean {
@@ -178,34 +146,60 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   }
 
   // Private
-  async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
-
+  _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (followState === FollowState.RETRACTED) {
+      const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
       // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});
       if (position) { 
         editorBinding?.updateTether(followState, position); 
       }
     } else {
       if (position) { 
-        this.workspaceManager.getEditorBindings().forEach(editorBindings => {
-          editorBindings.updateTether(followState, position);
+        this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+          editorBinding.updateTether(followState, position);
         });
       }
     }
   }
 
-  async didAddTextEditor (editor: vscode.TextEditor) {
-    if (!this.workspaceManager.getEditorBindingByBuffer(editor?.document)?.isRemote) {
-      await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal); 
+  private async didOpenTextDocument(document: vscode.TextDocument) {
+    if (document.uri.scheme === 'file' && this.isWorkspaceFiles(document.uri.fsPath)) {
+      const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
+        // this.portal?.activateEditorProxy(editorBinding?.editorProxy);
+         // this.sitePositionsComponent.show(editor.element);
+      this.workspaceManager.addHostTextDocument(document);
     }
   }
 
-  didRemoveTextEditor (buffer: vscode.TextDocument) {
+  private didChangeActiveTextEditor (editor?: vscode.TextEditor) {
+    if (editor) {
+      const doc = editor.document;
+      if (doc.uri.scheme === 'file' && this.isWorkspaceFiles(doc.uri.fsPath) && this.workspaceManager.getBufferBindingByBuffer(doc)?.bufferProxy.isHost) {
+        //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
+        //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
+        const editorBinding = this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal);
+        if (editorBinding?.editorProxy !== this.portal?.activateEditorProxy) {
+          this.portal?.activateEditorProxy(editorBinding?.editorProxy);
+        // this.sitePositionsComponent.show(editor.element);
+        }
+      }
+    } else {
+      this.portal?.activateEditorProxy(null);
+      // this.sitePositionsComponent.hide();
+    }
+  }
+
+  didAddTextEditor (editor: vscode.TextEditor) {
+    if (this.workspaceManager.getBufferBindingByBuffer(editor?.document)?.bufferProxy.isHost) {
+      this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal); 
+    }
+  }
+
+  didCloseTextDocument (buffer: vscode.TextDocument) {
     const bufferBiding = this.workspaceManager.getBufferBindingByBuffer(buffer);
     if (bufferBiding){
       // const editorProxy = this.workspaceManager.editorBindingsByBuffer.get(bufferBiding.buffer);
-      // editorProxy?.dispose();
+      bufferBiding.bufferProxy?.dispose();
     }
   }
 }
