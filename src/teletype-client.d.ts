@@ -107,6 +107,7 @@ declare module '@atom/teletype-client' {
         id: number;
         siteId: number;
         bufferProxy: BufferProxy;
+        portal: Portal;
 
         constructor(...args: any[]);
 
@@ -275,7 +276,7 @@ declare module '@atom/teletype-client' {
             
         constructor(...args: any[]);
 
-        activateEditorProxy(...args: any[]): void;
+        activateEditorProxy(editorProxy: EditorProxy | null | undefined): void;
 
         activeEditorDidScroll(...args: any[]): void;
 

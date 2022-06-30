@@ -22,8 +22,8 @@ interface SiteDecoration {
 export default class EditorBinding implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
   public readonly title: string;
-	public portal: Portal | undefined;
-	private readonly isHost: boolean;
+	// public portal: Portal | undefined;
+	// private readonly isHost: boolean;
   private disposed: boolean = false;
   private emitter: EventEmitter;
   // selectionsMarkerLayer: any;
@@ -40,15 +40,16 @@ export default class EditorBinding implements IEditorDelegate {
   editorProxy!: EditorProxy;
   // batchedMarkerUpdates: {} | null;
   // isBatchingMarkerUpdates: boolean;
-  isRemote: boolean = false;
+  // isRemote: boolean = false;
   bufferBinding: BufferBinding;
 
-  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
+  // constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
+  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string) {
     this.editor = editor;
     this.bufferBinding = bufferBinding;
     this.title = title ?? editor.document.uri.fsPath;
-    this.portal = portal;
-    this.isHost = isHost;
+    // this.portal = portal;
+    // this.isHost = isHost;
     this.emitter = new EventEmitter();
     // this.selectionsMarkerLayer = this.editor.selectionsMarkerLayer.bufferMarkerLayer;
     // this.markerLayersBySiteId = new Map();
@@ -99,8 +100,8 @@ export default class EditorBinding implements IEditorDelegate {
 
   setEditorProxy (editorProxy: EditorProxy) {
     this.editorProxy = editorProxy;
-    if (!this.isHost) {
-      this.isRemote = true;
+    if (!this.bufferBinding?.bufferProxy?.isHost) {
+      // this.isRemote = true;
       this.monkeyPatchEditorMethods(this.editor, this.editorProxy);
     }
 
@@ -414,7 +415,7 @@ export default class EditorBinding implements IEditorDelegate {
 			backgroundColor: `rgba(0,0,255,0.6)`
 		};
 
-		const siteLogin = this.portal?.getSiteIdentity(siteId);
+		const siteLogin = this.editorProxy.portal?.getSiteIdentity(siteId);
 
 		const nameTagStyleRules = {
 			position: 'absolute',

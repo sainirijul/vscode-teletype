@@ -171,29 +171,35 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
     }
   }
 
-  private didChangeActiveTextEditor (editor?: vscode.TextEditor) {
+  private async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
+    let editorProxy: EditorProxy | undefined = undefined;
+
     if (editor) {
       const doc = editor.document;
-      if (doc.uri.scheme === 'file' && this.isWorkspaceFiles(doc.uri.fsPath) && this.workspaceManager.getBufferBindingByBuffer(doc)?.bufferProxy.isHost) {
-        //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
-        //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
-        const editorBinding = this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal);
-        if (editorBinding?.editorProxy !== this.portal?.activateEditorProxy) {
-          this.portal?.activateEditorProxy(editorBinding?.editorProxy);
-        // this.sitePositionsComponent.show(editor.element);
+
+      if (doc.uri.scheme === 'file' && this.isWorkspaceFiles(doc.uri.fsPath)) {
+        const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(doc, this.portal);      
+        if (bufferBinding?.bufferProxy.isHost) {
+          //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
+          //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
+          const editorBinding = this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal);
+          // if (editorBinding?.editorProxy !== this.portal?.activateEditorProxy) {
+            editorProxy = editorBinding?.editorProxy;
+            // this.sitePositionsComponent.show(editor.element);
+          // }
         }
       }
-    } else {
-      this.portal?.activateEditorProxy(null);
-      // this.sitePositionsComponent.hide();
     }
+    
+    this.portal?.activateEditorProxy(editorProxy);
+    // this.sitePositionsComponent.hide();
   }
 
-  didAddTextEditor (editor: vscode.TextEditor) {
-    if (this.workspaceManager.getBufferBindingByBuffer(editor?.document)?.bufferProxy.isHost) {
-      this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal); 
-    }
-  }
+  // didAddTextEditor (editor: vscode.TextEditor) {
+  //   if (this.workspaceManager.getBufferBindingByBuffer(editor?.document)?.bufferProxy.isHost) {
+  //     this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal); 
+  //   }
+  // }
 
   didCloseTextDocument (buffer: vscode.TextDocument) {
     const bufferBiding = this.workspaceManager.getBufferBindingByBuffer(buffer);
