@@ -17,7 +17,7 @@ export default class WorkspaceManager {
   // private bufferBindings: BufferBinding[];
   // private editorBindings: EditorBinding[];
 
-  private ProxyObjectByUri : Map<string, {bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
+  private proxyObjectByUri : Map<string, {bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
   private bufferBindingsByTextDocument : Map<vscode.TextDocument, BufferBinding>;
   private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
 	// public editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
@@ -31,7 +31,7 @@ export default class WorkspaceManager {
     //this.bufferBindings = new Map();
     //this.editorBindings = new Map();
 
-    this.ProxyObjectByUri = new Map();
+    this.proxyObjectByUri = new Map();
     this.bufferBindingsByBufferProxy = new Map();
 		this.bufferBindingsByTextDocument = new Map();
     this.editorBindingsByEditorProxy = new Map();
@@ -360,7 +360,7 @@ export default class WorkspaceManager {
     //   this.findOrCreateEditorProxyForEditor(editor); 
     // }
 
-    const proxyObject = this.ProxyObjectByUri.get(buffer.uri.toString());
+    const proxyObject = this.proxyObjectByUri.get(buffer.uri.toString());
     if (proxyObject) {
       const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
       if (bufferBinding) {
@@ -379,7 +379,7 @@ export default class WorkspaceManager {
   private didChangeVisibleTextEditors(editors?: vscode.TextEditor[]) {
     editors?.forEach(editor => {
       if (!this.editorBindingsByTextEditor.has(editor)){
-        const proxyObject = this.ProxyObjectByUri.get(editor.document.uri.toString());
+        const proxyObject = this.proxyObjectByUri.get(editor.document.uri.toString());
         if (proxyObject) {
           const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
           if (bufferBinding) {
@@ -396,10 +396,18 @@ export default class WorkspaceManager {
   private didCloseTextDocument(buffer: vscode.TextDocument) {
     const bufferBiding = this.bufferBindingsByTextDocument.get(buffer);
     if (bufferBiding) {
-      // bufferBiding.bufferProxy?.dispose();
+      if (bufferBiding.bufferProxy.isHost) {
+        bufferBiding.bufferProxy.dispose();
+        const proxyObject = this.proxyObjectByUri.get(bufferBiding.uri);
+        if (proxyObject) {
+          proxyObject.editorProxy?.dispose();
+          this.proxyObjectByUri.delete(bufferBiding.uri);
+        }
+      }
+      this.bufferBindingsByTextDocument.delete(buffer);
 
       vscode.window.visibleTextEditors.forEach((editor) => {
-        if(editor.document === bufferBiding.buffer) {
+        if(editor.document === buffer) {
           // editor.hide();
         }
       });
@@ -446,15 +454,15 @@ export default class WorkspaceManager {
 
   private addProxyObject(uri: string | undefined, bufferProxy: BufferProxy, editorProxy: EditorProxy) {
     const path = uri ?? bufferProxy.uri;
-    if (this.ProxyObjectByUri.has(path)) { return; }
-    this.ProxyObjectByUri.set(path, {bufferProxy, editorProxy});
+    if (this.proxyObjectByUri.has(path)) { return; }
+    this.proxyObjectByUri.set(path, {bufferProxy, editorProxy});
   }
 
   private removeProxyObject(uri: string | BufferProxy) {
     if (typeof uri === 'string') {
-      this.ProxyObjectByUri.delete(uri);
+      this.proxyObjectByUri.delete(uri);
     } else if (uri instanceof BufferProxy) {
-      this.ProxyObjectByUri.delete((uri as BufferProxy).uri);
+      this.proxyObjectByUri.delete((uri as BufferProxy).uri);
     }
   }
 
@@ -477,7 +485,7 @@ export default class WorkspaceManager {
     if (!bufferBinding || !bufferBinding.fsPath) { return; }
     // if (!this.bufferBindings.has(bufferBinding.fsPath)) { return; }
     // this.bufferBindings.delete(bufferBinding.fsPath);
-    this.ProxyObjectByUri.delete(bufferBinding.uri);
+    this.proxyObjectByUri.delete(bufferBinding.uri);
     this.bufferBindingsByBufferProxy.delete(bufferBinding.bufferProxy);
     if (bufferBinding.buffer) {
       this.bufferBindingsByTextDocument.delete(bufferBinding.buffer);

@@ -39,6 +39,9 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				host.portal?.bufferProxiesById.forEach((a,_) => {
 					lst.push(new Dependency(a.uri));
 				});
+				// host.portal?.editorProxiesById.forEach((a,_) => {
+				// 	lst.push(new Dependency(a.bufferProxy.uri));
+				// });
 			}
 			const guests = await this.portalBindingManager.getGuestPortalBindings();
 			if (guests) {
@@ -46,6 +49,9 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					guest.portal?.bufferProxiesById.forEach((a,_) => {
 						lst.push(new Dependency(`* ${a.uri}`));
 					});
+					// guest.portal?.editorProxiesById.forEach((a,_) => {
+					// 	lst.push(new Dependency(`* ${a.bufferProxy.uri}`));
+					// });
 				});				
 			}
 

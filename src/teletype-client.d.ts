@@ -300,37 +300,37 @@ declare module '@atom/teletype-client' {
 
         createEditorProxy(props: any): EditorProxy;
 
-        deserializeBufferProxy(...args: any[]): void;
+        deserializeBufferProxy(message: any): void;
 
-        deserializeEditorProxy(...args: any[]): void;
+        deserializeEditorProxy(message: any): void;
 
-        deserializeEditorProxyMetadata(...args: any[]): void;
+        deserializeEditorProxyMetadata(message: any): void;
 
-        didChangeTetherState(...args: any[]): void;
+        didChangeTetherState(changeState: any): void;
 
         dispose(): void;
 
-        extendTether(...args: any[]): void;
+        extendTether(): void;
 
-        fetchBufferProxy(...args: any[]): void;
+        fetchBufferProxy(id: string): void;
 
-        fetchEditorProxy(...args: any[]): void;
+        fetchEditorProxy(id: string): void;
 
-        findOrFetchBufferProxy(...args: any[]): void;
+        findOrFetchBufferProxy(id: string): void;
 
-        findOrFetchEditorProxy(...args: any[]): EditorProxy;
+        findOrFetchEditorProxy(id: string): EditorProxy;
 
-        follow(...args: any[]): void;
+        follow(siteId: number): void;
 
-        getActiveSiteIds(...args: any[]): string[];
+        getActiveSiteIds(): string[];
 
-        getEditorProxiesMetadata(...args: any[]): any[];
+        getEditorProxiesMetadata(): any[];
 
-        getEditorProxyMetadata(...args: any[]): void;
+        getEditorProxyMetadata(editorProxyId: string): any;
 
         getFollowedSiteId(): number;
 
-        getLocalActiveEditorProxy(...args: any[]): void;
+        getLocalActiveEditorProxy(): EditorProxy;
 
         getLocalSiteId(): number;
 
@@ -374,7 +374,7 @@ declare module '@atom/teletype-client' {
 
         subscribeToEditorProxyChanges(...args: any[]): void;
 
-        unfollow(...args: any[]): void;
+        unfollow(): void;
 
         updateActivePositions(...args: any[]): void;
 

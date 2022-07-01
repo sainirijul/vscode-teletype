@@ -174,7 +174,10 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
     if (followState === FollowState.RETRACTED) {
       this.shouldRelayActiveEditorChanges = false;
       const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
-      // await this.openPaneItem(editor);
+      if (editor) {
+        // await this.openPaneItem(editor);
+        vscode.window.showTextDocument(editor.document);
+      }
       this.shouldRelayActiveEditorChanges = true;
     } else {
       if (position) { 
