@@ -153,16 +153,6 @@ export default class WorkspaceManager {
   //   return editorBinding;
   // }
 
-  private didRequireUpdateBuffer(bufferBinding: BufferBinding) {
-    for (let i:number = 0; i < vscode.window.visibleTextEditors.length; i++) {
-      const editor = vscode.window.visibleTextEditors[i];
-      if (editor.document === bufferBinding.buffer) {
-        bufferBinding.applyUpdate(editor);
-        break;
-      }
-    }
-  }
-
   // Host에서 문서 열 때
   public findOrCreateBufferBindingForBuffer (buffer: vscode.TextDocument, portal?: Portal) : BufferBinding | undefined {
     let bufferBinding = this.bufferBindingsByTextDocument.get(buffer);
@@ -301,126 +291,6 @@ export default class WorkspaceManager {
   }
 
 
-  hasPaneItem(paneItem: vscode.TextEditor) : boolean {
-    // return this.editorProxiesByEditor.has(paneItem);
-    return this.editorBindingsByTextEditor.has(paneItem);
-  }
-
-  // getActivePaneItem() : vscode.TextEditor {
-  //   return this.newActivePaneItem || vscode.window.activeTextEditor;
-  // }
-
-  onDidChange(callback: () => void) {
-    return this.emitter.on('did-change', callback);
-  }
-
-	private registerWorkspaceEvents () {
-    vscode.workspace.onDidOpenTextDocument(this.didOpenTextDocument.bind(this));
-    vscode.workspace.onDidCloseTextDocument(this.didCloseTextDocument.bind(this));
-		vscode.workspace.onDidChangeTextDocument(this.didChangeTextDocument.bind(this));
-		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
-
-    vscode.window.onDidChangeActiveTextEditor(this.didChangeActiveTextEditor.bind(this));
-    vscode.window.onDidChangeVisibleTextEditors(this.didChangeVisibleTextEditors.bind(this));
-    vscode.window.onDidChangeTextEditorSelection(this.didSelectionChanges.bind(this));
-    vscode.window.onDidChangeTextEditorVisibleRanges(this.didViewRangeChanges.bind(this));
-
-      // vscode.window.onDidChangeActiveTextEditor((e) => {
-      //   const editor = e as vscode.TextEditor;
-      //   this.didChangeActiveTextEditor(editor);
-      // });
-      // vscode.workspace.onDidOpenTextDocument(async (e) => {
-      //   const editor = await vscode.window.showTextDocument(e);
-      //   this.didAddTextEditor(editor);
-      // });
-
-	}
-
-	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
-    const bufferBinding = this.bufferBindingsByTextDocument.get(event.document);
-    if (bufferBinding) {
-      if (!bufferBinding.isUpdating) {
-        // if (!bufferBinding.disableHistory) {
-          const doc = bufferBinding.changeBuffer(event.contentChanges);
-        // }
-      } else {
-        bufferBinding.isUpdating = false;
-      }
-    }
-	}
-
-  // private didAddTextEditor (editor: vscode.TextEditor) {
-  //   if (!this.editorBindingsByEditor.get(editor)?.isRemote) {
-  //     this.findOrCreateEditorProxyForEditor(editor); 
-  //   }
-  // }
-
-  private didOpenTextDocument(buffer: vscode.TextDocument) {
-    // if (!this.editorBindingsByEditor.get(editor)?.isRemote) {
-    //   this.findOrCreateEditorProxyForEditor(editor); 
-    // }
-
-    const proxyObject = this.proxyObjectByUri.get(buffer.uri.toString());
-    if (proxyObject) {
-      const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
-      if (bufferBinding) {
-        bufferBinding?.setBuffer(buffer);
-        if (!this.bufferBindingsByTextDocument.has(buffer)) {
-          this.bufferBindingsByTextDocument.set(buffer, bufferBinding);        
-        }
-      }
-    }
-  }
-
-  private didChangeActiveTextEditor(editor?: vscode.TextEditor) {
-
-  }
-
-  private didChangeVisibleTextEditors(editors?: vscode.TextEditor[]) {
-    editors?.forEach(editor => {
-      if (!this.editorBindingsByTextEditor.has(editor)){
-        const proxyObject = this.proxyObjectByUri.get(editor.document.uri.toString());
-        if (proxyObject) {
-          const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
-          if (bufferBinding) {
-            const editorBinding = this.createEditorBinding(editor, proxyObject.editorProxy, bufferBinding);
-            if (editorBinding) {
-              this.editorBindingsByTextEditor.set(editor, editorBinding);
-            }
-          }
-        }
-      }
-    });
-  }
-
-  private didCloseTextDocument(buffer: vscode.TextDocument) {
-    const bufferBiding = this.bufferBindingsByTextDocument.get(buffer);
-    if (bufferBiding) {
-      if (bufferBiding.bufferProxy.isHost) {
-        bufferBiding.bufferProxy.dispose();
-        const proxyObject = this.proxyObjectByUri.get(bufferBiding.uri);
-        if (proxyObject) {
-          proxyObject.editorProxy?.dispose();
-          this.proxyObjectByUri.delete(bufferBiding.uri);
-        }
-      }
-      this.bufferBindingsByTextDocument.delete(buffer);
-
-      vscode.window.visibleTextEditors.forEach((editor) => {
-        if(editor.document === buffer) {
-          // editor.hide();
-        }
-      });
-
-      // const editorBinding = this.editorBindingsByBuffer.get(bufferBiding.editor.document);
-      // if (editorBinding) {
-      //   editorBinding.editorProxy?.dispose();
-      //   this.removeEditorBinding(editorBinding);
-      // }
-      this.emitter.emit('did-change');
-    }
-  }
-
 	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
 		if(this.bufferBindingsByTextDocument){
       const bufferBinding = this.bufferBindingsByTextDocument.get(event.document);
@@ -430,26 +300,8 @@ export default class WorkspaceManager {
     }
   }
 
-	private didSelectionChanges (event: vscode.TextEditorSelectionChangeEvent) {
-    const editorBinding = this.editorBindingsByTextEditor.get(event.textEditor);
-    if (editorBinding) {
-      editorBinding.updateSelections(event.selections);
-    }
-  }
-
-	private didViewRangeChanges (event: vscode.TextEditorVisibleRangesChangeEvent) {
-    const editorBinding = this.editorBindingsByTextEditor.get(event.textEditor);
-    if (editorBinding) {
-      // editorBinding.editorDidChangeScrollTop(event.visibleRanges);
-      // editorBinding.editorDidChangeScrollLeft(event.visibleRanges);
-      // editorBinding.editorDidResize(event.visibleRanges);
-      // console.log(event.textEditor.visibleRanges[0]);
-      // console.log(event.visibleRanges[0]);
-    }
-  }
-
   addHostTextDocument(e: vscode.TextDocument) {
-    
+    this.emitter.emit('did-change');    
   }
 
   private addProxyObject(uri: string | undefined, bufferProxy: BufferProxy, editorProxy: EditorProxy) {
@@ -535,5 +387,188 @@ export default class WorkspaceManager {
     return this.bufferBindingsByTextDocument.get(buffer);
   }
 
-  
+  getBufferBindingByBufferProxy(bufferProxy: BufferProxy) : BufferBinding | undefined {
+    return this.bufferBindingsByBufferProxy.get(bufferProxy);
+  }
+
+  syscronizedShowingEditors(editors : vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
+    if (editors) {
+      this.editorBindingsByTextEditor.forEach(editor => {
+
+      });
+
+      editors.forEach(editor => {
+        if (!this.editorBindingsByTextEditor.has(editor)){
+          const proxyObject = this.proxyObjectByUri.get(editor.document.uri.toString());
+          if (proxyObject) {
+            const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
+            if (bufferBinding) {
+              const editorBinding = this.createEditorBinding(editor, proxyObject.editorProxy, bufferBinding);
+              if (editorBinding) {
+                this.editorBindingsByTextEditor.set(editor, editorBinding);
+              }
+            }
+          }
+        }
+      });
+    }
+
+  }
+
+  public showEditor(item: any) {
+    if (item instanceof vscode.Uri || typeof item === 'string') {
+      vscode.commands.executeCommand('vscode.open', item);
+    }
+  }  
+
+  // ============ 이벤트 핸들러 ===================
+
+  onDidChange(callback: () => void) {
+    return this.emitter.on('did-change', callback);
+  }
+
+  hasPaneItem(paneItem: vscode.TextEditor) : boolean {
+    // return this.editorProxiesByEditor.has(paneItem);
+    return this.editorBindingsByTextEditor.has(paneItem);
+  }
+
+  private didRequireUpdateBuffer(bufferBinding: BufferBinding) {
+    for (let i:number = 0; i < vscode.window.visibleTextEditors.length; i++) {
+      const editor = vscode.window.visibleTextEditors[i];
+      if (editor.document === bufferBinding.buffer) {
+        bufferBinding.applyUpdate(editor);
+        break;
+      }
+    }
+  }
+
+  // getActivePaneItem() : vscode.TextEditor {
+  //   return this.newActivePaneItem || vscode.window.activeTextEditor;
+  // }
+
+	private registerWorkspaceEvents () {
+    vscode.workspace.onDidOpenTextDocument(this.didOpenTextDocument.bind(this));
+    vscode.workspace.onDidCloseTextDocument(this.didCloseTextDocument.bind(this));
+		vscode.workspace.onDidChangeTextDocument(this.didChangeTextDocument.bind(this));
+		vscode.workspace.onWillSaveTextDocument(this.saveDocument.bind(this));
+
+    vscode.window.onDidChangeActiveTextEditor(this.didChangeActiveTextEditor.bind(this));
+    vscode.window.onDidChangeVisibleTextEditors(this.didChangeVisibleTextEditors.bind(this));
+    vscode.window.onDidChangeTextEditorSelection(this.didSelectionChanges.bind(this));
+    vscode.window.onDidChangeTextEditorVisibleRanges(this.didViewRangeChanges.bind(this));
+
+      // vscode.window.onDidChangeActiveTextEditor((e) => {
+      //   const editor = e as vscode.TextEditor;
+      //   this.didChangeActiveTextEditor(editor);
+      // });
+      // vscode.workspace.onDidOpenTextDocument(async (e) => {
+      //   const editor = await vscode.window.showTextDocument(e);
+      //   this.didAddTextEditor(editor);
+      // });
+
+	}
+
+	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
+    const bufferBinding = this.bufferBindingsByTextDocument.get(event.document);
+    if (bufferBinding) {
+      if (!bufferBinding.isUpdating) {
+        // if (!bufferBinding.disableHistory) {
+          const doc = bufferBinding.changeBuffer(event.contentChanges);
+        // }
+      } else {
+        bufferBinding.isUpdating = false;
+      }
+    }
+	}
+
+  // private didAddTextEditor (editor: vscode.TextEditor) {
+  //   if (!this.editorBindingsByEditor.get(editor)?.isRemote) {
+  //     this.findOrCreateEditorProxyForEditor(editor); 
+  //   }
+  // }
+
+  private didOpenTextDocument(buffer: vscode.TextDocument) {
+    // if (!this.editorBindingsByEditor.get(editor)?.isRemote) {
+    //   this.findOrCreateEditorProxyForEditor(editor); 
+    // }
+
+    const proxyObject = this.proxyObjectByUri.get(buffer.uri.toString());
+    if (proxyObject) {
+      const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
+      if (bufferBinding) {
+        bufferBinding?.setBuffer(buffer);
+        if (!this.bufferBindingsByTextDocument.has(buffer)) {
+          this.bufferBindingsByTextDocument.set(buffer, bufferBinding);        
+        }
+      }
+    }
+  }
+
+  private didChangeActiveTextEditor(editor?: vscode.TextEditor) {
+
+  }
+
+  private didChangeVisibleTextEditors(editors?: vscode.TextEditor[]) {
+    this.syscronizedShowingEditors(editors);
+    // editors?.forEach(editor => {
+    //   if (!this.editorBindingsByTextEditor.has(editor)){
+    //     const proxyObject = this.proxyObjectByUri.get(editor.document.uri.toString());
+    //     if (proxyObject) {
+    //       const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObject.bufferProxy);
+    //       if (bufferBinding) {
+    //         const editorBinding = this.createEditorBinding(editor, proxyObject.editorProxy, bufferBinding);
+    //         if (editorBinding) {
+    //           this.editorBindingsByTextEditor.set(editor, editorBinding);
+    //         }
+    //       }
+    //     }
+    //   }
+    // });
+  }
+
+  private didCloseTextDocument(buffer: vscode.TextDocument) {
+    const bufferBiding = this.bufferBindingsByTextDocument.get(buffer);
+    if (bufferBiding) {
+      if (bufferBiding.bufferProxy.isHost) {
+        bufferBiding.bufferProxy.dispose();
+        const proxyObject = this.proxyObjectByUri.get(bufferBiding.uri);
+        if (proxyObject) {
+          proxyObject.editorProxy?.dispose();
+          this.proxyObjectByUri.delete(bufferBiding.uri);
+        }
+      }
+      this.bufferBindingsByTextDocument.delete(buffer);
+
+      vscode.window.visibleTextEditors.forEach((editor) => {
+        if(editor.document === buffer) {
+          // editor.hide();
+        }
+      });
+
+      // const editorBinding = this.editorBindingsByBuffer.get(bufferBiding.editor.document);
+      // if (editorBinding) {
+      //   editorBinding.editorProxy?.dispose();
+      //   this.removeEditorBinding(editorBinding);
+      // }
+      this.emitter.emit('did-change');
+    }
+  }
+
+	private didSelectionChanges (event: vscode.TextEditorSelectionChangeEvent) {
+    const editorBinding = this.editorBindingsByTextEditor.get(event.textEditor);
+    if (editorBinding) {
+      editorBinding.updateSelections(event.selections);
+    }
+  }
+
+	private didViewRangeChanges (event: vscode.TextEditorVisibleRangesChangeEvent) {
+    const editorBinding = this.editorBindingsByTextEditor.get(event.textEditor);
+    if (editorBinding) {
+      // editorBinding.editorDidChangeScrollTop(event.visibleRanges);
+      // editorBinding.editorDidChangeScrollLeft(event.visibleRanges);
+      // editorBinding.editorDidResize(event.visibleRanges);
+      // console.log(event.textEditor.visibleRanges[0]);
+      // console.log(event.visibleRanges[0]);
+    }
+  }
 }

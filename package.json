@@ -61,6 +61,10 @@
 				"title": "Copy Portal URL to Clipboard"
 			},
 			{
+				"command": "extension.show-editor",
+				"title": "Show Editor"
+			},
+			{
 				"command": "extension.test",
 				"title": "test"
 			}

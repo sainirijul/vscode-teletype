@@ -37,7 +37,10 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 
 			if (host) {
 				host.portal?.bufferProxiesById.forEach((a,_) => {
-					lst.push(new Dependency(a.uri));
+					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
+					if (binding) {
+						lst.push(new Dependency(binding.fsPath ?? binding.uri, binding.uri, undefined, true));
+					}
 				});
 				// host.portal?.editorProxiesById.forEach((a,_) => {
 				// 	lst.push(new Dependency(a.bufferProxy.uri));
@@ -47,7 +50,10 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 			if (guests) {
 				guests.forEach(guest => {
 					guest.portal?.bufferProxiesById.forEach((a,_) => {
-						lst.push(new Dependency(`* ${a.uri}`));
+						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
+						if (binding) {
+							lst.push(new Dependency(`* ${binding.uri}`, binding.fsPath));
+						}
 					});
 					// guest.portal?.editorProxiesById.forEach((a,_) => {
 					// 	lst.push(new Dependency(`* ${a.bufferProxy.uri}`));
@@ -73,15 +79,21 @@ export class Dependency extends vscode.TreeItem {
 
 	constructor(
 		public readonly label: string,
+		public readonly path?: string,
 		public readonly iconUri?: vscode.Uri,
-		public readonly collapsibleState?: vscode.TreeItemCollapsibleState,
-		public readonly command?: vscode.Command
+		public readonly isHost?: boolean,
+		public readonly collapsibleState?: vscode.TreeItemCollapsibleState
 	) {
 		super(label, collapsibleState);
 
 		this.iconPath = iconUri;
 		this.tooltip = `${this.label}`;
 		// this.description = `${this.label}`;
+
+		this.command = {title: 'Open Editor', command: 'extension.show-editor',
+						 // arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
+						 arguments: [this.isHost ? vscode.Uri.file(label) : this.path? vscode.Uri.file(this.path) : '']
+					   };
 	}
 
 	// iconPath = {

@@ -17,6 +17,11 @@ import GuestPortalBinding from './guest-portal-binding';
 
 
 export default class TeletypePackage {
+  //     this.config.set('teletype.askBeforeJoiningPortalViaExternalApp', false);
+  //     return this.joinPortal(portalId);
+  //   default:
+  //     break;
+  // }
   fs: vscode.FileSystemProvider;
   config: any;
   workspace: vscode.WorkspaceFolder;
@@ -371,7 +376,11 @@ export default class TeletypePackage {
     }
   }
 
-  async test() {
+  showEditor(item: any) {
+	  this.workspaceManager.showEditor(item);
+  }
+
+  test() {
     if (vscode.window.activeTextEditor) {
       // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');
     }
