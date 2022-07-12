@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
-//const {CompositeDisposable, Emitter, TextEditor, TextBuffer} = require('atom');
 import { SelectionMap, Selection, Position, Range} from './teletype-types';
 import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal, IPortalDelegate, EditorProxyMetadata} from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
@@ -10,9 +9,6 @@ import {getEditorURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 import { IPortalBinding, PortalBinding } from './portal-binding';
-// import * as os from 'os';
-// import * as path from 'path';
-// import * as fs from 'fs';
 
 const NOOP = () => {};
 
@@ -20,25 +16,9 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
   client: TeletypeClient;
   portalId: string;
   // public readonly workspace: vscode.WorkspaceFolder;
-	// public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
-  // emitDidDispose: any;
   lastActivePaneItem: null;
-	// private editorBindingsByEditorProxy : Map<EditorProxy, EditorBinding>;
-  // private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
-  // private bufferBindingsByBuffer : Map<vscode.TextDocument, BufferBinding>;
-	// private editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
-	// private editorProxiesByEditor : WeakMap<vscode.TextEditor, EditorProxy>;
-  // private editorBindingsByEditorProxyId: Map<number, EditorBinding>;
-  // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
-  // private bufferBindingsByBufferProxyId: Map<number, BufferBinding>;
-  // private editorProxiesMetadataById: Map<number, EditorProxyMetadata>;
-  // private workspaceManager: WorkspaceManager;
-  // private emitter: EventEmitter;
-  // subscriptions: any;
-  lastEditorProxyChangePromise: Promise<void>;
   shouldRelayActiveEditorChanges: boolean;
-  // public portal?: Portal = undefined;
   // sitePositionsComponent: SitePositionsComponent;
   // public newActivePaneItem: any;
 
@@ -48,20 +28,9 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
     this.client = client;
     this.portalId = portalId;
     // this.workspace = workspace;
-    // this.editor = editor;
     this.notificationManager = notificationManager;
-    // this.emitDidDispose = didDispose || NOOP;
     this.lastActivePaneItem = null;
-    // this.editorBindingsByEditorProxyId = new Map();
-    // this.bufferBindingsByBufferProxyId = new Map();
-    // this.editorProxiesByEditor = new WeakMap();
-    // this.editorProxiesMetadataById = new Map();
-		// this.bufferBindingsByBuffer = new Map();
-    // this.editorBindingsByEditor = new Map();
     // this.workspaceManager = workspaceManager;
-    // this.emitter = new EventEmitter();
-    // this.subscriptions = new CompositeDisposable();
-    this.lastEditorProxyChangePromise = Promise.resolve();
     this.shouldRelayActiveEditorChanges = true;
   }
 
@@ -91,11 +60,8 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
 
   // @override
   dispose () {
-  //   // this.subscriptions.dispose();
-  //   // this.sitePositionsComponent.destroy();
-
-  //  this.emitDidDispose();
-    // this.portal = undefined;
+  // this.subscriptions.dispose();
+  // this.sitePositionsComponent.destroy();
     super.dispose();
   }
 
@@ -153,23 +119,7 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
   //   }
   // }
 
-  updateActivePositions (positionsBySiteId: Position[]) : void {
-    // this.sitePositionsComponent.update({positionsBySiteId});
-    console.log(positionsBySiteId);
-  }
-
   // @override
-  updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    if (editorProxy) {
-      this.lastEditorProxyChangePromise = this.lastEditorProxyChangePromise.then(() =>
-        this._updateTether(followState, editorProxy, position)
-      );
-    }
-
-    return this.lastEditorProxyChangePromise;
-  }
-
-  // Private
   async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (followState === FollowState.RETRACTED) {
       this.shouldRelayActiveEditorChanges = false;
@@ -273,9 +223,5 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
   // getActivePaneItem() : vscode.TextEditor {
   //   return this.workspaceManager.newActivePaneItem || vscode.window.activeTextEditor;
   // }
-
-  onDidChange(callback: (event: any) => void) {
-    return this.emitter.on('did-change', callback);
-  }
 
 }

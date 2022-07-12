@@ -64,20 +64,22 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 
   // @override
   dispose () {
-    if (this.disposed) { return; }
+    if (!this.disposed) {
+      this.unbinding(this.bufferProxy.isHost);
 
-    this.unbinding(this.bufferProxy.isHost);
+      // this.subscriptions.dispose();
+      // if (this.buffer) {
+        // this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(this.buffer.maxUndoEntries));
+        // this.buffer = undefined;
+      // }
+      if (this.bufferDestroySubscription) { this.bufferDestroySubscription.dispose(); }
+      if (this.remoteFile) { this.remoteFile.dispose(); }
+      // this.emitDidDispose();
 
-    // this.subscriptions.dispose();
-    // if (this.buffer) {
-      // this.buffer.restoreDefaultHistoryProvider(this.bufferProxy.getHistory(this.buffer.maxUndoEntries));
-      // this.buffer = undefined;
-    // }
-    if (this.bufferDestroySubscription) { this.bufferDestroySubscription.dispose(); }
-    if (this.remoteFile) { this.remoteFile.dispose(); }
-    // this.emitDidDispose();
+      this.disposed = true;
+    }
 
-    this.disposed = true;
+    super.dispose();
   }
 
   isBinded() : boolean {
@@ -404,4 +406,24 @@ class RemoteFile {
     return false;
   }
  
+}
+
+export function createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, bufferPath?: string, fsPath?: string, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void) : BufferBinding {
+  const bufferBinding = new BufferBinding(uri, buffer, bufferProxy, bufferPath, didDispose);
+
+  if (didRquireUpdate) {
+    bufferBinding.onRequireUpdate(didRquireUpdate);
+  }
+  
+  bufferBinding.fsPath = fsPath ?? buffer?.uri.fsPath;
+
+  // delegate 지정 순간 setText()가 호출되기에 vscode.TextDocument의 이벤트 발생을 막기 위해서는 buffer 지정을 이 이후로 미뤄야 한다.
+  bufferProxy.setDelegate(bufferBinding);
+
+  (bufferProxy as any).setBufferBinding = (bufferBinding: BufferBinding) => {
+    (bufferProxy as any).bufferBinding = bufferBinding;
+  };
+  (bufferProxy as any).setBufferBinding(bufferBinding);
+
+  return bufferBinding;
 }

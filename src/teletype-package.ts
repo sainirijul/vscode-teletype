@@ -384,5 +384,7 @@ export default class TeletypePackage {
     if (vscode.window.activeTextEditor) {
       // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');
     }
+
+    console.log(this.workspaceManager);
   }
 }

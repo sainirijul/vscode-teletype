@@ -14,17 +14,8 @@ import * as path from 'path';
 export default class HostPortalBinding extends PortalBinding implements IPortalDelegate {
   client: TeletypeClient;
   public readonly workspace: vscode.WorkspaceFolder;
-  // public readonly editor: vscode.TextEditor;
   notificationManager: NotificationManager;
   // workspaceManager: WorkspaceManager;
-  // private editorBindingsByEditor: WeakMap<vscode.TextEditor, EditorBinding>;
-  // private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
-  // private bufferBindingsByBuffer: WeakMap<vscode.TextDocument, BufferBinding>;
-  // disposables: any;
-  // private emitter: EventEmitter;
-  lastUpdateTetherPromise: Promise<void>;
-  // didDispose: Function | undefined;
-  // portal?: Portal;
   uri: string | undefined;
   closeDocumentEventListener?: vscode.Disposable;
   changeActiveEditorEventListener?: vscode.Disposable;
@@ -36,16 +27,8 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
 
     this.client = client;
     this.workspace = workspace;
-    // this.editor = editor;
     this.notificationManager = notificationManager;
     // this.workspaceManager = workspaceManager;
-    // this.editorBindingsByEditor = new WeakMap();
-    // this.editorBindingsByEditorProxy = new Map();
-    // this.bufferBindingsByBuffer = new WeakMap();
-    // this.disposables = new CompositeDisposable();
-    // this.emitter = new EventEmitter();
-    this.lastUpdateTetherPromise = Promise.resolve();
-    // this.didDispose = didDispose;
   }
 
   // @override
@@ -78,19 +61,18 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
 
-
       vscode.workspace.textDocuments.forEach(async (document) => {
         if (document.uri.scheme === 'file' && this.isWorkspaceFiles(document.uri.fsPath)) {
           const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
           // this.portal?.activateEditorProxy(editorBinding?.editorProxy);
            // this.sitePositionsComponent.show(editor.element);
-          this.workspaceManager.addHostTextDocument(document);
+          // this.workspaceManager.addHostTextDocument(document);
         }
       });
 
       this.changeActiveEditorEventListener = vscode.window.onDidChangeActiveTextEditor(this.didChangeActiveTextEditor.bind(this));
       this.openDocumentEventListener = vscode.workspace.onDidOpenTextDocument(this.didOpenTextDocument.bind(this));
-      this.closeDocumentEventListener = vscode.workspace.onDidCloseTextDocument(this.didCloseTextDocument.bind(this));
+      // this.closeDocumentEventListener = vscode.workspace.onDidCloseTextDocument(this.didCloseTextDocument.bind(this));
 
       // this.workspace.getElement().classList.add('teletype-Host');
       return true;
@@ -128,10 +110,6 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
     this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
   }
 
-  onDidChange (callback: (...args: any[]) => void) {
-    return this.emitter.on('did-change', callback);
-  }
-
   isWorkspaceFiles(fsPath: string) : boolean {
     fsPath = path.normalize(fsPath);
     const parentPath = path.normalize(this.workspace.uri.fsPath);
@@ -140,23 +118,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   }
 
   // @override
-  updateActivePositions (positionsBySiteId: Position[]) {
-    // this.sitePositionsComponent.update({positionsBySiteId});
-  }
-
-  // @override
-  updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    if (editorProxy) {
-      this.lastUpdateTetherPromise = this.lastUpdateTetherPromise.then(() =>
-        this._updateTether(followState, editorProxy, position)
-      );
-    }
-
-    return this.lastUpdateTetherPromise;
-  }
-
-  // Private
-  _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+  async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     if (followState === FollowState.RETRACTED) {
       const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
       // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});
@@ -177,7 +139,7 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
       const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
         // this.portal?.activateEditorProxy(editorBinding?.editorProxy);
          // this.sitePositionsComponent.show(editor.element);
-      this.workspaceManager.addHostTextDocument(document);
+      // this.workspaceManager.addHostTextDocument(document);
     }
   }
 
@@ -203,19 +165,5 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
     
     this.portal?.activateEditorProxy(editorProxy);
     // this.sitePositionsComponent.hide();
-  }
-
-  // didAddTextEditor (editor: vscode.TextEditor) {
-  //   if (this.workspaceManager.getBufferBindingByBuffer(editor?.document)?.bufferProxy.isHost) {
-  //     this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal); 
-  //   }
-  // }
-
-  didCloseTextDocument (buffer: vscode.TextDocument) {
-    const bufferBiding = this.workspaceManager.getBufferBindingByBuffer(buffer);
-    if (bufferBiding){
-      // const editorProxy = this.workspaceManager.editorBindingsByBuffer.get(bufferBiding.buffer);
-      bufferBiding.bufferProxy?.dispose();
-    }
   }
 }

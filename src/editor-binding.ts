@@ -5,12 +5,10 @@ import {EventEmitter} from 'events';
 import {EditorProxy, IEditorDelegate, Portal} from '@atom/teletype-client';
 import {SelectionMap, Selection, Position, Range} from './teletype-types';
 
-/* global ResizeObserver */
-
-import path = require('path');
+// import path = require('path');
 // const {Range, Emitter, Disposable, CompositeDisposable, TextBuffer} = require('atom')
-import { getEditorURI } from './uri-helpers';
-import { FollowState } from '@atom/teletype-client';
+// import { getEditorURI } from './uri-helpers';
+// import { FollowState } from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
 import { fstat } from 'fs';
 
@@ -19,7 +17,9 @@ interface SiteDecoration {
 	selectionDecoration: vscode.TextEditorDecorationType;
 }
 
-export default class EditorBinding implements IEditorDelegate {
+function doNothing () {}
+
+export default class EditorBinding extends vscode.Disposable implements IEditorDelegate {
 	public readonly editor: vscode.TextEditor;
   public readonly title: string;
 	// public portal: Portal | undefined;
@@ -44,7 +44,9 @@ export default class EditorBinding implements IEditorDelegate {
   bufferBinding: BufferBinding;
 
   // constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
-  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string) {
+  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, didDispose: Function = doNothing) {
+    super(didDispose);
+
     this.editor = editor;
     this.bufferBinding = bufferBinding;
     this.title = title ?? editor.document.uri.fsPath;
@@ -70,28 +72,30 @@ export default class EditorBinding implements IEditorDelegate {
 
   // @override
   async dispose () {
-    if (this.disposed) { return; }
+    if (!this.disposed) {
+      // if (this.isRemote && this.bufferBinding.fsPath) {
+      //   fs.unlinkSync(this.bufferBinding.fsPath);
+      // }
 
-    // if (this.isRemote && this.bufferBinding.fsPath) {
-    //   fs.unlinkSync(this.bufferBinding.fsPath);
-    // }
+      this.disposed = true;
+      // this.subscriptions.dispose();
 
-    this.disposed = true;
-    // this.subscriptions.dispose();
+      // this.markerLayersBySiteId.forEach((l) => l.destroy());
+      // this.markerLayersBySiteId.clear();
+      if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
-    // this.markerLayersBySiteId.forEach((l) => l.destroy());
-    // this.markerLayersBySiteId.clear();
-    if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
-
-    if (!this.editor.document.isClosed) {
-      if (vscode.window.activeTextEditor !== this.editor){
-        await vscode.window.showTextDocument(this.editor.document);
+      if (!this.editor.document.isClosed) {
+        // if (vscode.window.activeTextEditor !== this.editor){
+        //   await vscode.window.showTextDocument(this.editor.document);
+        // }
+        // await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
       }
-      await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+
+      this.emitter.emit('did-dispose');
+      // this.emitter.dispose();
     }
 
-    this.emitter.emit('did-dispose');
-    // this.emitter.dispose();    
+    super.dispose();
   }
 
 	public isDisposed() {
@@ -197,15 +201,15 @@ export default class EditorBinding implements IEditorDelegate {
     this.emitter.emit('did-resize');
   }
 
-	onDidDispose(callback: { (): void; (...args: any[]): void; }) {
-    return this.emitter.on('did-dispose', callback);
-  }
+	// onDidDispose(callback: () => void) {
+  //   return this.emitter.on('did-dispose', callback);
+  // }
 
-  onDidScroll (callback: any) {
+  onDidScroll (callback: () => void) {
     return this.emitter.on('did-scroll', callback);
   }
 
-  onDidResize (callback: any) {
+  onDidResize (callback: () => void) {
     return this.emitter.on('did-resize', callback);
   }
 
@@ -497,3 +501,17 @@ function cursorClassForSiteId (siteId: number, blink: boolean = false) {
 //   resizeObserver.observe(element);
 //   return new Disposable(() => resizeObserver.disconnect());
 // }
+
+export function createEditorBinding(editor: vscode.TextEditor, editorProxy: EditorProxy, bufferBinding: BufferBinding, didDispose: () => void) : EditorBinding {
+  // const bufferBinding = this.bufferBindingsByUri.get(editor.document.uri.toString());
+  // if (!bufferBinding) { return undefined; }
+
+  const editorBinding = new EditorBinding(editor, bufferBinding, undefined, didDispose);
+
+  editorBinding.setEditorProxy(editorProxy);
+  editorProxy.setDelegate(editorBinding);
+
+  // editorBinding.onDidDispose(onDispose);
+
+  return editorBinding;
+}
