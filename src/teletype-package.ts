@@ -200,7 +200,7 @@ export default class TeletypePackage {
 
     const manager = await this.getPortalBindingManager();
     const hostPortalBinding = await manager?.getHostPortalBinding();
-    hostPortalBinding?.close();
+    hostPortalBinding?.closePortal();
   }
 
   async copyHostPortalURI () {

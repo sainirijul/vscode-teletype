@@ -11,11 +11,9 @@ import { IPortalBinding, PortalBinding } from './portal-binding';
 import * as path from 'path';
 
 
-export default class HostPortalBinding extends PortalBinding implements IPortalDelegate {
-  client: TeletypeClient;
+export default class HostPortalBinding extends PortalBinding {
   public readonly workspace: vscode.WorkspaceFolder;
   notificationManager: NotificationManager;
-  // workspaceManager: WorkspaceManager;
   uri: string | undefined;
   closeDocumentEventListener?: vscode.Disposable;
   changeActiveEditorEventListener?: vscode.Disposable;
@@ -23,27 +21,25 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
   // sitePositionsComponent: SitePositionsComponent | undefined;
 
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
-    super(workspaceManager, client, didDispose);
+    super(client, workspaceManager, notificationManager, didDispose);
 
-    this.client = client;
     this.workspace = workspace;
     this.notificationManager = notificationManager;
-    // this.workspaceManager = workspaceManager;
   }
 
-  // @override
-  hostDidLoseConnection(): void {
-    this.emitter.emit('did-change', {type: 'close-portal'});
-  }
+  // // @override
+  // hostDidLoseConnection(): void {
+  //   this.emitter.emit('did-change', {type: 'close-portal'});
+  // }
 
-  // @override
-  hostDidClosePortal(): void {
-    this.emitter.emit('did-change', {type: 'close-portal'});
-  }
+  // // @override
+  // hostDidClosePortal(): void {
+  //   this.emitter.emit('did-change', {type: 'close-portal'});
+  // }
 
-  // @override
-  didChangeEditorProxies(): void {
-  }
+  // // @override
+  // didChangeEditorProxies(): void {
+  // }
 
   async initialize (): Promise<boolean> {
     try {
@@ -96,19 +92,19 @@ export default class HostPortalBinding extends PortalBinding implements IPortalD
     super.dispose();
   }
 
-  // @override
-  siteDidJoin (siteId: number) {
-    const site = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${site?.login} has joined your portal`);
-    this.emitter.emit('did-change', {type: 'join-portal', portal: this.portal});
-  }
+  // // @override
+  // siteDidJoin (siteId: number) {
+  //   const site = this.portal?.getSiteIdentity(siteId);
+  //   this.notificationManager.addInfo(`@${site?.login} has joined your portal`);
+  //   this.emitter.emit('did-change', {type: 'join-portal', portal: this.portal});
+  // }
 
-  // @override
-  siteDidLeave (siteId: number) {
-    const site = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${site?.login} has left your portal`);
-    this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
-  }
+  // // @override
+  // siteDidLeave (siteId: number) {
+  //   const site = this.portal?.getSiteIdentity(siteId);
+  //   this.notificationManager.addInfo(`@${site?.login} has left your portal`);
+  //   this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
+  // }
 
   isWorkspaceFiles(fsPath: string) : boolean {
     fsPath = path.normalize(fsPath);

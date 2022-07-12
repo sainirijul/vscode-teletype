@@ -12,25 +12,19 @@ import { IPortalBinding, PortalBinding } from './portal-binding';
 
 const NOOP = () => {};
 
-export default class GuestPortalBinding extends PortalBinding implements IPortalDelegate {
-  client: TeletypeClient;
+export default class GuestPortalBinding extends PortalBinding {
   portalId: string;
-  // public readonly workspace: vscode.WorkspaceFolder;
-  notificationManager: NotificationManager;
   lastActivePaneItem: null;
   shouldRelayActiveEditorChanges: boolean;
   // sitePositionsComponent: SitePositionsComponent;
   // public newActivePaneItem: any;
 
   constructor (client: TeletypeClient, portalId: string, notificationManager: NotificationManager, workspaceManager: WorkspaceManager, didDispose: Function) {
-    super(workspaceManager, client, didDispose);
+    super(client, workspaceManager, notificationManager, didDispose);
 
-    this.client = client;
     this.portalId = portalId;
-    // this.workspace = workspace;
     this.notificationManager = notificationManager;
     this.lastActivePaneItem = null;
-    // this.workspaceManager = workspaceManager;
     this.shouldRelayActiveEditorChanges = true;
   }
 
@@ -62,28 +56,31 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
   dispose () {
   // this.subscriptions.dispose();
   // this.sitePositionsComponent.destroy();
+
     super.dispose();
   }
 
-  // @override
-  siteDidJoin (siteId: number) {
-    const hostLogin = this.portal?.getSiteIdentity(1);
-    const siteLogin = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${siteLogin?.login} has joined @${hostLogin?.login}'s portal`);
-    this.emitter.emit('did-change');
-    vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
-  }
+  // // @override
+  // siteDidJoin (siteId: number) {
+  //   const hostLogin = this.portal?.getSiteIdentity(1);
+  //   const siteLogin = this.portal?.getSiteIdentity(siteId);
+  //   this.notificationManager.addInfo(`@${siteLogin?.login} has joined @${hostLogin?.login}'s portal`);
+  //   this.emitter.emit('did-change');
+  //   vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
+  // }
 
-  // @override
-  siteDidLeave (siteId: number) {
-    const hostLogin = this.portal?.getSiteIdentity(1);
-    const siteLogin = this.portal?.getSiteIdentity(siteId);
-    this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s portal`);
-    this.emitter.emit('did-change');
-    vscode.window.showInformationMessage('Leaved Portal with ID' + ' ' + this.portalId + ' ');
-  }
+  // // @override
+  // siteDidLeave (siteId: number) {
+  //   const hostLogin = this.portal?.getSiteIdentity(1);
+  //   const siteLogin = this.portal?.getSiteIdentity(siteId);
+  //   this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s portal`);
+  //   this.emitter.emit('did-change');
+  //   vscode.window.showInformationMessage('Leaved Portal with ID' + ' ' + this.portalId + ' ');
+  // }
 
-  didChangeEditorProxies () {}
+  // // @override
+  // didChangeEditorProxies () {    
+  // }
 
   getRemoteEditors (): any[] | null {
     if (!this.portal) { return null; }
@@ -121,26 +118,34 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
 
   // @override
   async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    if (followState === FollowState.RETRACTED) {
-      this.shouldRelayActiveEditorChanges = false;
-      const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
-      if (editor) {
-        // await this.openPaneItem(editor);
-        vscode.window.showTextDocument(editor.document);
-      }
-      this.shouldRelayActiveEditorChanges = true;
-    } else {
-      if (position) { 
-        this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-          editorBinding.updateTether(followState, position);
-        }); 
-      }
-    }
+    // if (followState === FollowState.RETRACTED) {
+    //   this.shouldRelayActiveEditorChanges = false;
+    //   const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+    //   if (editor) {
+    //     // await this.openPaneItem(editor);
+    //     vscode.window.showTextDocument(editor.document);
+    //   }
+    //   this.shouldRelayActiveEditorChanges = true;
+    // } else {
+    //   if (position) { 
+    //     this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+    //       editorBinding.updateTether(followState, position);
+    //     }); 
+    //   }
+    // }
 
-    const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
-    if (editorBinding && position) {
-      editorBinding.updateTether(followState, position);
-    }
+      // guest:
+      if (followState === FollowState.RETRACTED) {
+          // this.shouldRelayActiveEditorChanges = false;
+          const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+          if (editor) {
+              // await this.openPaneItem(editor);
+              await vscode.window.showTextDocument(editor.document);
+          }
+          // this.shouldRelayActiveEditorChanges = true;
+      } 
+
+      super._updateTether(followState, editorProxy, position);
   }
 
   activate () {
@@ -150,6 +155,7 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
     //   pane.activateItem(paneItem);
     //   pane.activate();
     // }
+
     this.emitter.emit('did-change');
   }
 
@@ -172,27 +178,29 @@ export default class GuestPortalBinding extends PortalBinding implements IPortal
     });
   }
 
-  // @override
-  hostDidClosePortal () {
-    this.notificationManager.addInfo('Portal closed', {
-      description: 'Your host stopped sharing their editor.',
-      dismissable: true
-    });
-  }
+  // // @override
+  // hostDidClosePortal () {
+  //   this.notificationManager.addInfo('Portal closed', {
+  //     description: 'Your host stopped sharing their editor.',
+  //     dismissable: true
+  //   });
+  //   this.emitter.emit('did-change', {type: 'close-portal'});
+  // }
 
-  // @override
-  hostDidLoseConnection () {
-    this.notificationManager.addInfo('Portal closed', {
-      description: (
-        'We haven\'t heard from the host in a while.\n' +
-        'Once your host is back online, they can share a new portal with you to resume collaborating.'
-      ),
-      dismissable: true
-    });
-  }
+  // // @override
+  // hostDidLoseConnection () {
+  //   this.notificationManager.addInfo('Portal closed', {
+  //     description: (
+  //       'We haven\'t heard from the host in a while.\n' +
+  //       'Once your host is back online, they can share a new portal with you to resume collaborating.'
+  //     ),
+  //     dismissable: true
+  //   });
+  //   this.emitter.emit('did-change', {type: 'close-portal'});
+  // }
 
   public leave () {
-    this.close();
+    this.closePortal();
   }
 
   // async openPaneItem (newActivePaneItem) {

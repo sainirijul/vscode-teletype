@@ -33,7 +33,7 @@ export default class PortalBindingManager {
 
     if (this.hostPortalBindingPromise) {
       const disposePromise = this.hostPortalBindingPromise.then((portalBinding) => {
-        portalBinding?.close();
+        portalBinding?.closePortal();
       });
       disposePromises.push(disposePromise);
     }

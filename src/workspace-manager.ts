@@ -15,7 +15,7 @@ export default class WorkspaceManager {
   // private editorBindings: EditorBinding[];
 
   private proxyObjectByUri : Map<string, {bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
-  private bufferBindingsByUri : Map<string, BufferBinding>;
+  // private bufferBindingsByUri : Map<string, BufferBinding>;
   private bufferBindingsByTextDocument : Map<vscode.TextDocument, BufferBinding>;
   private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
 	// public editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
@@ -30,7 +30,7 @@ export default class WorkspaceManager {
     //this.editorBindings = new Map();
 
     this.proxyObjectByUri = new Map();
-    this.bufferBindingsByUri = new Map();
+    // this.bufferBindingsByUri = new Map();
     this.bufferBindingsByBufferProxy = new Map();
 		this.bufferBindingsByTextDocument = new Map();
     this.editorBindingsByEditorProxy = new Map();
@@ -333,7 +333,7 @@ export default class WorkspaceManager {
     this.bufferBindingsByBufferProxy.set(bufferBinding.bufferProxy, bufferBinding);
     if (bufferBinding.buffer) {
       this.bufferBindingsByTextDocument.set(bufferBinding.buffer, bufferBinding);
-      this.bufferBindingsByUri.set(bufferBinding.buffer.uri.toString(), bufferBinding);
+      // this.bufferBindingsByUri.set(bufferBinding.buffer.uri.toString(), bufferBinding);
     }
   }
 
@@ -359,7 +359,7 @@ export default class WorkspaceManager {
 
     if (bufferBinding.buffer) {
       this.bufferBindingsByTextDocument.delete(bufferBinding.buffer);
-      this.bufferBindingsByUri.delete(bufferBinding.buffer.uri.toString());
+      // this.bufferBindingsByUri.delete(bufferBinding.buffer.uri.toString());
     }
 
     this.emitter.emit('did-change');
@@ -404,13 +404,13 @@ export default class WorkspaceManager {
     return this.editorBindingsByEditorProxy.get(editorProxy);
   }
 
-  getBufferBindingByUri(uri: vscode.Uri | string): BufferBinding | undefined {
-    if (typeof uri === 'string') {
-      return this.bufferBindingsByUri.get(uri);
-    } else {
-      return this.bufferBindingsByUri.get(uri.toString());
-    }
-  }
+  // getBufferBindingByUri(uri: vscode.Uri | string): BufferBinding | undefined {
+  //   if (typeof uri === 'string') {
+  //     return this.bufferBindingsByUri.get(uri);
+  //   } else {
+  //     return this.bufferBindingsByUri.get(uri.toString());
+  //   }
+  // }
 
   getBufferBindingByBuffer(buffer: vscode.TextDocument) : BufferBinding | undefined {
     return this.bufferBindingsByTextDocument.get(buffer);
@@ -534,9 +534,9 @@ export default class WorkspaceManager {
         if (!this.bufferBindingsByTextDocument.has(buffer)) {
           this.bufferBindingsByTextDocument.set(buffer, bufferBinding);
         }
-        if (!this.bufferBindingsByUri.has(buffer.uri.toString())) {
-          this.bufferBindingsByUri.set(buffer.uri.toString(), bufferBinding);
-        }
+        // if (!this.bufferBindingsByUri.has(buffer.uri.toString())) {
+        //   this.bufferBindingsByUri.set(buffer.uri.toString(), bufferBinding);
+        // }
       }
     }
   }
