@@ -114,20 +114,21 @@ export default class HostPortalBinding extends PortalBinding {
   }
 
   // @override
-  async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-    if (followState === FollowState.RETRACTED) {
-      const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
-      // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});
-      if (position) { 
-        editorBinding?.updateTether(followState, position); 
-      }
-    } else {
-      if (position) { 
-        this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-          editorBinding.updateTether(followState, position);
-        });
-      }
-    }
+  async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+    // if (followState === FollowState.RETRACTED) {
+    //   const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
+    //   // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});
+    //   if (position) { 
+    //     editorBinding?.updateTether(followState, position); 
+    //   }
+    // } else {
+    //   if (position) { 
+    //     this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+    //       editorBinding.updateTether(followState, position);
+    //     });
+    //   }
+    // }
+    await super.updateTether(followState, editorProxy, position);
   }
 
   private async didOpenTextDocument(document: vscode.TextDocument) {

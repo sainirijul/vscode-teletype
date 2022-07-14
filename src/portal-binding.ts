@@ -11,13 +11,13 @@ export interface IPortalBinding {
 
 export class PortalBinding extends vscode.Disposable implements IPortalBinding, IPortalDelegate {
     portal?: Portal;
-    lastUpdateTetherPromise: Promise<void>;
+    // lastUpdateTetherPromise: Promise<void>;
     emitter: EventEmitter;
 
     constructor (public client: TeletypeClient, public workspaceManager: WorkspaceManager, public notificationManager: NotificationManager, didDispose: Function) {
         super(didDispose);
 
-        this.lastUpdateTetherPromise = Promise.resolve();
+        // this.lastUpdateTetherPromise = Promise.resolve();
         this.emitter = new EventEmitter();
     }
 
@@ -102,15 +102,15 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     }
 
     // @override
-    updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
-        if (editorProxy) {
-            this.lastUpdateTetherPromise = this.lastUpdateTetherPromise.then(() =>
-            this._updateTether(followState, editorProxy, position)
-            );
-        }
+    // async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+    //     if (editorProxy) {
+    //         // this.lastUpdateTetherPromise = this.lastUpdateTetherPromise.then(() => {
+    //             await this._updateTether(followState, editorProxy, position);
+    //         // });
+    //     }
 
-        return this.lastUpdateTetherPromise;
-    }
+    //     // return this.lastUpdateTetherPromise;
+    // }
 
     // async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     // }
@@ -140,8 +140,10 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     //     }
     // }
 
-    // Private
-    _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+    // @override
+    async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+        if (!editorProxy) { return; }
+
         if (followState === FollowState.RETRACTED) {
             const editorBinding = this.workspaceManager.getEditorBindingByEditorProxy(editorProxy);
             // await vscode.workspace.openTextDocument(editorBinding?.editor, {searchAllPanes: true});

@@ -32,10 +32,13 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   isUpdating: boolean = false;
   changeCnt: number = 0;
   private emitter: EventEmitter;
+  private didBeforeDispose: ((bufferBinding: BufferBinding) => void) | undefined;
 
 //	constructor(buffer: vscode.TextDocument | undefined, portal: Portal, title: string | undefined, editor: vscode.TextEditor | undefined, isHost: boolean = false, didDispose: Function = doNothing) {
-  constructor(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, title: string | undefined, didDispose: Function = doNothing) {  
+  constructor(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, title: string | undefined, didDispose: Function = doNothing, didBeforeDispose?: (bufferBinding: BufferBinding) => void) {  
     super(didDispose);
+
+    this.didBeforeDispose = didBeforeDispose;
 
     this.uri = uri;
     this.buffer = buffer;
@@ -65,6 +68,10 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   // @override
   dispose () {
     if (!this.disposed) {
+      if (this.didBeforeDispose) {
+        this.didBeforeDispose(this);
+      }
+
       this.unbinding(this.bufferProxy.isHost);
 
       // this.subscriptions.dispose();
@@ -408,8 +415,8 @@ class RemoteFile {
  
 }
 
-export function createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, bufferPath?: string, fsPath?: string, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void) : BufferBinding {
-  const bufferBinding = new BufferBinding(uri, buffer, bufferProxy, bufferPath, didDispose);
+export function createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, bufferPath?: string, fsPath?: string, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void, didBeforeDispose?: (bufferBinding: BufferBinding) => void) : BufferBinding {
+  const bufferBinding = new BufferBinding(uri, buffer, bufferProxy, bufferPath, didDispose, didBeforeDispose);
 
   if (didRquireUpdate) {
     bufferBinding.onRequireUpdate(didRquireUpdate);

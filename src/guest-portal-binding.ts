@@ -82,6 +82,13 @@ export default class GuestPortalBinding extends PortalBinding {
   // didChangeEditorProxies () {    
   // }
 
+  // @override
+  updateActivePositions (positionsBySiteId: Position[]) {
+    // this.sitePositionsComponent.update({positionsBySiteId});
+
+    super.updateActivePositions(positionsBySiteId);
+  }
+
   getRemoteEditors (): any[] | null {
     if (!this.portal) { return null; }
 
@@ -117,7 +124,7 @@ export default class GuestPortalBinding extends PortalBinding {
   // }
 
   // @override
-  async _updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+  async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
     // if (followState === FollowState.RETRACTED) {
     //   this.shouldRelayActiveEditorChanges = false;
     //   const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
@@ -138,14 +145,14 @@ export default class GuestPortalBinding extends PortalBinding {
       if (followState === FollowState.RETRACTED) {
           // this.shouldRelayActiveEditorChanges = false;
           const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
-          if (editor) {
-              // await this.openPaneItem(editor);
-              await vscode.window.showTextDocument(editor.document);
+          if (editor && editor !== vscode.window.activeTextEditor) {
+            // await this.openPaneItem(editor);
+            await vscode.window.showTextDocument(editor.document);
           }
           // this.shouldRelayActiveEditorChanges = true;
       } 
 
-      super._updateTether(followState, editorProxy, position);
+      await super.updateTether(followState, editorProxy, position);
   }
 
   activate () {

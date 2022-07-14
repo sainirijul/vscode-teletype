@@ -11,6 +11,7 @@ import WorkspaceManager from './workspace-manager';
 import { AccountNodeProvider, Dependency } from './ui-account-node-provider';
 import { EditorNodeProvider } from './ui-editor-node-provider';
 import { MemFS } from './memfs-filesystem-provider';
+import { isPortalURI } from './uri-helpers';
 
 const fetch = require('node-fetch');
 const wrtc = require('wrtc');
@@ -168,7 +169,11 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 async function getPortalID() : Promise<string | undefined | null> {
-	let url = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
+	let text = await vscode.env.clipboard.readText();
+	if (!isPortalURI(text)) {
+		text = '';
+	}
+	let url = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join', value: text });
 	if (url) {
 		let portalID = findPortalId(url);
 		return portalID;

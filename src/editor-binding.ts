@@ -215,6 +215,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 
   // @override
   updateSelectionsForSiteId (siteId: number, selections: Selection[]) {
+
     // let markerLayer = this.markerLayersBySiteId.get(siteId);
     // if (!markerLayer) {
     //   markerLayer = this.editor.addMarkerLayer();
@@ -317,7 +318,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   }
 
   // @override
-  public updateTether (state: number, position: Position) {
+  updateTether (state: number, position: Position) {
     // const localCursorDecorationProperties = {type: 'cursor'};
 
     // if (state === FollowState.RETRACTED) {

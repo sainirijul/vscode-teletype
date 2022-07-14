@@ -16,8 +16,8 @@ export default class WorkspaceManager {
 
   private proxyObjectByUri : Map<string, {bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
   // private bufferBindingsByUri : Map<string, BufferBinding>;
-  private bufferBindingsByTextDocument : Map<vscode.TextDocument, BufferBinding>;
   private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
+  private bufferBindingsByTextDocument : Map<vscode.TextDocument, BufferBinding>;
 	// public editorBindingsByEditor : Map<vscode.TextEditor, EditorBinding>;
 	// private editorBindingsByBuffer : Map<vscode.TextDocument, EditorBinding>;
   private editorBindingsByEditorProxy: Map<EditorProxy, EditorBinding>;
@@ -48,26 +48,26 @@ export default class WorkspaceManager {
     // this.emitter = this.DidDispose();
   }
 
-  removeDocumentByBufferBinding(bufferBinding: BufferBinding): void {
-    if (!bufferBinding.buffer) { return; }
+  // removeDocumentByBufferBinding(bufferBinding: BufferBinding): void {
+  //   if (!bufferBinding.buffer) { return; }
   
-    vscode.window.visibleTextEditors.forEach(editor => {
-      if (editor.document === bufferBinding.buffer) {
-        editor.hide();
-        // this.removeEditorBinding(editorBinding);
-        this.removeBufferBinding(bufferBinding);
-      }
-    });
+  //   vscode.window.visibleTextEditors.forEach(editor => {
+  //     if (editor.document === bufferBinding.buffer) {
+  //       editor.hide();
+  //       // this.removeEditorBinding(editorBinding);
+  //       this.removeBufferBinding(bufferBinding);
+  //     }
+  //   });
 
-    // const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
-    // if (editorBinding?.isRemote && !editorBinding.editor.document.isClosed) {
-    //   //vscode. editorBinding.editor.document
-    //   vscode.window.showTextDocument(editorBinding.editor.document);
-    //   vscode.commands.executeCommand("workbench.action.closeActiveEditor");
-    // }
-    // this.removeEditorBinding(editorBinding);
-    // this.removeBufferBinding(bufferBinding);
-  }
+  //   // const editorBinding = this.editorBindingsByBuffer.get(bufferBinding.buffer);
+  //   // if (editorBinding?.isRemote && !editorBinding.editor.document.isClosed) {
+  //   //   //vscode. editorBinding.editor.document
+  //   //   vscode.window.showTextDocument(editorBinding.editor.document);
+  //   //   vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+  //   // }
+  //   // this.removeEditorBinding(editorBinding);
+  //   // this.removeBufferBinding(bufferBinding);
+  // }
 
   removeDocuments(id: string | undefined): void {
     if (!id) { return; }
@@ -81,8 +81,9 @@ export default class WorkspaceManager {
 
   private createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, bufferPath?: string, fsPath?: string) : BufferBinding {
     const bufferBinding = createBufferBinding(uri, buffer, bufferProxy, bufferPath, fsPath, 
-      this.didRequireUpdateBuffer.bind(this), 
-      () => {
+      this.didRequireUpdateBuffer.bind(this),
+      () => {},
+      (bufferBinding) => {
         this.removeBufferBinding(bufferBinding);
       }
     );
@@ -227,7 +228,7 @@ export default class WorkspaceManager {
     return undefined;
   }
 
-  // host에서 파일 열기
+  // guest 파일 열기
   public async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy, portal?: Portal) : Promise<vscode.TextEditor | undefined> {
     let editor: vscode.TextEditor | undefined;
 
@@ -351,7 +352,7 @@ export default class WorkspaceManager {
     const proxyObject = this.proxyObjectByUri.get(bufferBinding.uri);
     if (proxyObject) {
       proxyObject.editorProxy?.dispose();
-      this.proxyObjectByUri.delete(bufferBinding.uri);
+      this.removeProxyObject(bufferBinding.uri);
     }
 
     // if (!bufferBinding || !bufferBinding.fsPath) { return; }

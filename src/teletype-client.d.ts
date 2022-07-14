@@ -257,7 +257,7 @@ declare module '@atom/teletype-client' {
         updateActivePositions(positionsBySiteId: Position[]): void;
         hostDidLoseConnection(): void
         hostDidClosePortal(): void;
-        updateTether(state: number, editorProxy: EditorProxy, position: Position): void;
+        updateTether(state: number, editorProxy: EditorProxy, position: Position): Promise<void>;
         siteDidJoin(siteId: number): void;
         siteDidLeave(siteId: number): void;
         didChangeEditorProxies(): void;    
