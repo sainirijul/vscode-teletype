@@ -125,6 +125,8 @@ export default class GuestPortalBinding extends PortalBinding {
 
   // @override
   async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+    if (!editorProxy) { return; }
+
     // if (followState === FollowState.RETRACTED) {
     //   this.shouldRelayActiveEditorChanges = false;
     //   const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
