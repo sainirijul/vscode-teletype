@@ -69,8 +69,12 @@ export default class WorkspaceManager {
   //   // this.removeBufferBinding(bufferBinding);
   // }
 
-  removeDocuments(id: string | undefined): void {
+  async removeDocuments(id: string | undefined) {
     if (!id) { return; }
+
+    // await vscode.commands.executeCommand('workbench.action.nextEditor');
+    // vscode.window.activeTextEditor?.document
+    // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
     // this.bufferBindings.forEach(bufferBinding => {
     //   if (bufferBinding.portal?.id === id) {

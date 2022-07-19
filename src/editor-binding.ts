@@ -317,21 +317,21 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     return false;
   }
 
-  // @override
-  updateTether (state: number, position: Position) {
-    // const localCursorDecorationProperties = {type: 'cursor'};
+  // // @override
+  // updateTether (state: number, position: Position) {
+  //   // const localCursorDecorationProperties = {type: 'cursor'};
 
-    // if (state === FollowState.RETRACTED) {
-    //   this.editor.destroyFoldsIntersectingBufferRange(Range(position, position));
-    //   this.batchMarkerUpdates(() => this.editor.setCursorBufferPosition(position));
+  //   // if (state === FollowState.RETRACTED) {
+  //   //   this.editor.destroyFoldsIntersectingBufferRange(Range(position, position));
+  //   //   this.batchMarkerUpdates(() => this.editor.setCursorBufferPosition(position));
 
-    //   localCursorDecorationProperties.style = {opacity: 0};
-    // } else {
-    //   localCursorDecorationProperties.class = cursorClassForSiteId(this.editorProxy.siteId);
-    // }
+  //   //   localCursorDecorationProperties.style = {opacity: 0};
+  //   // } else {
+  //   //   localCursorDecorationProperties.class = cursorClassForSiteId(this.editorProxy.siteId);
+  //   // }
 
-    // this.localCursorLayerDecoration.setProperties(localCursorDecorationProperties);
-  }
+  //   // this.localCursorLayerDecoration.setProperties(localCursorDecorationProperties);
+  // }
 
   getDirectionFromViewportToPosition (bufferPosition: Position) {
     // const {element} = this.editor;

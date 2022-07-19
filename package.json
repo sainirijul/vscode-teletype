@@ -58,7 +58,8 @@
 			},
 			{
 				"command": "extension.copy-portal-url",
-				"title": "Copy Portal URL to Clipboard"
+				"title": "Copy Portal URL to Clipboard",
+				"icon": "$(explorer-view-icon)"
 			},
 			{
 				"command": "extension.show-editor",
@@ -163,6 +164,11 @@
 					"command": "extension.copy-portal-url",
 					"when": "view == teletype.accountsView && viewItem == Host",
 					"group": "portal"
+				},
+				{
+					"command": "extension.copy-portal-url",
+					"when": "view == teletype.accountsView && viewItem == Host",
+					"group": "inline"
 				},
 				{
 					"command": "extension.join-portal",

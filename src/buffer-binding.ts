@@ -95,7 +95,11 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 
   unbinding(isHost: boolean) {
     if (!isHost && this.fsPath) {
-      fs.unlinkSync(this.fsPath);
+      // fs.unlinkSync(this.fsPath);
+
+      const we = new vscode.WorkspaceEdit();
+      we.deleteFile(vscode.Uri.file(this.fsPath));
+      vscode.workspace.applyEdit(we);
     }
     this.buffer = undefined;
   }

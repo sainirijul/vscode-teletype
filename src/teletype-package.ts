@@ -13,7 +13,8 @@ import { CredentialCache } from './credential-cache';
 import WorkspaceManager from './workspace-manager';
 import { PortalBinding } from './portal-binding';
 import GuestPortalBinding from './guest-portal-binding';
-//import * as fs from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 export default class TeletypePackage {
@@ -380,11 +381,47 @@ export default class TeletypePackage {
 	  this.workspaceManager.showEditor(item);
   }
 
-  test() {
+  async test() {
     if (vscode.window.activeTextEditor) {
       // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');
     }
 
+    // vscode.commands.executeCommand('explorer.newFile', 'xxxx.txt');
+
+    if (vscode.workspace.workspaceFolders) {
+      console.log(vscode.workspace.workspaceFolders[0]);
+      const fsPath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, 'vscode_builtin_commands.txt');
+      // let cmds: string[] = [];
+      // (await vscode.commands.getCommands()) .forEach(value => {
+      //   cmds.push(value);
+      // });
+      // const cmds = await vscode.commands.getCommands();
+      // fs.writeFileSync(fsPath, cmds.join('\n'));
+      // vscode.commands.executeCommand('vscode.open', vscode.Uri.file(fsPath));
+      //vscode.commands.executeCommand('deleteFile', vscode.Uri.file(fsPath));
+      const we = new vscode.WorkspaceEdit();
+      we.deleteFile(vscode.Uri.file(fsPath));
+      vscode.workspace.applyEdit(we);
+    }
+
+    // (await vscode.commands.getCommands()).forEach(value => {
+    //   console.log(value);
+    // });
+
+    // await vscode.commands.executeCommand('workbench.action.nextEditor');
+    // console.log(">>> activeEditor:");
+    // console.log(vscode.window.activeTextEditor?.document.uri.toString());
+    // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+
+    console.log(">>> workspaceManager:");
     console.log(this.workspaceManager);
+
+    console.log(">>> visibleTextEditors:");
+    console.log(vscode.window.visibleTextEditors);
+
+    console.log(">>> textDocuments:");
+    console.log(vscode.workspace.textDocuments);
+
+    // workbench.action
   }
 }

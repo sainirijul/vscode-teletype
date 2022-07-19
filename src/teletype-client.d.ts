@@ -100,7 +100,7 @@ declare module '@atom/teletype-client' {
         isScrollNeededToViewPosition(position: Position): boolean;
         updateActivePositions(positionsBySiteId: Position[]): void;
         updateSelectionsForSiteId(...args: any[]): void;
-        updateTether(state: number, position: Position): void;
+        // updateTether(state: number, position: Position): void;
     }
 
     export class EditorProxy {
