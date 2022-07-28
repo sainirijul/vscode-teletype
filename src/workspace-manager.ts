@@ -238,19 +238,19 @@ export default class WorkspaceManager {
     return bufferBinding;
   }
   
-  public findOrCreateEditorBindingForEditor (editor: vscode.TextEditor, portal: Portal | undefined) : EditorBinding | undefined {
-    let editorBinding = this.getEditorBindingByEditor(editor);
-    if (editorBinding) {
-      return editorBinding;
-    } else {
-      if (portal) {
-        const proxyObj = this.proxyObjectByUri.get(editor.document.uri.toString());
-        const editorBinding = this.addEditor(editor, portal, true, undefined, proxyObj?.editorProxy);
-        return editorBinding;
-      }
-    }
-    return undefined;
-  }
+  // public findOrCreateEditorBindingForEditor (editor: vscode.TextEditor, portal: Portal | undefined) : EditorBinding | undefined {
+  //   let editorBinding = this.getEditorBindingByEditor(editor);
+  //   if (editorBinding) {
+  //     return editorBinding;
+  //   } else {
+  //     if (portal) {
+  //       // const proxyObj = this.proxyObjectByUri.get(editor.document.uri.toString());
+  //       // const editorBinding = this.addEditor(editor, portal, true, undefined, proxyObj?.editorProxy);
+  //       // return editorBinding;
+  //     }
+  //   }
+  //   return undefined;
+  // }
 
   // guest 파일 열기
   public async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy, portal?: Portal) : Promise<vscode.TextEditor | undefined> {

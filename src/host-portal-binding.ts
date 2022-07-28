@@ -151,7 +151,9 @@ export default class HostPortalBinding extends PortalBinding {
         if (bufferBinding?.bufferProxy.isHost) {
           //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
           //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
-          const editorBinding = this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal);
+          const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
+
+          // const editorBinding = this.workspaceManager.findOrCreateEditorBindingForEditor(editor, this.portal);
           // if (editorBinding?.editorProxy !== this.portal?.activateEditorProxy) {
             editorProxy = editorBinding?.editorProxy;
             // this.sitePositionsComponent.show(editor.element);
