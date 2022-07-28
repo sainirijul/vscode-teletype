@@ -39,7 +39,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				host.portal?.bufferProxiesById.forEach((a,_) => {
 					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 					if (binding) {
-						lst.push(new Dependency(binding.fsPath ?? binding.uri, binding.uri, undefined, true));
+						lst.push(new Dependency(binding.uri, binding.fsPath ?? binding.uri, true));
 					}
 				});
 				// host.portal?.editorProxiesById.forEach((a,_) => {
@@ -52,7 +52,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					guest.portal?.bufferProxiesById.forEach((a,_) => {
 						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 						if (binding) {
-							lst.push(new Dependency(`* ${binding.uri}`, binding.fsPath));
+							lst.push(new Dependency(binding.uri, binding.fsPath));
 						}
 					});
 					// guest.portal?.editorProxiesById.forEach((a,_) => {
@@ -80,19 +80,24 @@ export class Dependency extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
 		public readonly path?: string,
-		public readonly iconUri?: vscode.Uri,
 		public readonly isHost?: boolean,
+		public readonly iconPath?: vscode.Uri | string | vscode.ThemeIcon,
 		public readonly collapsibleState?: vscode.TreeItemCollapsibleState
 	) {
 		super(label, collapsibleState);
 
-		this.iconPath = iconUri;
+		if (iconPath) {
+			this.iconPath = iconPath;
+		} else if (!isHost) {
+			this.iconPath = new vscode.ThemeIcon('link');
+		}
+
 		this.tooltip = `${this.label}`;
 		// this.description = `${this.label}`;
 
 		this.command = {title: 'Open Editor', command: 'extension.show-editor',
 						 // arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
-						 arguments: [this.isHost ? vscode.Uri.file(label) : this.path? vscode.Uri.file(this.path) : '']
+						 arguments: [this.path ?vscode.Uri.file(this.path) : '']
 					   };
 	}
 

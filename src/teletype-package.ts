@@ -413,14 +413,16 @@ export default class TeletypePackage {
     // console.log(vscode.window.activeTextEditor?.document.uri.toString());
     // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 
-    console.log(">>> workspaceManager:");
-    console.log(this.workspaceManager);
+    this.workspaceManager.debugWorkspaceInfo();
 
-    console.log(">>> visibleTextEditors:");
-    console.log(vscode.window.visibleTextEditors);
+    // console.log(">>> workspaceManager:");
+    // console.log(this.workspaceManager);
 
-    console.log(">>> textDocuments:");
-    console.log(vscode.workspace.textDocuments);
+    // console.log(">>> visibleTextEditors:");
+    // console.log(vscode.window.visibleTextEditors);
+
+    // console.log(">>> textDocuments:");
+    // console.log(vscode.workspace.textDocuments);
 
     // workbench.action
   }

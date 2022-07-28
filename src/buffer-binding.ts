@@ -16,8 +16,9 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   // public textBuffer: string = '';
 	public buffer?: vscode.TextDocument;
   public bufferProxy!: BufferProxy;
+  public portal!: Portal;
   // public portal!: Portal;
-  public title: string | undefined;
+  // public title: string | undefined;
 	// public editor?: vscode.TextEditor;
 	// private readonly isHost: boolean;
   // emitDidDispose: Function;
@@ -35,7 +36,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   private didBeforeDispose: ((bufferBinding: BufferBinding) => void) | undefined;
 
 //	constructor(buffer: vscode.TextDocument | undefined, portal: Portal, title: string | undefined, editor: vscode.TextEditor | undefined, isHost: boolean = false, didDispose: Function = doNothing) {
-  constructor(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, title: string | undefined, didDispose: Function = doNothing, didBeforeDispose?: (bufferBinding: BufferBinding) => void) {  
+  constructor(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, portal: Portal, didDispose: Function = doNothing, didBeforeDispose?: (bufferBinding: BufferBinding) => void) {  
     super(didDispose);
 
     this.didBeforeDispose = didBeforeDispose;
@@ -46,7 +47,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 
     // this.portal = portal;
     // this.path = path ?? buffer.uri.toString();
-    this.title = title ?? uri;
+    // this.title = title ?? uri;
     // this.editor = editor;
     // this.isHost = isHost;
     // this.emitDidDispose = didDispose || doNothing;
@@ -60,7 +61,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 
     this.emitter = new EventEmitter();
 
-    this.setBufferProxy(bufferProxy);
+    this.setBufferProxyAndPortal(bufferProxy, portal);
 
     this.monkeyPatchBufferMethods(this.buffer);
   }
@@ -82,6 +83,13 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
       if (this.bufferDestroySubscription) { this.bufferDestroySubscription.dispose(); }
       if (this.remoteFile) { this.remoteFile.dispose(); }
       // this.emitDidDispose();
+
+      // teletype-client에서 자동으로 해 주지 않아서 수동으로 연결 된 editorProxy들을 찾아서 청소해 줘야 한다.
+      this.portal.editorProxiesById.forEach(editorProxy => {
+        if(editorProxy.bufferProxy === this.bufferProxy) {
+          editorProxy.dispose();
+        }
+      });
 
       this.disposed = true;
     }
@@ -108,8 +116,9 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
     this.buffer = buffer;
   }
 
-  setBufferProxy (bufferProxy: BufferProxy) {
+  setBufferProxyAndPortal (bufferProxy: BufferProxy, portal: Portal) {
     this.bufferProxy = bufferProxy;
+    this.portal = portal;
 
     // // this.buffer?.setHistoryProvider(this);
     while (this.pendingChanges.length > 0) {
@@ -319,7 +328,8 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   }
 
   getBufferProxyURI () {
-    return this.title ?? 'untitled';
+    return this.bufferProxy.uri;
+    // return this.title ?? 'untitled';
     // if (!this.buffer.uri.fsPath) { return 'untitled'; }
     // const [projectPath, relativePath] = atom.workspace.project.relativizePath(this.buffer.uri.fsPath);
     // if (projectPath) {
@@ -419,8 +429,8 @@ class RemoteFile {
  
 }
 
-export function createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, bufferPath?: string, fsPath?: string, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void, didBeforeDispose?: (bufferBinding: BufferBinding) => void) : BufferBinding {
-  const bufferBinding = new BufferBinding(uri, buffer, bufferProxy, bufferPath, didDispose, didBeforeDispose);
+export function createBufferBinding(uri: string, buffer: vscode.TextDocument | undefined, bufferProxy: BufferProxy, portal: Portal, fsPath?: string, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void, didBeforeDispose?: (bufferBinding: BufferBinding) => void) : BufferBinding {
+  const bufferBinding = new BufferBinding(uri, buffer, bufferProxy, portal, didDispose, didBeforeDispose);
 
   if (didRquireUpdate) {
     bufferBinding.onRequireUpdate(didRquireUpdate);

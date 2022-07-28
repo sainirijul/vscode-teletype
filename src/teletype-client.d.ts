@@ -23,7 +23,7 @@ declare module '@atom/teletype-client' {
 
     export class BufferProxy {
         id: number;
-        uri: any;
+        uri: string;
 		onDidChangeBuffer: any;
         isHost: boolean;
         hostPeerId: string; 
