@@ -60,6 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		// pusherOptions.encrypted = true;
 	}
 
+	vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
 
 	const teletype = new TeletypePackage({
 		fs: memFs,
@@ -102,8 +103,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		} else {
 			vscode.window.showInformationMessage('Trying to SignIn...');
 			if (await (globalAny.teletype as TeletypeClient).signIn(token)) {
+				vscode.commands.executeCommand('setContext', 'teletype:isSignin', true);
 				vscode.window.showInformationMessage("SignIn successeded.");
 			} else {
+				vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
 				vscode.window.showErrorMessage("SignIn failed.");
 			}
 		}
@@ -114,6 +117,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('extension.teletype-signout', async () => {
 
 		await (globalAny.teletype as TeletypeClient).signOut();
+		vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
 
 	});
 	context.subscriptions.push(disposable);
@@ -156,6 +160,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	disposable = vscode.commands.registerCommand('extension.show-editor', (item: any) => {
 		(globalAny.teletype as TeletypePackage).showEditor(item);
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.follow-portal', (item: any) => {
+		vscode.window.showInformationMessage('Follow portal');
+		(globalAny.teletype as TeletypePackage).followPortal(item);
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.unfollow-portal', (item: any) => {
+		vscode.window.showInformationMessage('Unfollow portal');
+		(globalAny.teletype as TeletypePackage).unfollowPortal(item);
 	});
 	context.subscriptions.push(disposable);
 

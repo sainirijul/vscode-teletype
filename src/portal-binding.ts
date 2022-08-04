@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { EventEmitter } from 'events';
 import { SelectionMap, Selection, Position, Range} from './teletype-types';
-import { EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient } from "@atom/teletype-client";
+import { EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 
@@ -97,8 +97,13 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     }
 
     // @override
-    updateActivePositions (positionsBySiteId: Position[]) {
+    updateActivePositions (positionsBySiteId: UpdatePosition[]) {
+        // positionsBySiteId.forEach(async (position) => {
+        //     await this.updateTether(position.followState, position.editorProxy, position.position);
+        // });
+
         // this.sitePositionsComponent.update({positionsBySiteId});
+        this.emitter.emit('did-change');
     }
 
     // @override

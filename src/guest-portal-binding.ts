@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
 import { SelectionMap, Selection, Position, Range} from './teletype-types';
-import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal, IPortalDelegate, EditorProxyMetadata} from '@atom/teletype-client';
+import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal, IPortalDelegate, EditorProxyMetadata, UpdatePosition} from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
 import EditorBinding from './editor-binding';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
@@ -83,7 +83,7 @@ export default class GuestPortalBinding extends PortalBinding {
   // }
 
   // @override
-  updateActivePositions (positionsBySiteId: Position[]) {
+  updateActivePositions (positionsBySiteId: UpdatePosition[]) {
     // this.sitePositionsComponent.update({positionsBySiteId});
 
     super.updateActivePositions(positionsBySiteId);
@@ -146,10 +146,15 @@ export default class GuestPortalBinding extends PortalBinding {
       // guest:
       if (followState === FollowState.RETRACTED) {
           // this.shouldRelayActiveEditorChanges = false;
-          const editor = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
-          if (editor && editor !== vscode.window.activeTextEditor) {
+          const editorBinding = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+          // if (editor && editor !== vscode.window.activeTextEditor) {
+          if (editorBinding?.bufferBinding.buffer) {
             // await this.openPaneItem(editor);
-            await vscode.window.showTextDocument(editor.document);
+            //if (editorBinding.editor) {
+              //await vscode.window.showTextDocument(editorBinding.bufferBinding.buffer);
+            //} else {
+              await vscode.commands.executeCommand('vscode.open', editorBinding.bufferBinding.buffer.uri);              
+            //}
           }
           // this.shouldRelayActiveEditorChanges = true;
       } 

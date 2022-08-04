@@ -40,11 +40,13 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 					if (binding) {
 						lst.push(new Dependency(binding.uri, binding.fsPath ?? binding.uri, true));
+					} else {
+						lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
 					}
 				});
-				// host.portal?.editorProxiesById.forEach((a,_) => {
-				// 	lst.push(new Dependency(a.bufferProxy.uri));
-				// });
+				host.portal?.editorProxiesById.forEach((a,_) => {
+				 	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
+				});
 			}
 			const guests = await this.portalBindingManager.getGuestPortalBindings();
 			if (guests) {
@@ -53,11 +55,13 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 						if (binding) {
 							lst.push(new Dependency(binding.uri, binding.fsPath));
+						} else {
+							lst.push(new Dependency(`(unbinded) ${a.uri}`));
 						}
 					});
-					// guest.portal?.editorProxiesById.forEach((a,_) => {
-					// 	lst.push(new Dependency(`* ${a.bufferProxy.uri}`));
-					// });
+					guest.portal?.editorProxiesById.forEach((a,_) => {
+						lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`));
+					});
 				});				
 			}
 
@@ -95,10 +99,12 @@ export class Dependency extends vscode.TreeItem {
 		this.tooltip = `${this.label}`;
 		// this.description = `${this.label}`;
 
-		this.command = {title: 'Open Editor', command: 'extension.show-editor',
-						 // arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
-						 arguments: [this.path ?vscode.Uri.file(this.path) : '']
-					   };
+		if (this.path) {
+			this.command = {title: 'Open Editor', command: 'extension.show-editor',
+							// arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
+							arguments: [this.path ?vscode.Uri.file(this.path) : '']
+						};
+		}
 	}
 
 	// iconPath = {

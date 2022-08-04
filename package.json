@@ -27,6 +27,8 @@
 		"onCommand:extension.copy-portal-url",
 		"onCommand:extension.join-portal",
 		"onCommand:extension.leave-portal",
+		"onCommand:extension.follow-portal",
+		"onCommand:extension.unfollow-portal",
 		"onCommand:extension.test"
 	],
 	"main": "./out/extension.js",
@@ -64,6 +66,16 @@
 			{
 				"command": "extension.show-editor",
 				"title": "Show Editor"
+			},
+			{
+				"command": "extension.follow-portal",
+				"title": "Follow Portal",
+				"icon": "$(sync)"
+			},
+			{
+				"command": "extension.unfollow-portal",
+				"title": "Unfollow Portal",
+				"icon": "$(sync-ignored)"
 			},
 			{
 				"command": "extension.test",
@@ -140,12 +152,12 @@
 			"view/title": [
 				{
 					"command": "extension.teletype-signin",
-					"when": "view == teletype.accountsView && !isSignin",
+					"when": "view == teletype.accountsView && !teletype:isSignin",
 					"group": "identify"
 				},
 				{
 					"command": "extension.teletype-signout",
-					"when": "view == teletype.accountsView && isSignin",
+					"when": "view == teletype.accountsView && teletype:isSignin",
 					"group": "identify"
 				}
 			],
@@ -179,6 +191,26 @@
 					"command": "extension.leave-portal",
 					"when": "view == teletype.accountsView && viewItem == Guest",
 					"group": "portal"
+				},
+				{
+					"command": "extension.follow-portal",
+					"when": "view == teletype.accountsView && viewItem == FollowableMember",
+					"group": "portal"
+				},
+				{
+					"command": "extension.follow-portal",
+					"when": "view == teletype.accountsView && viewItem == FollowableMember",
+					"group": "inline"
+				},
+				{
+					"command": "extension.unfollow-portal",
+					"when": "view == teletype.accountsView && viewItem == FollowedMember",
+					"group": "portal"
+				},
+				{
+					"command": "extension.unfollow-portal",
+					"when": "view == teletype.accountsView && viewItem == FollowedMember",
+					"group": "inline"
 				}
 			]
 		}

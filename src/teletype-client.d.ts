@@ -21,6 +21,12 @@ declare module '@atom/teletype-client' {
         updateText(updates: any[]) : void;
     }
 
+    export interface UpdatePosition {
+        followState: number;
+        editorProxy: EditorProxy;
+        position: Position;
+    }    
+
     export class BufferProxy {
         id: number;
         uri: string;
@@ -98,7 +104,7 @@ declare module '@atom/teletype-client' {
         dispose(): void;
         clearSelectionsForSiteId(siteId: number): void;
         isScrollNeededToViewPosition(position: Position): boolean;
-        updateActivePositions(positionsBySiteId: Position[]): void;
+        updateActivePositions(positionsBySiteId: UpdatePosition[]): void;
         updateSelectionsForSiteId(...args: any[]): void;
         // updateTether(state: number, position: Position): void;
     }
@@ -254,7 +260,7 @@ declare module '@atom/teletype-client' {
 
     export interface IPortalDelegate {
         dispose(): void;
-        updateActivePositions(positionsBySiteId: Position[]): void;
+        updateActivePositions(positionsBySiteId: UpdatePosition[]): void;
         hostDidLoseConnection(): void
         hostDidClosePortal(): void;
         updateTether(state: number, editorProxy: EditorProxy, position: Position): Promise<void>;
@@ -376,7 +382,7 @@ declare module '@atom/teletype-client' {
 
         unfollow(): void;
 
-        updateActivePositions(...args: any[]): void;
+        updateActivePositions(positionsBySiteId: UpdatePosition[]): void;
 
     }
 

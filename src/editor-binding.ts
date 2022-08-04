@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as converter from './teletype-converter';
 import {EventEmitter} from 'events';
-import {EditorProxy, IEditorDelegate, Portal} from '@atom/teletype-client';
+import {EditorProxy, IEditorDelegate, Portal, UpdatePosition} from '@atom/teletype-client';
 import {SelectionMap, Selection, Position, Range} from './teletype-types';
 
 // import path = require('path');
@@ -20,7 +20,7 @@ interface SiteDecoration {
 function doNothing () {}
 
 export default class EditorBinding extends vscode.Disposable implements IEditorDelegate {
-	public readonly editor: vscode.TextEditor;
+	public editor: vscode.TextEditor | undefined;
   public readonly title: string;
 	// public portal: Portal | undefined;
 	// private readonly isHost: boolean;
@@ -66,7 +66,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   }
 
   // @override
-  updateActivePositions(positionsBySiteId: Position[]): void {
+  updateActivePositions(positionsBySiteId: UpdatePosition[]): void {
 
   }
 
@@ -84,7 +84,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
       // this.markerLayersBySiteId.clear();
       if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
-      if (!this.editor.document.isClosed) {
+      if (!this.editor?.document.isClosed) {
         // if (vscode.window.activeTextEditor !== this.editor){
         //   await vscode.window.showTextDocument(this.editor.document);
         // }
@@ -124,6 +124,10 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     // this.subscriptions.add(this.editor.element.onDidChangeScrollLeft(this.editorDidChangeScrollLeft.bind(this)));
     // this.subscriptions.add(subscribeToResizeEvents(this.editor.element, this.editorDidResize.bind(this)));
     this.relayLocalSelections();
+  }
+
+  setTextEditor(editor: vscode.TextEditor | undefined) {
+    this.editor = editor;
   }
 
   monkeyPatchEditorMethods (editor: any, editorProxy: EditorProxy) {
@@ -400,20 +404,6 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
       );
     // }
   }
-
-  // toggleFollowingForSiteId (siteId: number) {
-  //   // portal이 아니라 editorProxy가 맞나???
-  //   // if (siteId === this.editorProxy?.getFollowedSiteId()) {
-  //   //   this.editorProxy?.unfollow();
-  //   // } else {
-  //   //   this.editorProxy?.follow(siteId);
-  //   // }
-  //   if (siteId === this.portal?.getFollowedSiteId()) {
-  //     this.portal?.unfollow();
-  //   } else {
-  //     this.portal?.follow(siteId);
-  //   }
-  // }
 
 	private createDecorationFromSiteId(siteId: number): SiteDecoration {
 		const selectionDecorationRenderOption: vscode.DecorationRenderOptions = {

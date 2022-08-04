@@ -37,9 +37,11 @@ export class AuthenticationProvider {
     if (this.isSignedIn()) { return true; }
 
     if (await this._signIn(token)) {
+      vscode.commands.executeCommand('setContext', 'teletype:isSignin', true);
       await this.credentialCache.set('oauth-token', token);
       return true;
     } else {
+      vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
       return false;
     }
   }
@@ -48,6 +50,7 @@ export class AuthenticationProvider {
     if (!this.isSignedIn()) { return; }
 
     this.client.signOut();
+    vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
     
     await this.credentialCache.delete('oauth-token');
   }

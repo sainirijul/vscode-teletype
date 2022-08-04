@@ -381,6 +381,15 @@ export default class TeletypePackage {
 	  this.workspaceManager.showEditor(item);
   }
 
+  followPortal(item: any) {
+	  console.log(item);
+    item.value?.portal?.follow(item.value?.siteId);
+  }
+
+  unfollowPortal(item: any) {
+    item.value?.portal?.unfollow();
+  }
+
   async test() {
     if (vscode.window.activeTextEditor) {
       // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');

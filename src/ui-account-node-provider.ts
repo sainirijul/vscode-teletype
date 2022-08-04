@@ -10,6 +10,8 @@ import { AuthenticationProvider } from './authentication-provider';
 // import { IMemberIdentify } from '@atom/teletype-client';
 
 export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> {
+	public isSignin : boolean = true;
+	
 	public static readonly viewType = 'teletype.accountsView';
 
     private portalBindingUri: string | undefined;
@@ -98,9 +100,9 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
 			const ids = element.value.portal?.getActiveSiteIds();
 			if (ids) {
 				ids.map(siteId => {
-					const identify = element.value.portal.getSiteIdentity(siteId);					
+					const identify = element.value.portal.getSiteIdentity(siteId);
 					const avatarUrl = getAvatarUrl(identify.login, 32);
-					lst.push(new Dependency(identify.login, siteId, identify, vscode.Uri.parse(avatarUrl)));
+					lst.push(new Dependency(identify.login, siteId, {portal: element.value.portal, siteId, identify}, vscode.Uri.parse(avatarUrl)));
 				});
 			}
 		}
@@ -128,8 +130,22 @@ export class Dependency extends vscode.TreeItem {
 				} else if (value instanceof GuestPortalBinding) {
 					this.contextValue = 'Guest';
 				}
-			} else if ('login' in value) {
-				this.description = (id === 1)? '(me)' : undefined;
+			} else if ('portal' in value) {
+				if (id === value.portal.getLocalSiteId()) {
+					this.description = '(me)';
+					this.contextValue = 'Member';
+				} else {
+					if (id === value.portal.getFollowedSiteId()) {
+						this.description = (id === 1)? '(Host) *' : '*';
+						this.contextValue = 'FollowedMember';
+					} else {
+						this.description = (id === 1)? '(Host)' : undefined;
+						this.contextValue = 'FollowableMember';
+					}
+				}
+
+				// this.command = {title: 'Follow', command: 'teletype.follow-portal',
+				// 	arguments: [value.portal, value.identify]	
 			}
 		} else {
 			this.description = '(signed)';
@@ -149,3 +165,10 @@ export class Dependency extends vscode.TreeItem {
 
 	// contextValue = 'dependency';
 }
+
+// if (siteId === this.guest.getFollowedSiteId()) {
+// 	guest.portal.unfollow()
+//   } else {
+// 	guest.portal.follow(siteId)
+//   }
+// }

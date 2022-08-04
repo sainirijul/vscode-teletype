@@ -31,7 +31,7 @@ export default class WorkspaceManager {
   // private bufferBindings: BufferBinding[];
   // private editorBindings: EditorBinding[];
 
-  private proxyObjectByUri : Map<string, {bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
+  private proxyObjectByUri : Map<string, {portal: Portal, bufferProxy: BufferProxy, editorProxy: EditorProxy}>;
   // private bufferBindingsByUri : Map<string, BufferBinding>;
   private bufferBindingsByBufferProxy : Map<BufferProxy, BufferBinding>;
   private bufferBindingsByTextDocument : Map<vscode.TextDocument, BufferBinding>;
@@ -154,36 +154,36 @@ export default class WorkspaceManager {
     return editorBinding;
   }
 
-  public addEditor(editor: vscode.TextEditor, portal: Portal, isHost: boolean, bufferBinding?: BufferBinding, editorProxy?: EditorProxy | undefined): EditorBinding | undefined {
-    if (!bufferBinding) {
-      bufferBinding = this.findOrCreateBufferBindingForBuffer(editor.document, portal);
-      if (!bufferBinding) {
-        this.notificationManager?.addError('bufferProxy create failed.');
-        return undefined;
-      }
-    }
+  // public addEditor(editor: vscode.TextEditor, portal: Portal, isHost: boolean, bufferBinding?: BufferBinding, editorProxy?: EditorProxy | undefined): EditorBinding | undefined {
+  //   if (!bufferBinding) {
+  //     bufferBinding = this.findOrCreateBufferBindingForBuffer(editor.document, portal);
+  //     if (!bufferBinding) {
+  //       this.notificationManager?.addError('bufferProxy create failed.');
+  //       return undefined;
+  //     }
+  //   }
 
-    if (!editorProxy){
-      editorProxy = portal.createEditorProxy({bufferProxy: bufferBinding.bufferProxy});
-    }    
-    const editorBinding = this.createEditorBinding(editor, editorProxy, bufferBinding);
+  //   if (!editorProxy){
+  //     editorProxy = portal.createEditorProxy({bufferProxy: bufferBinding.bufferProxy});
+  //   }    
+  //   const editorBinding = this.createEditorBinding(editor, editorProxy, bufferBinding);
 
-    //const editorBinding = new EditorBinding(editor, bufferBinding, undefined, portal, isHost);
+  //   //const editorBinding = new EditorBinding(editor, bufferBinding, undefined, portal, isHost);
     
-    //editorProxy?.setDelegate(editorBinding);
-    // editorBinding.setEditorProxy(editorProxy);
-    // this.addEditorBinding(editorBinding);
+  //   //editorProxy?.setDelegate(editorBinding);
+  //   // editorBinding.setEditorProxy(editorProxy);
+  //   // this.addEditorBinding(editorBinding);
 
-    // editorBinding?.onDidDispose(() => {
-    //   //   didDestroyEditorSubscription.dispose();
-    //   this.removeEditorBinding(editorBinding);
-    //   this.emitter.emit('did-change');
-    // });
+  //   // editorBinding?.onDidDispose(() => {
+  //   //   //   didDestroyEditorSubscription.dispose();
+  //   //   this.removeEditorBinding(editorBinding);
+  //   //   this.emitter.emit('did-change');
+  //   // });
 
-    // this.emitter.emit('did-change');
+  //   // this.emitter.emit('did-change');
 
-    return editorBinding;
-  }
+  //   return editorBinding;
+  // }
 
   // Host에서 문서 열 때
   public findOrCreateBufferBindingForBuffer (buffer: vscode.TextDocument, portal?: Portal) : BufferBinding | undefined {
@@ -230,7 +230,7 @@ export default class WorkspaceManager {
     // bufferBinding.setBufferProxy(bufferProxy);
     // bufferBinding.setBuffer(buffer);
 
-    this.addProxyObject(buffer.uri.toString(), bufferProxy, editorProxy);
+    this.addProxyObject(buffer.uri.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
 
     this.emitter.emit('did-change');
@@ -253,13 +253,11 @@ export default class WorkspaceManager {
   // }
 
   // guest 파일 열기
-  public async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy, portal?: Portal) : Promise<vscode.TextEditor | undefined> {
+  public async findOrCreateEditorForEditorProxy (editorProxy: EditorProxy, portal?: Portal) : Promise<EditorBinding | undefined> {
     let editor: vscode.TextEditor | undefined;
 
     let editorBinding = this.editorBindingsByEditorProxy.get(editorProxy);
-    if (editorBinding) {
-      editor = editorBinding.editor;
-    } else {
+    if (!editorBinding) {
       const {bufferProxy} = editorProxy;
       // this.addProxyObject(bufferProxy.uri, bufferProxy, editorProxy);
       const buffer = await this.findOrCreateBufferForEditorProxy(editorProxy, portal);
@@ -275,7 +273,7 @@ export default class WorkspaceManager {
       }
     }
 
-    return editor;
+    return editorBinding;
   }
 
   // guest에서 리모트 파일 연결 된 에디터 열기
@@ -319,7 +317,7 @@ export default class WorkspaceManager {
     //const editor = await vscode.window.showTextDocument(buffer);
     //bufferBinding.assignEditor(buffer, undefined);
 
-    this.addProxyObject(vscode.Uri.file(filePath).toString(), bufferProxy, editorProxy);
+    this.addProxyObject(vscode.Uri.file(filePath).toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
 
     return bufferBinding;
@@ -339,10 +337,10 @@ export default class WorkspaceManager {
   //   this.emitter.emit('did-change');    
   // }
 
-  private addProxyObject(uri: string | undefined, bufferProxy: BufferProxy, editorProxy: EditorProxy) {
+  private addProxyObject(uri: string | undefined, portal: Portal, bufferProxy: BufferProxy, editorProxy: EditorProxy) {
     const path = uri ?? bufferProxy.uri;
     if (this.proxyObjectByUri.has(path)) { return; }
-    this.proxyObjectByUri.set(path, {bufferProxy, editorProxy});
+    this.proxyObjectByUri.set(path, {portal, bufferProxy, editorProxy});
   }
 
   private removeProxyObject(uri: string | BufferProxy) {
@@ -451,18 +449,20 @@ export default class WorkspaceManager {
     return this.bufferBindingsByBufferProxy.get(bufferProxy);
   }
 
+  // 현재 활성화 된 editor들과 editorProxy를 연결시켜서 동기화시킨다.
   synchronizedShowingEditors(editors : vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
     if (editors) {
       let newList = new Map(this.editorBindingsByEditorProxy);
-      this.editorBindingsByEditorProxy.clear();
+      // this.editorBindingsByEditorProxy.clear();
 
       editors.forEach(editor => {
         const proxyObj = this.proxyObjectByUri.get(editor.document.uri.toString());
         if (proxyObj) {
-          const editorBinding = newList.get(proxyObj.editorProxy);
+          const editorBinding = this.editorBindingsByEditorProxy.get(proxyObj.editorProxy);
           if (editorBinding){ 
-            newList.delete(proxyObj.editorProxy); 
-            this.editorBindingsByEditorProxy.set(proxyObj.editorProxy, editorBinding);
+            newList.delete(proxyObj.editorProxy);
+            editorBinding.setTextEditor(editor);
+            // this.editorBindingsByEditorProxy.set(proxyObj.editorProxy, editorBinding);
           } else {
             const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObj.bufferProxy);
             if (bufferBinding) {
@@ -475,9 +475,10 @@ export default class WorkspaceManager {
         }
       });
        
-      // newList.forEach(editorBinding => {
-      //   editorBinding.editorProxy.dispose();
-      // });
+      newList.forEach(editorBinding => {
+          // editorBinding.editorProxy.dispose();
+          editorBinding.setTextEditor(undefined);
+      });
 
       // let newList = new Map(this.editorBindingsByTextEditor);
       // this.editorBindingsByTextEditor.clear();
