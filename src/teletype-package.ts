@@ -391,6 +391,8 @@ export default class TeletypePackage {
   }
 
   async test() {
+    this.workspaceManager.refresh();
+
     if (vscode.window.activeTextEditor) {
       // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');
     }

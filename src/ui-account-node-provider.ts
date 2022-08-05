@@ -135,12 +135,16 @@ export class Dependency extends vscode.TreeItem {
 					this.description = '(me)';
 					this.contextValue = 'Member';
 				} else {
-					if (id === value.portal.getFollowedSiteId()) {
-						this.description = (id === 1)? '(Host) *' : '*';
-						this.contextValue = 'FollowedMember';
+					if (value.portal.isHost) {
+						this.contextValue = 'Member';
 					} else {
-						this.description = (id === 1)? '(Host)' : undefined;
-						this.contextValue = 'FollowableMember';
+						if (id === value.portal.getFollowedSiteId()) {
+							this.description = (id === 1)? '(Host) *' : '*';
+							this.contextValue = 'FollowedMember';
+						} else {
+							this.description = (id === 1)? '(Host)' : undefined;
+							this.contextValue = 'FollowableMember';
+						}
 					}
 				}
 

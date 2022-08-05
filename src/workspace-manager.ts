@@ -680,6 +680,10 @@ export default class WorkspaceManager {
     }
   }
 
+  public refresh() {
+    this.emitter.emit('did-change');
+  }
+
   public debugWorkspaceInfo() {
     console.log(`>>> proxyObjectByUri (${this.proxyObjectByUri.size}): `);
     this.proxyObjectByUri.forEach((v, k) => {
