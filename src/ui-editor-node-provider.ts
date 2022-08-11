@@ -44,9 +44,9 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 						lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
 					}
 				});
-				host.portal?.editorProxiesById.forEach((a,_) => {
-				 	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
-				});
+				// host.portal?.editorProxiesById.forEach((a,_) => {
+				//  	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
+				// });
 			}
 			const guests = await this.portalBindingManager.getGuestPortalBindings();
 			if (guests) {
@@ -59,9 +59,9 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 							lst.push(new Dependency(`(unbinded) ${a.uri}`));
 						}
 					});
-					guest.portal?.editorProxiesById.forEach((a,_) => {
-						lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`));
-					});
+					// guest.portal?.editorProxiesById.forEach((a,_) => {
+					// 	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`));
+					// });
 				});				
 			}
 
