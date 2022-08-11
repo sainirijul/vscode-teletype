@@ -147,7 +147,7 @@ export default class HostPortalBinding extends PortalBinding {
       const doc = editor.document;
 
       if (doc.uri.scheme === 'file' && this.isWorkspaceFiles(doc.uri.fsPath)) {
-        const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(doc, this.portal);      
+        const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(doc, this.portal);
         if (bufferBinding?.bufferProxy.isHost) {
           //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
           //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);

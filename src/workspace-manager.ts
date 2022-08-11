@@ -458,7 +458,7 @@ export default class WorkspaceManager {
       editors.forEach(editor => {
         const proxyObj = this.proxyObjectByUri.get(editor.document.uri.toString());
         if (proxyObj) {
-          const editorBinding = this.editorBindingsByEditorProxy.get(proxyObj.editorProxy);
+          let editorBinding = this.editorBindingsByEditorProxy.get(proxyObj.editorProxy);
           if (editorBinding){ 
             newList.delete(proxyObj.editorProxy);
             editorBinding.setTextEditor(editor);
@@ -466,11 +466,19 @@ export default class WorkspaceManager {
           } else {
             const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObj.bufferProxy);
             if (bufferBinding) {
-              const editorBinding = this.createEditorBinding(editor, proxyObj.editorProxy, bufferBinding);
+              editorBinding = this.createEditorBinding(editor, proxyObj.editorProxy, bufferBinding);
               if (editorBinding) {
                 this.editorBindingsByEditorProxy.set(proxyObj.editorProxy, editorBinding);
               }
             }
+          }
+
+          if (editorBinding?.editor) {
+            const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObj.bufferProxy);
+            if (bufferBinding) {
+              bufferBinding.applyUpdate(editorBinding?.editor);
+            }
+            editorBinding.applyUpdate();
           }
         }
       });

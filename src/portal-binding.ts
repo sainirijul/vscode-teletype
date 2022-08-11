@@ -98,9 +98,11 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
 
     // @override
     updateActivePositions (positionsBySiteId: UpdatePosition[]) {
-        // positionsBySiteId.forEach(async (position) => {
-        //     await this.updateTether(position.followState, position.editorProxy, position.position);
-        // });
+        // if (positionsBySiteId) { 
+        //     this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+        //         editorBinding.updateActivePositions(positionsBySiteId);
+        //     });
+        // }
 
         // this.sitePositionsComponent.update({positionsBySiteId});
         this.emitter.emit('did-change');

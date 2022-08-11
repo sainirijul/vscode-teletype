@@ -10,12 +10,11 @@ import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 import { IPortalBinding, PortalBinding } from './portal-binding';
 
-const NOOP = () => {};
-
 export default class GuestPortalBinding extends PortalBinding {
   portalId: string;
   lastActivePaneItem: null;
   shouldRelayActiveEditorChanges: boolean;
+  changeActiveEditorEventListener?: vscode.Disposable;
   // sitePositionsComponent: SitePositionsComponent;
   // public newActivePaneItem: any;
 
@@ -40,6 +39,8 @@ export default class GuestPortalBinding extends PortalBinding {
 			//vscode.window.showInformationMessage('Joined Portal with ID' + ' ' + this.portalId + ' ');
 			// this.registerWorkspaceEvents();
 
+      this.changeActiveEditorEventListener = vscode.window.onDidChangeActiveTextEditor(this.didChangeActiveTextEditor.bind(this));
+
       this.notificationManager.addInfo(`Joined Portal with ID ${this.portalId}`, {
         description: '',
         dismissable: true
@@ -54,6 +55,8 @@ export default class GuestPortalBinding extends PortalBinding {
 
   // @override
   dispose () {
+    this.changeActiveEditorEventListener?.dispose();
+
   // this.subscriptions.dispose();
   // this.sitePositionsComponent.destroy();
 
@@ -145,7 +148,7 @@ export default class GuestPortalBinding extends PortalBinding {
 
       // guest:
       if (followState === FollowState.RETRACTED) {
-          // this.shouldRelayActiveEditorChanges = false;
+          this.shouldRelayActiveEditorChanges = false;
           const editorBinding = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
           // if (editor && editor !== vscode.window.activeTextEditor) {
           if (editorBinding?.bufferBinding.buffer) {
@@ -224,19 +227,29 @@ export default class GuestPortalBinding extends PortalBinding {
   //   this.newActivePaneItem = null;
   // }
 
-  // didChangeActivePaneItem (paneItem) {
-  //   const editorProxy = this.editorProxiesByEditor.get(paneItem);
+  private async didChangeActiveTextEditor (editor?: vscode.TextEditor) {
+    let editorProxy: EditorProxy | undefined = undefined;
 
-  //   if (editorProxy) {
-  //     this.sitePositionsComponent.show(paneItem.element);
-  //   } else {
-  //     this.sitePositionsComponent.hide();
-  //   }
+    if (editor) {
+      const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);
 
-  //   if (this.shouldRelayActiveEditorChanges) {
-  //     this.portal.activateEditorProxy(editorProxy);
-  //   }
-  // }
+      editorProxy = editorBinding?.editorProxy;
+    }
+
+    // const editorProxy = this.editorProxiesByEditor.get(paneItem);
+
+    // if (editorProxy) {
+    //   this.sitePositionsComponent.show(paneItem.element);
+    // } else {
+    //   this.sitePositionsComponent.hide();
+    // }
+
+    if (this.shouldRelayActiveEditorChanges) {
+      this.portal?.activateEditorProxy(editorProxy);
+    }
+
+    this.shouldRelayActiveEditorChanges = true;    
+  }
 
   hasPaneItem(paneItem: vscode.TextEditor) : boolean {
     return this.workspaceManager.hasPaneItem(paneItem);

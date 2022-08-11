@@ -200,4 +200,9 @@ export default class PortalBindingManager {
   onDidChange (callback: (binding?: any) => void): EventEmitter {
     return this.emitter.on('did-change', callback);
   }
+
+  refresh (): void {
+    this.emitter.emit('did-change');
+  }
+
 }

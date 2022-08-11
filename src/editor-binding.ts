@@ -42,6 +42,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   // isBatchingMarkerUpdates: boolean;
   // isRemote: boolean = false;
   bufferBinding: BufferBinding;
+  public pendingUpdates: any[];
 
   // constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
   constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, didDispose: Function = doNothing) {
@@ -63,11 +64,15 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 		this.localMarkerSelectionMap = new Map();
     this.preserveFollowState = false;
     this.positionsBySiteId = {};
+
+    this.pendingUpdates = [];
   }
 
   // @override
   updateActivePositions(positionsBySiteId: UpdatePosition[]): void {
-
+    positionsBySiteId.forEach(position => {
+      // this.updateSelectionsForSiteId(position.editorProxy.siteId, position.position);
+    });
   }
 
   // @override
@@ -217,6 +222,18 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     return this.emitter.on('did-resize', callback);
   }
 
+  public applyUpdate() : void {
+    if (this.pendingUpdates.length <= 0) {
+      return;
+    }
+
+    this.pendingUpdates.forEach(updateUpdate => {
+      this.updateDecorations2(updateUpdate.siteDecoration, updateUpdate.cursorRanges, updateUpdate.selectionRanges);
+    });
+
+    this.pendingUpdates = [];
+  }
+
   // @override
   updateSelectionsForSiteId (siteId: number, selections: Selection[]) {
 
@@ -295,13 +312,20 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 		this.updateDecorations(siteDecoration, cursorRanges, selectionRanges);
   }
 
-	private async updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
-		const { cursorDecoration, selectionDecoration } = siteDecoration;
-    // const { bufferProxy } = this.editorProxy;
+	private updateDecorations(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
     if (this.editor) {
-      this.editor.setDecorations(cursorDecoration, cursorRanges);
-      this.editor.setDecorations(selectionDecoration, selectionRanges);
+      this.updateDecorations2(siteDecoration, cursorRanges, selectionRanges);
+    } else {
+      this.pendingUpdates.push({siteDecoration, cursorRanges, selectionRanges});
     }
+	}
+
+	private updateDecorations2(siteDecoration: SiteDecoration, cursorRanges: vscode.Range[], selectionRanges: vscode.Range[]) {
+    if (!this.editor) { return; }
+
+    const { cursorDecoration, selectionDecoration } = siteDecoration;
+    this.editor.setDecorations(cursorDecoration, cursorRanges);
+    this.editor.setDecorations(selectionDecoration, selectionRanges);
 	}
 
 	private findSiteDecoration(siteId: number) {

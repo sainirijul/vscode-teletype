@@ -191,7 +191,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
           this.disableHistory = false;
         });
         // this.isUpdating = false;
-      }, { undoStopBefore: false, undoStopAfter: false });
+      }, { undoStopBefore: true, undoStopAfter: true });
 
     this.pendingUpdates = [];
   }
