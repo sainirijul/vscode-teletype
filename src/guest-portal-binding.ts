@@ -156,6 +156,7 @@ export default class GuestPortalBinding extends PortalBinding {
             //if (editorBinding.editor) {
               //await vscode.window.showTextDocument(editorBinding.bufferBinding.buffer);
             //} else {
+              this.portal?.activateEditorProxy(editorProxy);
               await vscode.commands.executeCommand('vscode.open', editorBinding.bufferBinding.buffer.uri);              
             //}
           }
