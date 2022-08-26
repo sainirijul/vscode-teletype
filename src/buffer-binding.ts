@@ -30,7 +30,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   bufferDestroySubscription: any;
   remoteFile?: RemoteFile;
   fsPath?: string;
-  isUpdating: boolean = false;
+  bufferUpdateState: number = 0;
   changeCnt: number = 0;
   private emitter: EventEmitter;
   private didBeforeDispose: ((bufferBinding: BufferBinding) => void) | undefined;
@@ -178,20 +178,27 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
     }
   }
 
-  public applyUpdate(editor: vscode.TextEditor) : void {
+  public async applyUpdate(editor: vscode.TextEditor) {
     if (this.pendingUpdates.length <= 0) {
       return;
     }
 
-    editor.edit(builder => {
-        this.isUpdating = true;
-        this.pendingUpdates.forEach(textUpdate => {
-          this.disableHistory = true;
+    this.bufferUpdateState = 1;
+    this.disableHistory = true;
+    for (const textUpdate of this.pendingUpdates) {
+      await editor.edit(builder => {
+        // if (!textUpdate.newText) {
+        //   builder.delete(this.createRange(textUpdate.oldStart, textUpdate.oldEnd));
+        // } else if(textUpdate.oldStart === textUpdate.oldEnd) {
+        //   builder.insert(this.createPosition(textUpdate.oldStart), textUpdate.newText);
+        // } else {
           builder.replace(this.createRange(textUpdate.oldStart, textUpdate.oldEnd), textUpdate.newText);
-          this.disableHistory = false;
-        });
-        // this.isUpdating = false;
-      }, { undoStopBefore: true, undoStopAfter: true });
+        //}
+      });
+      //}, { undoStopBefore: true, undoStopAfter: true });
+    }
+    this.disableHistory = false;
+    this.bufferUpdateState = 2;
 
     this.pendingUpdates = [];
   }
@@ -199,6 +206,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   // @override
   async updateText (textUpdates: any[]) {
     if (!textUpdates || textUpdates.length <= 0) { return; }
+    console.log(textUpdates);
 
     // if (!this.buffer) { return; }
     // if (this.buffer.isClosed) { return; }
@@ -249,6 +257,10 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
       return null;
     }
   }
+
+	createPosition(pos: Position): vscode.Position {
+		return	new vscode.Position(pos.row, pos.column);
+	}
 
 	createRange(start: Position, end: Position): vscode.Range {
 		return new vscode.Range(

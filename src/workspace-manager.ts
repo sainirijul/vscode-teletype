@@ -450,12 +450,12 @@ export default class WorkspaceManager {
   }
 
   // 현재 활성화 된 editor들과 editorProxy를 연결시켜서 동기화시킨다.
-  synchronizedShowingEditors(editors : vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
+  async synchronizedShowingEditors(editors : vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
     if (editors) {
       let newList = new Map(this.editorBindingsByEditorProxy);
       // this.editorBindingsByEditorProxy.clear();
 
-      editors.forEach(editor => {
+      editors.forEach(async (editor) => {
         const proxyObj = this.proxyObjectByUri.get(editor.document.uri.toString());
         if (proxyObj) {
           let editorBinding = this.editorBindingsByEditorProxy.get(proxyObj.editorProxy);
@@ -476,7 +476,7 @@ export default class WorkspaceManager {
           if (editorBinding?.editor) {
             const bufferBinding = this.bufferBindingsByBufferProxy.get(proxyObj.bufferProxy);
             if (bufferBinding) {
-              bufferBinding.applyUpdate(editorBinding?.editor);
+              await bufferBinding.applyUpdate(editorBinding?.editor);
             }
             editorBinding.applyUpdate();
           }
@@ -581,12 +581,13 @@ export default class WorkspaceManager {
 	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
     const bufferBinding = this.bufferBindingsByTextDocument.get(event.document);
     if (bufferBinding) {
-      if (!bufferBinding.isUpdating) {
+      if (bufferBinding.bufferUpdateState !== 1) {
         // if (!bufferBinding.disableHistory) {
           const doc = bufferBinding.changeBuffer(event.contentChanges);
         // }
-      } else {
-        bufferBinding.isUpdating = false;
+      }
+      if (bufferBinding.bufferUpdateState === 2) {
+        bufferBinding.bufferUpdateState = 0;
       }
     }
 	}
