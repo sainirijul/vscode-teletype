@@ -158,11 +158,11 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
                 // editorBinding.updateTether(followState, position); 
             }
         } else {
-            if (position) { 
-                this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+            //if (position) { 
+                //this.workspaceManager.getEditorBindings().forEach(editorBinding => {
                     // editorBinding.updateTether(followState, position);
-                });
-            }
+                //});
+            //}
         }
     }
 

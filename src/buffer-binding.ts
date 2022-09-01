@@ -11,6 +11,11 @@ import WorkspaceManager from './workspace-manager';
 
 function doNothing () {}
 
+export interface IBufferProxyExt {
+  setBufferBinding(bufferBinding: BufferBinding): void;
+  getBufferBinding(): BufferBinding;
+}
+
 export default class BufferBinding extends vscode.Disposable implements IBufferDelegate {
   public uri: string;
   // public textBuffer: string = '';
@@ -45,7 +50,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
     this.buffer = buffer;
     // this.bufferProxy = bufferProxy;
 
-    // this.portal = portal;
+    this.portal = portal;
     // this.path = path ?? buffer.uri.toString();
     // this.title = title ?? uri;
     // this.editor = editor;
@@ -61,7 +66,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 
     this.emitter = new EventEmitter();
 
-    this.setBufferProxyAndPortal(bufferProxy, portal);
+    this.setBufferProxy(bufferProxy);
 
     this.monkeyPatchBufferMethods(this.buffer);
   }
@@ -116,9 +121,8 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
     this.buffer = buffer;
   }
 
-  setBufferProxyAndPortal (bufferProxy: BufferProxy, portal: Portal) {
+  setBufferProxy (bufferProxy: BufferProxy) {
     this.bufferProxy = bufferProxy;
-    this.portal = portal;
 
     // // this.buffer?.setHistoryProvider(this);
     while (this.pendingChanges.length > 0) {
@@ -138,7 +142,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
     // });
   }
 
-  monkeyPatchBufferMethods (buffer: any) {
+  private monkeyPatchBufferMethods (buffer: any) {
     // vscode의 document는 extensible하지 않기 때문에 monkey patch가 안 된다.
 
   }
@@ -406,6 +410,16 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
 			this.bufferProxy.requestSave();
 		});
   }
+
+  // bufferProxy를 monkey patch 한다.
+  public bufferProxyMonkeyPatch(): void {
+    (this.bufferProxy as any).setBufferBinding = (bufferBinding: BufferBinding) => {
+      (this.bufferProxy as any).bufferBinding = bufferBinding;
+    };
+    (this.bufferProxy as any).getBufferBinding = () : BufferBinding => {
+      return (this.bufferProxy as any).bufferBinding;
+    };
+  }
 }
 
 class RemoteFile {
@@ -453,10 +467,16 @@ export function createBufferBinding(uri: string, buffer: vscode.TextDocument | u
   // delegate 지정 순간 setText()가 호출되기에 vscode.TextDocument의 이벤트 발생을 막기 위해서는 buffer 지정을 이 이후로 미뤄야 한다.
   bufferProxy.setDelegate(bufferBinding);
 
-  (bufferProxy as any).setBufferBinding = (bufferBinding: BufferBinding) => {
-    (bufferProxy as any).bufferBinding = bufferBinding;
-  };
-  (bufferProxy as any).setBufferBinding(bufferBinding);
+  // bufferProxy를 monkey patch 한다.
+  bufferBinding.bufferProxyMonkeyPatch();
+  // (bufferProxy as any).setBufferBinding = (bufferBinding: BufferBinding) => {
+  //   (bufferProxy as any).bufferBinding = bufferBinding;
+  // };
+  // (bufferProxy as any).getBufferBinding = () : BufferBinding => {
+  //   return (bufferProxy as any).bufferBinding;
+  // };
+
+  (bufferProxy as unknown as IBufferProxyExt).setBufferBinding(bufferBinding);
 
   return bufferBinding;
 }

@@ -19,6 +19,11 @@ interface SiteDecoration {
 
 function doNothing () {}
 
+export interface IEditorProxyExt {
+  setEditorBinding(editorBinding: EditorBinding): void;
+  getEditorBinding(): EditorBinding;
+}
+
 export default class EditorBinding extends vscode.Disposable implements IEditorDelegate {
 	public editor: vscode.TextEditor | undefined;
   public readonly title: string;
@@ -472,6 +477,16 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 				return `${rule}: ${rules[rule]};`;
 			}).join(' ');
 	}
+
+  // editorProxy를 monkey patch 한다.
+  public editorProxyMonkeyPatch(): void {
+    (this.editorProxy as any).setEditorBinding = (editorBinding: EditorBinding) => {
+      (this.editorProxy as any).editorBinding = editorBinding;
+    };
+    (this.editorProxy as any).getEditorBinding = () : EditorBinding => {
+      return (this.editorProxy as any).editorBinding;
+    };
+  }
 }
 
 function isCursor(selection: Selection): boolean {
@@ -525,6 +540,17 @@ export function createEditorBinding(editor: vscode.TextEditor, editorProxy: Edit
 
   editorBinding.setEditorProxy(editorProxy);
   editorProxy.setDelegate(editorBinding);
+
+  // editorProxy monkey patch 한다.
+  // (editorProxy as any).setEditorBinding = (editorBinding: EditorBinding) => {
+  //   (editorProxy as any).editorBinding = editorBinding;
+  // };
+  // (editorProxy as any).getEditorBinding = () : EditorBinding => {
+  //   return (editorProxy as any).editorBinding;
+  // };
+  editorBinding.editorProxyMonkeyPatch();
+
+  (editorProxy as unknown as IEditorProxyExt).setEditorBinding(editorBinding);
 
   // editorBinding.onDidDispose(onDispose);
 

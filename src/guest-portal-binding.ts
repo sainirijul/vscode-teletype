@@ -1,14 +1,11 @@
 import * as vscode from 'vscode';
-import {EventEmitter} from 'events';
-import { SelectionMap, Selection, Position, Range} from './teletype-types';
-import {BufferProxy, EditorProxy, Errors, FollowState, TeletypeClient, Portal, IPortalDelegate, EditorProxyMetadata, UpdatePosition} from '@atom/teletype-client';
-import BufferBinding from './buffer-binding';
-import EditorBinding from './editor-binding';
+import {Position} from './teletype-types';
+import {EditorProxy, Errors, FollowState, TeletypeClient, UpdatePosition} from '@atom/teletype-client';
 import getPathWithNativeSeparators from './get-path-with-native-separators';
 import {getEditorURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
-import { IPortalBinding, PortalBinding } from './portal-binding';
+import {PortalBinding} from './portal-binding';
 
 export default class GuestPortalBinding extends PortalBinding {
   portalId: string;
