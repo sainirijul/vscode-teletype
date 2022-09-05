@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
 import {BufferProxy, EditorProxy, Portal} from '@atom/teletype-client';
-import BufferBinding, { createBufferBinding } from './buffer-binding';
-import EditorBinding, { createEditorBinding } from './editor-binding';
+import BufferBinding, { createBufferBinding, IBufferProxyExt } from './buffer-binding';
+import EditorBinding, { createEditorBinding, IEditorProxyExt } from './editor-binding';
 import NotificationManager from './notification-manager';
 import * as os from 'os';
 import * as path from 'path';
@@ -428,7 +428,7 @@ export default class WorkspaceManager {
 
   getEditorBindingByEditorProxy(editorProxy: EditorProxy) : EditorBinding | undefined {
     //return this.editorBindingsByEditorProxy.get(editorProxy);
-    const getBindingFunc = (editorProxy as any).getEdtorBinding;
+    const getBindingFunc = (editorProxy as unknown as IEditorProxyExt).getEditorBinding;
     if (!getBindingFunc) { return undefined; }
     return getBindingFunc();
   }
@@ -450,7 +450,7 @@ export default class WorkspaceManager {
   getBufferBindingByBufferProxy(bufferProxy: BufferProxy | undefined) : BufferBinding | undefined {
     //return this.bufferBindingsByBufferProxy.get(bufferProxy);
     if (!bufferProxy) { return undefined; }
-    const getBindingFunc = (bufferProxy as any).getBufferBinding;
+    const getBindingFunc = (bufferProxy as unknown as IBufferProxyExt).getBufferBinding;
     if (!getBindingFunc) { return undefined; }
     return getBindingFunc();
   }
@@ -524,6 +524,8 @@ export default class WorkspaceManager {
       //   editorBinding.editorProxy.dispose();
       // });
     }
+
+    // this.debugWorkspaceInfo();    
   }
 
   public showEditor(item: any) {
@@ -626,7 +628,14 @@ export default class WorkspaceManager {
   }
 
   private didChangeActiveTextEditor(editor?: vscode.TextEditor) {
+    if (editor) {
+      const proxyObj = this.getProxyObjectByUri(editor.document.uri);
+      if (proxyObj){
+        proxyObj.portal.activateEditorProxy(proxyObj.editorProxy);
+      }
+    } else {
 
+    }
   }
 
   private didChangeVisibleTextEditors(editors?: vscode.TextEditor[]) {
