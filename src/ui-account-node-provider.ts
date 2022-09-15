@@ -169,10 +169,3 @@ export class Dependency extends vscode.TreeItem {
 
 	// contextValue = 'dependency';
 }
-
-// if (siteId === this.guest.getFollowedSiteId()) {
-// 	guest.portal.unfollow()
-//   } else {
-// 	guest.portal.follow(siteId)
-//   }
-// }

@@ -1,16 +1,9 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as converter from './teletype-converter';
 import {EventEmitter} from 'events';
 import {EditorProxy, IEditorDelegate, Portal, UpdatePosition} from '@atom/teletype-client';
 import {SelectionMap, Selection, Position, Range} from './teletype-types';
-
-// import path = require('path');
-// const {Range, Emitter, Disposable, CompositeDisposable, TextBuffer} = require('atom')
-// import { getEditorURI } from './uri-helpers';
-// import { FollowState } from '@atom/teletype-client';
 import BufferBinding from './buffer-binding';
-import { fstat } from 'fs';
 
 interface SiteDecoration {
 	cursorDecoration: vscode.TextEditorDecorationType;
@@ -28,7 +21,6 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 	public editor: vscode.TextEditor | undefined;
   public readonly title: string;
 	// public portal: Portal | undefined;
-	// private readonly isHost: boolean;
   private disposed: boolean = false;
   private emitter: EventEmitter;
   // selectionsMarkerLayer: any;
@@ -45,19 +37,16 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   editorProxy!: EditorProxy;
   // batchedMarkerUpdates: {} | null;
   // isBatchingMarkerUpdates: boolean;
-  // isRemote: boolean = false;
   bufferBinding: BufferBinding;
   public pendingUpdates: any[];
 
-  // constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, portal?: Portal, isHost: boolean = false) {
-  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, didDispose: Function = doNothing) {
+  constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, /*portal?: Portal,*/ didDispose: Function = doNothing) {
     super(didDispose);
 
     this.editor = editor;
     this.bufferBinding = bufferBinding;
     this.title = title ?? editor.document.uri.fsPath;
     // this.portal = portal;
-    // this.isHost = isHost;
     this.emitter = new EventEmitter();
     // this.selectionsMarkerLayer = this.editor.selectionsMarkerLayer.bufferMarkerLayer;
     // this.markerLayersBySiteId = new Map();

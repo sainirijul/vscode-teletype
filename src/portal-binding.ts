@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { EventEmitter } from 'events';
-import { SelectionMap, Selection, Position, Range} from './teletype-types';
-import { EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
+import {EventEmitter } from 'events';
+import {SelectionMap, Selection, Position, Range} from './teletype-types';
+import {EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 

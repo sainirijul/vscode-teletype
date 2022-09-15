@@ -2,12 +2,12 @@ import * as vscode from 'vscode';
 import {EventEmitter} from 'events';
 import { SelectionMap, Selection, Position, Range } from './teletype-types';
 import {TeletypeClient, EditorProxy, BufferProxy, FollowState, Portal, IPortalDelegate} from '@atom/teletype-client';
-import BufferBinding from './buffer-binding';
-import EditorBinding from './editor-binding';
+// import BufferBinding from './buffer-binding';
+// import EditorBinding from './editor-binding';
 import {getPortalURI} from './uri-helpers';
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
-import { IPortalBinding, PortalBinding } from './portal-binding';
+import {PortalBinding } from './portal-binding';
 import * as path from 'path';
 
 

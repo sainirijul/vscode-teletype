@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 //import {EventEmitter} from 'events';
-//import {CompositeDisposable} from 'atom';
 import {TeletypeClient, Errors, PusherPubSubGateway, Portal} from '@atom/teletype-client';
 import PortalBindingManager from './portal-binding-manager';
 import NotificationManager from './notification-manager';

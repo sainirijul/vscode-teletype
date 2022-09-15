@@ -1,5 +1,4 @@
 .vscode/**
 typings/**
-.gitignore
 tsconfig.json
 preview.gif
