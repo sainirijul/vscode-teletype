@@ -6,6 +6,7 @@ import EditorBinding, { createEditorBinding, IEditorProxyExt } from './editor-bi
 import NotificationManager from './notification-manager';
 import * as os from 'os';
 import * as path from 'path';
+import { TextEncoder } from 'util';
 import * as fs from 'fs';
 
 // VSCode의 에디터 특성:
@@ -63,8 +64,8 @@ export default class WorkspaceManager {
     // });
   }
 
-  private createBufferBinding(uri: string, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: string) : BufferBinding {
-    const bufferBinding = createBufferBinding(uri, bufferProxy, portal, buffer, fsPath, 
+  private createBufferBinding(uri: vscode.Uri, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri) : BufferBinding {
+    const bufferBinding = createBufferBinding(this.fs, uri, bufferProxy, portal, buffer, fsPath, 
       this.didRequireUpdateBuffer.bind(this),
       () => {},
       (bufferBinding) => {
@@ -116,7 +117,7 @@ export default class WorkspaceManager {
 
     const editorProxy = portal.createEditorProxy({bufferProxy: bufferProxy});
 
-    bufferBinding = this.createBufferBinding(bufferPath, bufferProxy, portal, buffer);
+    bufferBinding = this.createBufferBinding(buffer.uri, bufferProxy, portal, buffer);
 
     this.addProxyObject(buffer.uri.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
@@ -160,22 +161,24 @@ export default class WorkspaceManager {
 
     if (!portal?.id) { return undefined; }
 
-    // const filePath = path.join(os.tmpdir(), portalId, bufferProxy.uri);
-    const uriNorm = bufferProxy.uri.replace(/[\\\/:%]/g, '_');
-    const filePath = path.join(os.tmpdir(), portal.id, uriNorm);
-    // const filePath = path.join(portalId, bufferProxy.uri);
-    // const bufferURI = vscode.Uri.parse(`memfs:/${filePath.replace(/\\/g, '/')}`);
-    await require('mkdirp-promise')(path.dirname(filePath));
-    // this.fs.createDirectory(vscode.Uri.parse(`memfs:${path.dirname(filePath)}`));
-    // this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
-    fs.writeFileSync(filePath, '');
+    const fileUri = vscode.Uri.parse(bufferProxy.uri);
+    // const filePath = path.join(os.tmpdir(), portal.id, fileUri.path);
+    const baseUri = vscode.Uri.parse(`memfs:///${portal.id}`);
+    const bufferURI = vscode.Uri.joinPath(baseUri, fileUri.path);
+    const filePath = bufferURI.fsPath;
+    // await require('mkdirp-promise')(path.dirname(filePath));
+    this.fs.createDirectory(baseUri);
+    this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
+    //fs.writeFileSync(filePath, '');
 
-    bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, filePath);
+    //bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, filePath);
+    bufferBinding = this.createBufferBinding(vscode.Uri.parse(bufferProxy.uri), bufferProxy, portal, undefined, bufferURI);
     // bufferBinding = new BufferBinding(bufferProxy.uri, undefined, bufferProxy, bufferPath, () => {
     //   this.removeBufferBinding(bufferBinding);
     //   this.emitter.emit('did-change');
     // });
-    bufferBinding.fsPath = filePath;
+    //bufferBinding.fsPath = filePath;
+    bufferBinding.fsPath = bufferURI;
 
     //bufferBinding.setBufferProxy(bufferProxy);
     //bufferProxy.setDelegate(bufferBinding);
@@ -186,7 +189,8 @@ export default class WorkspaceManager {
     // buffer = await vscode.workspace.openTextDocument(bufferURI); 
     // const editor = await vscode.window.showTextDocument(buffer);
     // bufferBinding.assignEditor(buffer, undefined);
-    vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
+    // vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
+    vscode.commands.executeCommand('vscode.open', bufferURI);
 
     this.addProxyObject(vscode.Uri.file(filePath).toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);

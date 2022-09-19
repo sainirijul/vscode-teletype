@@ -331,7 +331,7 @@ export default class TeletypePackage {
         const client = await this.getClient();
         if (client) {
           resolve(new AuthenticationProvider(
-            client, this.notificationManager, this.workspace, this.credentialCache
+            client, this.notificationManager, this.credentialCache
           ));
         } else {
           this.authenticationProviderPromise = null;

@@ -39,7 +39,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				host.portal?.bufferProxiesById.forEach((a,_) => {
 					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 					if (binding) {
-						lst.push(new Dependency(binding.uri, binding.fsPath ?? binding.uri, true));
+						lst.push(new Dependency(binding.uri.toString(), binding.fsPath ?? binding.uri, true));
 					} else {
 						lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
 					}
@@ -54,7 +54,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					guest.portal?.bufferProxiesById.forEach((a,_) => {
 						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 						if (binding) {
-							lst.push(new Dependency(binding.uri, binding.fsPath));
+							lst.push(new Dependency(binding.uri.toString(), binding.fsPath));
 						} else {
 							lst.push(new Dependency(`(unbinded) ${a.uri}`));
 						}
@@ -83,7 +83,7 @@ export class Dependency extends vscode.TreeItem {
 
 	constructor(
 		public readonly label: string,
-		public readonly path?: string,
+		public readonly path?: vscode.Uri,
 		public readonly isHost?: boolean,
 		public readonly iconPath?: vscode.Uri | string | vscode.ThemeIcon,
 		public readonly collapsibleState?: vscode.TreeItemCollapsibleState
@@ -102,7 +102,7 @@ export class Dependency extends vscode.TreeItem {
 		if (this.path) {
 			this.command = {title: 'Open Editor', command: 'extension.show-editor',
 							// arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
-							arguments: [this.path ?vscode.Uri.file(this.path) : '']
+							arguments: [this.path ?? '']
 						};
 		}
 	}

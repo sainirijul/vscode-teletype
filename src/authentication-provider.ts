@@ -8,20 +8,21 @@ export class AuthenticationProvider {
   client: TeletypeClient;
   credentialCache: CredentialCache;
   notificationManager: NotificationManager;
-  workspace: vscode.WorkspaceFolder;
   emitter: EventEmitter;
   signingIn: boolean = false;
 
-  constructor (client: TeletypeClient, notificationManager: NotificationManager, workspace: vscode.WorkspaceFolder, credentialCache: CredentialCache) {
+  constructor (client: TeletypeClient, notificationManager: NotificationManager, credentialCache: CredentialCache) {
     this.client = client;
-    this.client.onSignInChange(this.didChangeSignIn.bind(this));
     this.credentialCache = credentialCache;
     this.notificationManager = notificationManager;
-    this.workspace = workspace;
     this.emitter = new EventEmitter();
+
+    this.client.onSignInChange(() => {
+      this.emitter.emit('did-change');
+    });
   }
 
-  async signInUsingSavedToken () : Promise<boolean> {
+  public async signInUsingSavedToken () : Promise<boolean> {
     console.log('start signInUsingSavedToken...');
     if (this.isSignedIn()) { return true; }
 
@@ -33,7 +34,7 @@ export class AuthenticationProvider {
     }
   }
 
-  async signIn (token: string) : Promise<boolean> {
+  public async signIn (token: string) : Promise<boolean> {
     if (this.isSignedIn()) { return true; }
 
     if (await this._signIn(token)) {
@@ -46,7 +47,7 @@ export class AuthenticationProvider {
     }
   }
 
-  async signOut () {
+  public async signOut () {
     if (!this.isSignedIn()) { return; }
 
     this.client.signOut();
@@ -71,31 +72,24 @@ export class AuthenticationProvider {
     return signedIn;
   }
 
-  isSigningIn () : boolean {
+  public isSigningIn () : boolean {
     return this.signingIn;
   }
 
-  isSignedIn () : boolean {
+  public isSignedIn () : boolean {
     console.log('check signin...');
     return this.client.isSignedIn();
   }
 
-  getIdentity () : any {
+  public getIdentity () : any {
     return this.client.getLocalUserIdentity();
   }
 
-  onDidChange (callback: () => void) {
+  public onDidChange (callback: () => void) {
     return this.emitter.on('did-change', callback);
   }
 
-  didChangeSignIn () : void {
-    // const workspaceElement = this.workspace.getElement();
-    // if (this.isSignedIn()) {
-    //   workspaceElement.classList.add('teletype-Authenticated');
-    // } else {
-    //   workspaceElement.classList.remove('teletype-Authenticated');
-    // }
-
-    this.emitter.emit('did-change');
+  private didChangeSignIn () : void {
+    
   }
 }
