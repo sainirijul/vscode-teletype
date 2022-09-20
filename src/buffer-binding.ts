@@ -16,29 +16,32 @@ export interface IBufferProxyExt {
 }
 
 export default class BufferBinding extends vscode.Disposable implements IBufferDelegate {
-  public uri: vscode.Uri;
+  // public uri: vscode.Uri;
   // public title: string | undefined;
   public bufferProxy!: BufferProxy;
   public portal!: Portal;
 	public buffer?: vscode.TextDocument;
   public pendingUpdates: any[];
-  private pendingChanges: vscode.TextDocumentContentChangeEvent[];
+  public filePath?: string;
+  public fsFullPathUri?: vscode.Uri;
   disposed: boolean;
   disableHistory: boolean;
   // subscriptions: Disposable;
   bufferDestroySubscription: any;
   remoteFile?: RemoteFile;
-  fsPath?: vscode.Uri;
   bufferUpdateState: number = 0;
+  private fs!: vscode.FileSystemProvider;
   private emitter: EventEmitter;
   private didBeforeDispose: ((bufferBinding: BufferBinding) => void) | undefined;
+  private pendingChanges: vscode.TextDocumentContentChangeEvent[];
 
-  constructor(public fs: vscode.FileSystemProvider, uri: vscode.Uri, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, didDispose: Function = doNothing, didBeforeDispose?: (bufferBinding: BufferBinding) => void) {  
+  constructor(fs: vscode.FileSystemProvider, filePath: string | undefined, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, didDispose: Function = doNothing, didBeforeDispose?: (bufferBinding: BufferBinding) => void) {  
     super(didDispose);
 
     this.didBeforeDispose = didBeforeDispose;
 
-    this.uri = uri;
+    this.fs = fs;
+    this.filePath = filePath;
     this.buffer = buffer;
     // this.bufferProxy = bufferProxy;
 
@@ -97,12 +100,11 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   }
 
   unbinding(isHost: boolean) {
-    if (!isHost && this.fsPath) {
-      // fs.unlinkSync(this.fsPath);
+    if (!isHost && this.fsFullPathUri) {
+      // fs.unlinkSync(this.fsFullPath);
 
       const we = new vscode.WorkspaceEdit();
-      //we.deleteFile(vscode.Uri.file(this.fsPath));
-      we.deleteFile(this.fsPath);
+      we.deleteFile(this.fsFullPathUri);
       vscode.workspace.applyEdit(we);
     }
     this.buffer = undefined;
@@ -142,9 +144,9 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
   setText (text: string) : void {
     this.disableHistory = true;
     // this.buffer?.setTextInRange(this.buffer?.getRange(), text);
-    if (this.fsPath) {
+    if (this.fsFullPathUri) {
 		  // fs.writeFileSync(this.fsPath, text);
-      this.fs.writeFile(this.fsPath, new TextEncoder().encode(text), {create:true, overwrite:true});
+      this.fs.writeFile(this.fsFullPathUri, new TextEncoder().encode(text), {create:true, overwrite:true});
     }
     this.disableHistory = false;
   }
@@ -417,14 +419,14 @@ class RemoteFile {
 }
 
 // host에서는 에디터가 열리면서 생성하기에 TextDocument가 있지만, guest에서 리모트로 생성할 때는 TextDocument가 undefined인 상태이다.
-export function createBufferBinding(fs: vscode.FileSystemProvider, uri: vscode.Uri, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void, didBeforeDispose?: (bufferBinding: BufferBinding) => void) : BufferBinding {
-  const bufferBinding = new BufferBinding(fs, uri, bufferProxy, portal, buffer, didDispose, didBeforeDispose);
+export function createBufferBinding(fs: vscode.FileSystemProvider, filePath: string | undefined, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri, didRquireUpdate?: (bufferBinding: BufferBinding) => void, didDispose?: () => void, didBeforeDispose?: (bufferBinding: BufferBinding) => void) : BufferBinding {
+  const bufferBinding = new BufferBinding(fs, filePath, bufferProxy, portal, buffer, didDispose, didBeforeDispose);
 
   if (didRquireUpdate) {
     bufferBinding.onRequireUpdate(didRquireUpdate);
   }
   
-  bufferBinding.fsPath = fsPath ?? buffer?.uri;
+  bufferBinding.fsFullPathUri = fsPath ?? buffer?.uri;
 
   // delegate 지정 순간 setText()가 호출되기에 vscode.TextDocument의 이벤트 발생을 막기 위해서는 buffer 지정을 이 이후로 미뤄야 한다.
   bufferProxy.setDelegate(bufferBinding);

@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-export class File implements vscode.FileStat {
+class File implements vscode.FileStat {
 
     type: vscode.FileType;
     ctime: number;
@@ -26,7 +25,7 @@ export class File implements vscode.FileStat {
     }
 }
 
-export class Directory implements vscode.FileStat {
+class Directory implements vscode.FileStat {
 
     type: vscode.FileType;
     ctime: number;
@@ -46,7 +45,7 @@ export class Directory implements vscode.FileStat {
     }
 }
 
-export type Entry = File | Directory;
+type Entry = File | Directory;
 
 export class MemFS implements vscode.FileSystemProvider {
 

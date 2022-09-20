@@ -39,7 +39,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 				host.portal?.bufferProxiesById.forEach((a,_) => {
 					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 					if (binding) {
-						lst.push(new Dependency(binding.uri.toString(), binding.fsPath ?? binding.uri, true));
+						lst.push(new Dependency(binding.filePath ?? binding.fsFullPathUri?.toString() ?? '', binding.fsFullPathUri, true));
 					} else {
 						lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
 					}
@@ -54,7 +54,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
 					guest.portal?.bufferProxiesById.forEach((a,_) => {
 						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
 						if (binding) {
-							lst.push(new Dependency(binding.uri.toString(), binding.fsPath));
+							lst.push(new Dependency(binding.filePath ?? binding.fsFullPathUri?.toString() ?? '', binding.fsFullPathUri));
 						} else {
 							lst.push(new Dependency(`(unbinded) ${a.uri}`));
 						}

@@ -64,8 +64,8 @@ export default class WorkspaceManager {
     // });
   }
 
-  private createBufferBinding(uri: vscode.Uri, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri) : BufferBinding {
-    const bufferBinding = createBufferBinding(this.fs, uri, bufferProxy, portal, buffer, fsPath, 
+  private createBufferBinding(filePath: string | undefined, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri) : BufferBinding {
+    const bufferBinding = createBufferBinding(this.fs, filePath, bufferProxy, portal, buffer, fsPath, 
       this.didRequireUpdateBuffer.bind(this),
       () => {},
       (bufferBinding) => {
@@ -117,7 +117,7 @@ export default class WorkspaceManager {
 
     const editorProxy = portal.createEditorProxy({bufferProxy: bufferProxy});
 
-    bufferBinding = this.createBufferBinding(buffer.uri, bufferProxy, portal, buffer);
+    bufferBinding = this.createBufferBinding(bufferPath, bufferProxy, portal, buffer);
 
     this.addProxyObject(buffer.uri.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
@@ -172,13 +172,13 @@ export default class WorkspaceManager {
     //fs.writeFileSync(filePath, '');
 
     //bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, filePath);
-    bufferBinding = this.createBufferBinding(vscode.Uri.parse(bufferProxy.uri), bufferProxy, portal, undefined, bufferURI);
+    bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, bufferURI);
     // bufferBinding = new BufferBinding(bufferProxy.uri, undefined, bufferProxy, bufferPath, () => {
     //   this.removeBufferBinding(bufferBinding);
     //   this.emitter.emit('did-change');
     // });
     //bufferBinding.fsPath = filePath;
-    bufferBinding.fsPath = bufferURI;
+    bufferBinding.fsFullPathUri = bufferURI;
 
     //bufferBinding.setBufferProxy(bufferProxy);
     //bufferProxy.setDelegate(bufferBinding);
@@ -192,7 +192,7 @@ export default class WorkspaceManager {
     // vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
     vscode.commands.executeCommand('vscode.open', bufferURI);
 
-    this.addProxyObject(vscode.Uri.file(filePath).toString(), portal, bufferProxy, editorProxy);
+    this.addProxyObject(bufferURI.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
 
     return bufferBinding;
