@@ -96,7 +96,7 @@ export class Dependency extends vscode.TreeItem {
 			this.iconPath = new vscode.ThemeIcon('link');
 		}
 
-		this.tooltip = `${this.label}`;
+		this.tooltip = `${this.label}\n(${path?.toString()})`;
 		// this.description = `${this.label}`;
 
 		if (this.path) {

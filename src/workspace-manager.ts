@@ -161,24 +161,26 @@ export default class WorkspaceManager {
 
     if (!portal?.id) { return undefined; }
 
-    const fileUri = vscode.Uri.parse(bufferProxy.uri);
-    // const filePath = path.join(os.tmpdir(), portal.id, fileUri.path);
-    const baseUri = vscode.Uri.parse(`memfs:///${portal.id}`);
-    const bufferURI = vscode.Uri.joinPath(baseUri, fileUri.path);
-    const filePath = bufferURI.fsPath;
+    const normPath = bufferProxy.uri.replace('\\','/');
+
+    // const filePath = path.join(os.tmpdir(), portal.id, normPath);
     // await require('mkdirp-promise')(path.dirname(filePath));
-    this.fs.createDirectory(baseUri);
-    this.fs.writeFile(bufferURI, new TextEncoder().encode(''), {create:true, overwrite:true});
-    //fs.writeFileSync(filePath, '');
+    // fs.writeFileSync(filePath, '');
+
+    const baseUri = vscode.Uri.parse(`memfs:///${portal.id}/`);
+    const bufferUri = vscode.Uri.joinPath(baseUri, normPath);
+
+    await this.mkdirp(bufferUri, true);
+    await this.fs.writeFile(bufferUri, new TextEncoder().encode(''), {create:true, overwrite:true});
 
     //bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, filePath);
-    bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, bufferURI);
+    bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, bufferUri);
     // bufferBinding = new BufferBinding(bufferProxy.uri, undefined, bufferProxy, bufferPath, () => {
     //   this.removeBufferBinding(bufferBinding);
     //   this.emitter.emit('did-change');
     // });
     //bufferBinding.fsPath = filePath;
-    bufferBinding.fsFullPathUri = bufferURI;
+    bufferBinding.fsFullPathUri = bufferUri;
 
     //bufferBinding.setBufferProxy(bufferProxy);
     //bufferProxy.setDelegate(bufferBinding);
@@ -190,12 +192,37 @@ export default class WorkspaceManager {
     // const editor = await vscode.window.showTextDocument(buffer);
     // bufferBinding.assignEditor(buffer, undefined);
     // vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
-    vscode.commands.executeCommand('vscode.open', bufferURI);
+    vscode.commands.executeCommand('vscode.open', bufferUri);
 
-    this.addProxyObject(bufferURI.toString(), portal, bufferProxy, editorProxy);
+    this.addProxyObject(bufferUri.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);
 
     return bufferBinding;
+  }
+
+  private async mkdirp(pathUri: vscode.Uri, includeFileName: boolean = false) {
+    const paths = pathUri.path.split('/');
+    const depth = (includeFileName)? 2 : 1;
+    const paths2 = paths.slice(0, paths.length - depth);
+    if (paths2.length <= 0) { return; }
+
+    const pathName = paths[paths.length - depth];
+    const parentDirUri = vscode.Uri.parse(`${pathUri.scheme}://${(paths2.length > 1)? paths2.join('/') : '/'}`);
+
+    try {
+      await this.fs.stat(parentDirUri);
+    } catch(error){
+      if (error instanceof vscode.FileSystemError) {
+        await this.mkdirp(parentDirUri);
+      }
+    }
+
+    const dirUri = vscode.Uri.joinPath(parentDirUri, pathName);
+    try {
+    await this.fs.createDirectory(dirUri);
+    } catch(error){
+
+    }	  
   }
 
 	private saveDocument (event : vscode.TextDocumentWillSaveEvent) {
