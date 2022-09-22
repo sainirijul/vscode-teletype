@@ -243,6 +243,7 @@
 		"@atom/teletype-client": "github:amos42/teletype-client.git",
 		"domexception": "^4.0.0",
 		"keytar": "^7.9.0",
+		"memfs": "^3.4.7",
 		"mkdirp-promise": "^5.0.1",
 		"node-fetch": "^2.6.0",
 		"wrtc": "^0.4.7"
