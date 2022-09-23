@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { fs } from 'memfs';
-import { Dirent } from 'fs';
+import { Dirent } from 'memfs/lib/Dirent';
 import { TextEncoder } from 'util';
 
 export class MemFS implements vscode.FileSystemProvider {
@@ -28,8 +28,17 @@ export class MemFS implements vscode.FileSystemProvider {
     }
 
     readDirectory(uri: vscode.Uri): [string, vscode.FileType][] {
-        const dirs = fs.readdirSync(uri.fsPath);
-        return dirs.map<[string, vscode.FileType]>((value,index,array) => [(value as Dirent).name, vscode.FileType.File]);
+        const dirs = fs.readdirSync(uri.fsPath, {withFileTypes: true});
+        return dirs.map<[string, vscode.FileType]>((value,index,array) => {
+            if (value instanceof Dirent) {
+                const dirent = value as Dirent;
+                return [dirent.name as string, dirent.isDirectory() ? vscode.FileType.Directory : dirent.isFile() ? vscode.FileType.File : vscode.FileType.Unknown];
+            } else if (typeof value === 'string') {
+                return [value as string, vscode.FileType.Unknown];
+            } else {
+                return ['', vscode.FileType.Unknown];
+            }            
+        });
     }
 
     readFile(uri: vscode.Uri): Uint8Array {
