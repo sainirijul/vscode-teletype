@@ -511,17 +511,17 @@ declare module '@atom/teletype-client' {
     }
 
     export class TeletypeClient {
-        constructor(...args: any[]);
+        constructor(options: any);
 
-        createPortal(...args: any[]): Portal;
+        createPortal(): Portal;
 
-        dispose(...args: any[]): void;
+        dispose(): void;
 
         getClientId(...args: any[]): void;
 
         getLocalUserIdentity(...args: any[]): any;
 
-        initialize(...args: any[]): void;
+        initialize(): void;
 
         isSignedIn(): boolean;
 

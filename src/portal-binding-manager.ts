@@ -13,7 +13,8 @@ export default class PortalBindingManager {
   public workspace!: vscode.WorkspaceFolder | null;
   public notificationManager: NotificationManager;
   public workspaceManager: WorkspaceManager;
-  private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
+  // private hostPortalBindingPromise: Promise<HostPortalBinding | undefined> | undefined;
+  private hostPortalBinding: HostPortalBinding | undefined;
   private promisesByGuestPortalId: Map<string, Promise<GuestPortalBinding>>;
 
   constructor (client: TeletypeClient, workspace: vscode.WorkspaceFolder | null, notificationManager: NotificationManager, workspaceManager: WorkspaceManager) {
@@ -23,20 +24,21 @@ export default class PortalBindingManager {
       this.workspace = workspace;
     }
     this.notificationManager = notificationManager;
-    // this.hostPortalBindingPromise = null;
+    // this.hostPortalBindingPromise = undefined;
     this.workspaceManager = workspaceManager;
     this.promisesByGuestPortalId = new Map();
   }
 
   dispose () {
-    const disposePromises = [];
+    const disposePromises: Promise<any>[] = [];
 
-    if (this.hostPortalBindingPromise) {
-      const disposePromise = this.hostPortalBindingPromise.then((portalBinding) => {
-        portalBinding?.closePortal();
-      });
-      disposePromises.push(disposePromise);
-    }
+    // if (this.hostPortalBindingPromise) {
+    //   const disposePromise = this.hostPortalBindingPromise.then((portalBinding) => {
+    //     portalBinding?.closePortal();
+    //   });
+    //   disposePromises.push(disposePromise);
+    // }
+    this.hostPortalBinding?.closePortal();
 
     this.promisesByGuestPortalId.forEach(async (portalBindingPromise: Promise<GuestPortalBinding>) => {
       const disposePromise = portalBindingPromise.then((portalBinding) => {
@@ -48,17 +50,25 @@ export default class PortalBindingManager {
     return Promise.all(disposePromises);
   }
 
-  async createHostPortalBinding () {
-    if (!this.hostPortalBindingPromise) {
-      this.hostPortalBindingPromise = this._createHostPortalBinding();
-      if(this.hostPortalBindingPromise) {
-        this.hostPortalBindingPromise.then((binding) => {
-          if (!binding) { this.hostPortalBindingPromise = undefined; }
-        });
-      }
+  // async createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
+  //   if (!this.hostPortalBindingPromise) {
+  //     this.hostPortalBindingPromise = this._createHostPortalBinding();
+  //     if(this.hostPortalBindingPromise) {
+  //       this.hostPortalBindingPromise.then((binding) => {
+  //         if (!binding) { this.hostPortalBindingPromise = undefined; }
+  //       });
+  //     }
+  //   }
+
+  //   return this.hostPortalBindingPromise;
+  // }
+
+  async createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
+    if (!this.hostPortalBinding) {
+      this.hostPortalBinding = await this._createHostPortalBinding();
     }
 
-    return this.hostPortalBindingPromise;
+    return this.hostPortalBinding;
   }
 
   async _createHostPortalBinding () : Promise<HostPortalBinding | undefined> {
@@ -83,14 +93,18 @@ export default class PortalBindingManager {
     return undefined;
   }
 
-  getHostPortalBinding (): Promise<HostPortalBinding | undefined> {
-    return this.hostPortalBindingPromise
-      ? this.hostPortalBindingPromise
-      : Promise.resolve(undefined);
+  // getHostPortalBinding (): Promise<HostPortalBinding | undefined> {
+  //   return this.hostPortalBindingPromise ?? Promise.resolve(undefined);
+  // }
+
+  getHostPortalBinding (): HostPortalBinding | undefined {
+    // return this.hostPortalBindingPromise ?? Promise.resolve(undefined);
+    return this.hostPortalBinding;
   }
 
   didDisposeHostPortalBinding () {
-    this.hostPortalBindingPromise = undefined;
+    // this.hostPortalBindingPromise = undefined;
+    this.hostPortalBinding = undefined;
     this.emitter.emit('did-change', {type: 'close-portal'});
   }
 

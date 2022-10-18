@@ -24,6 +24,7 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     public closePortal () {
         if (this.portal) {
             this.portal.dispose();
+            this.portal = undefined;
         }
     }
 

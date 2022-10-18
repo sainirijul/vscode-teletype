@@ -154,7 +154,7 @@ export class Dependency extends vscode.TreeItem {
 		} else {
 			this.description = '(signed)';
 			this.contextValue = 'Identify';
-			console.log(this);
+			// console.log(this);
 		}
 
 		// this.id = id;

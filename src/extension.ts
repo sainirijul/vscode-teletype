@@ -56,10 +56,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		pusherOptions.forceTLS = false;
 		pusherOptions.disableStats = true;
 		pusherOptions.enabledTransports = ['ws', 'wss'];
-	} else {
-		// pusherOptions.encrypted = true;
 	}
 
+	// 컨텍스트 변수 세팅 (팝업 메뉴를 위해)
 	vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
 
 	const teletype = new TeletypePackage({

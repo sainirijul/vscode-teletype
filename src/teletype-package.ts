@@ -173,7 +173,7 @@ export default class TeletypePackage {
     if (await this.isSignedIn()) {
       const manager = await this.getPortalBindingManager();
       const portalBinding = await manager?.createHostPortalBinding();
-      if (portalBinding) { 
+      if (portalBinding?.portal) { 
         return portalBinding.portal; 
       } else {
         this.notificationManager?.addError("Failed share portal.");

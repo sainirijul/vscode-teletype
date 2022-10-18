@@ -7,6 +7,7 @@ export class MemFS implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
     private _bufferedEvents: vscode.FileChangeEvent[] = [];
     private _fireSoonHandle?: NodeJS.Timer;
+    // private _watchedFiles: string[] = [];
 
     private _fireSoon(...events: vscode.FileChangeEvent[]): void {
         this._bufferedEvents.push(...events);
@@ -86,7 +87,6 @@ export class MemFS implements vscode.FileSystemProvider {
     }
 
     createDirectory(uri: vscode.Uri): void {
-        //fs.mkdirSync(uri.fsPath);
         fs.mkdirpSync(uri.fsPath);
         this._fireSoon({ type: vscode.FileChangeType.Created, uri });
     }
