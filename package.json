@@ -224,7 +224,6 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
-		"@types/event-kit": "^2.4.1",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.17.24",
 		"@types/event-kit": "^2.4.1",
