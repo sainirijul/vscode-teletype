@@ -239,7 +239,7 @@
 		"webpack-cli": "^4.9.2"
 	},
 	"dependencies": {
-		"@atom/teletype-client": "github:amos42/teletype-client.git#develop",
+		"@atom/teletype-client": "github:amos42/teletype-client#develop",
 		"domexception": "^4.0.0",
 		"keytar": "^7.9.0",
 		"memfs": "^3.4.7",
