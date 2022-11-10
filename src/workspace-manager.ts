@@ -118,6 +118,9 @@ export default class WorkspaceManager {
     const editorProxy = portal.createEditorProxy({bufferProxy: bufferProxy});
 
     bufferBinding = this.createBufferBinding(bufferPath, bufferProxy, portal, buffer);
+    bufferBinding.onRequireUpdate(() => {
+      this.emitter.emit('did-change');
+    });
 
     this.addProxyObject(buffer.uri.toString(), portal, bufferProxy, editorProxy);
     this.addBufferBinding(bufferBinding);

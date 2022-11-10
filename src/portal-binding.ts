@@ -4,6 +4,7 @@ import {SelectionMap, Selection, Position, Range} from './teletype-types';
 import {EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
+import BufferBinding, { IBufferProxyExt } from './buffer-binding';
 
 export interface IPortalBinding {
     portal?: Portal;
@@ -21,8 +22,15 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         this.emitter = new EventEmitter();
     }
 
-    public closePortal () {
+    public async closePortal () {
         if (this.portal) {
+            for (const [_, proxy] of this.portal.bufferProxiesById) {
+                const bufferBinding = (proxy as unknown as IBufferProxyExt).getBufferBinding();
+                if (bufferBinding?.pendingUpdates?.length > 0) {
+                    const reply = await this.notificationManager.confirm('There are changes that have not been reflected yet.\nAre you sure you want to quit?');
+                    if (!reply) { return; }
+                }
+            }
             this.portal.dispose();
             this.portal = undefined;
         }

@@ -29,7 +29,7 @@ export default class PortalBindingManager {
     this.promisesByGuestPortalId = new Map();
   }
 
-  dispose () {
+  async dispose () {
     const disposePromises: Promise<any>[] = [];
 
     // if (this.hostPortalBindingPromise) {
@@ -38,7 +38,7 @@ export default class PortalBindingManager {
     //   });
     //   disposePromises.push(disposePromise);
     // }
-    this.hostPortalBinding?.closePortal();
+    await this.hostPortalBinding?.closePortal();
 
     this.promisesByGuestPortalId.forEach(async (portalBindingPromise: Promise<GuestPortalBinding>) => {
       const disposePromise = portalBindingPromise.then((portalBinding) => {
