@@ -112,7 +112,7 @@
 			"properties": {
 				"teletype.settings.apiHostUrl": {
 					"type": "string",
-					"default": "https://api.teletype.atom.io",
+					"default": "http://teletype-server.ide-dev:4279",
 					"description": "API Host Url"
 				},
 				"teletype.settings.authToken": {
@@ -122,22 +122,22 @@
 				},
 				"teletype.settings.pusher.wsHost": {
 					"type": "string",
-					"default": "",
+					"default": "soketi.ide-dev",
 					"description": "Pusher WebSocket Host"
 				},
 				"teletype.settings.pusher.wsPort": {
 					"type": "string",
-					"default": "",
+					"default": "6001",
 					"description": "Pusher WebSocket Port"
 				},
 				"teletype.settings.pusher.key": {
 					"type": "string",
-					"default": "f119821248b7429bece3",
+					"default": "cc8fb96b89e84d763d6b",
 					"description": "Pusher Key"
 				},
 				"teletype.settings.pusher.cluster": {
 					"type": "string",
-					"default": "mt1",
+					"default": "ap3",
 					"description": "Pusher Cluster"
 				}
 			}
