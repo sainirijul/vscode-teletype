@@ -163,6 +163,11 @@
 			],
 			"view/item/context": [
 				{
+					"command": "extension.teletype-signout",
+					"when": "view == teletype.accountsView && viewItem == Identify",
+					"group": "identify"
+				},
+				{
 					"command": "extension.share-portal",
 					"when": "view == teletype.accountsView && viewItem == Identify",
 					"group": "portal"
@@ -246,5 +251,7 @@
 		"mkdirp-promise": "^5.0.1",
 		"node-fetch": "^2.6.7",
 		"wrtc": "^0.4.7"
-	}
+	},
+	"bundledDependencies": [ 
+    ]
 }
