@@ -122,6 +122,7 @@ export class Dependency extends vscode.TreeItem {
 	) {
 		super(label, collapsibleState);
 
+		let extLabel: string | undefined = undefined;
 		if (value) {
 			if (value instanceof PortalBinding) {
 				this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -132,17 +133,17 @@ export class Dependency extends vscode.TreeItem {
 				}
 			} else if ('portal' in value) {
 				if (id === value.portal.getLocalSiteId()) {
-					this.description = '(me)';
+					extLabel = '(me)';
 					this.contextValue = 'Member';
 				} else {
 					if (value.portal.isHost) {
 						this.contextValue = 'Member';
 					} else {
 						if (id === value.portal.getFollowedSiteId()) {
-							this.description = (id === 1)? '(Host) *' : '*';
+							extLabel = (id === 1)? '(Host) *' : '*';
 							this.contextValue = 'FollowedMember';
 						} else {
-							this.description = (id === 1)? '(Host)' : undefined;
+							extLabel = (id === 1)? '(Host)' : undefined;
 							this.contextValue = 'FollowableMember';
 						}
 					}
@@ -152,9 +153,14 @@ export class Dependency extends vscode.TreeItem {
 				// 	arguments: [value.portal, value.identify]	
 			}
 		} else {
-			this.description = '(signed)';
+			extLabel = '(signed)';
 			this.contextValue = 'Identify';
 			// console.log(this);
+		}
+
+		if (extLabel) {
+			// this.description = extLabel;  /// abobe Theia 1.82
+			this.label = `${this.label} ${extLabel}`;  /// for Theia 1.82
 		}
 
 		// this.id = id;
