@@ -159,8 +159,8 @@ export class Dependency extends vscode.TreeItem {
 		}
 
 		if (extLabel) {
-			// this.description = extLabel;  /// abobe Theia 1.82
-			this.label = `${this.label} ${extLabel}`;  /// for Theia 1.82
+			// this.description = extLabel;  /// above Theia 1.28
+			this.label = `${this.label} ${extLabel}`;  /// for Theia 1.28
 		}
 
 		// this.id = id;

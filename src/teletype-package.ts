@@ -124,7 +124,7 @@ export default class TeletypePackage {
     if (result) {
       this.registerRemoteEditorOpener();
     } else {
-      this.notificationManager?.addWarn("Session expired. Try sign-in.");
+      this.notificationManager?.addTrace("Session expired. Try sign-in.");
     }
 
     this.workspaceManager.initialize();

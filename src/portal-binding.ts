@@ -78,10 +78,8 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         // guest:
         const hostLogin = this.portal?.getSiteIdentity(1);
         const siteLogin = this.portal?.getSiteIdentity(siteId);
-        this.notificationManager.addInfo(`@${siteLogin?.login} has joined @${hostLogin?.login}'s portal`);
+        this.notificationManager.addInfo(`@${siteLogin?.login} has joined @${hostLogin?.login}'s Portal (${this.portal?.id})`);
         this.emitter.emit('did-change');
-
-        this.notificationManager?.addInfo(`Joined Portal with ID ${this.portal?.id}`);
     }
 
     // @override
@@ -94,10 +92,8 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         // guest:
         const hostLogin = this.portal?.getSiteIdentity(1);
         const siteLogin = this.portal?.getSiteIdentity(siteId);
-        this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s portal`);
+        this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s Portal (${this.portal?.id})`);
         this.emitter.emit('did-change');
-
-        this.notificationManager?.addInfo(`Leaved Portal with ID ${this.portal?.id}`);
     }
     
     // @override

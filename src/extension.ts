@@ -96,11 +96,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
 
 		const token = await getTeletypeToken();
-		notificationManager.addInfo("start signin...");
+		notificationManager.addTrace("start signin...");
 		if (!token) {
-			notificationManager.addInfo("No Toekn has been entered. Please try again");
+			notificationManager.addError("No Toekn has been entered. Please try again");
 		} else {
-			notificationManager.addInfo('Trying to SignIn...');
+			notificationManager.addTrace('Trying to SignIn...');
 			if (await (globalAny.teletype as TeletypeClient).signIn(token)) {
 				vscode.commands.executeCommand('setContext', 'teletype:isSignin', true);
 				notificationManager.addInfo("SignIn successeded.");
@@ -124,10 +124,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
 		const portalIdInput = await getPortalID();
 		if (!portalIdInput) {
-			notificationManager.addInfo("No Portal ID has been entered. Please try again");
+			notificationManager.addError("No Portal ID has been entered. Please try again");
 		}
 		else {
-			notificationManager.addInfo('Trying to Join Portal with ID' + ' ' + portalIdInput + ' ');
+			notificationManager.addTrace('Trying to Join Portal with ID' + ' ' + portalIdInput + ' ');
 			await (globalAny.teletype as TeletypePackage).joinPortal(portalIdInput);
 		}
 	});
@@ -140,7 +140,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand('extension.share-portal', () => {
-		notificationManager.addInfo('Trying to Share Portal');
+		notificationManager.addTrace('Trying to Share Portal');
 		(globalAny.teletype as TeletypePackage).sharePortal();
 	});
 	context.subscriptions.push(disposable);

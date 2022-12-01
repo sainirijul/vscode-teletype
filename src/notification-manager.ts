@@ -14,6 +14,10 @@ export default class NotificationManager {
         vscode.window.showWarningMessage(message, 'OK');
     }
 
+    public addTrace(message: string, options: { description: string; dismissable: boolean; } | undefined = undefined) {
+        vscode.window.showInformationMessage(message);
+    }
+
     public async confirm(message: string): Promise<boolean> {
         const answer = await vscode.window.showInformationMessage(message, "Yes", "No");
 
