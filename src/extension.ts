@@ -98,7 +98,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		const token = await getTeletypeToken();
 		notificationManager.addTrace("start signin...");
 		if (!token) {
-			notificationManager.addError("No Toekn has been entered. Please try again");
+			notificationManager.addError("No Token has been entered. Please try again");
 		} else {
 			notificationManager.addTrace('Trying to SignIn...');
 			if (await (globalAny.teletype as TeletypeClient).signIn(token)) {
