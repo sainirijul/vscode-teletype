@@ -35,6 +35,10 @@
 	"contributes": {
 		"commands": [
 			{
+				"command": "extension.teletype-about",
+				"title": "About Teletype"
+			},
+			{
 				"command": "extension.teletype-signin",
 				"title": "SignIn Teletype"
 			},
@@ -150,6 +154,11 @@
 		],
 		"menus": {
 			"view/title": [
+				{
+					"command": "extension.teletype-about",
+					"when": "view == teletype.accountsView",
+					"group": "about"
+				},
 				{
 					"command": "extension.teletype-signin",
 					"when": "view == teletype.accountsView && !teletype:isSignin",

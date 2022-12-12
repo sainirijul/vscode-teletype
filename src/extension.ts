@@ -25,6 +25,8 @@ globalAny.RTCPeerConnection = wrtc.RTCPeerConnection;
 globalAny.portalBindingManagerPromise = null;
 globalAny.notificationManager = null;
 
+const version = '0.0.1';
+
 // this method is called when the extension is activated
 // the extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
@@ -94,7 +96,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	console.log('Great, your extension "vscode-teletype" is now active!');
 
-	let disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
+	let disposable = vscode.commands.registerCommand('extension.teletype-about', async () => {
+
+		notificationManager.addInfo(`Teletype Version ${version}`);
+
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
 
 		const token = await getTeletypeToken();
 		if (!token) {

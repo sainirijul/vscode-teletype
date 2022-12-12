@@ -91,8 +91,8 @@ export default class TeletypePackage {
   }
 
   async activate () {
-    console.log('teletype: Using pusher key:', this.pusherKey);
-    console.log('teletype: Using base URL:', this.baseURL);
+    // console.log('teletype: Using pusher key:', this.pusherKey);
+    // console.log('teletype: Using base URL:', this.baseURL);
   
     // this.subscriptions.push(vscode.commands.registerCommand('teletype:sign-out', () => {
     //   this.signOut();
