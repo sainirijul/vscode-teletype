@@ -83,7 +83,7 @@ export default class PortalBindingManager {
         });
         this.emitter.emit('did-change', {type: 'share-portal', uri: portalBinding?.uri, portal: portalBinding?.portal});
       } else {
-        vscode.window.showErrorMessage(`Create Portal failed`);        
+        this.notificationManager?.addError(`Create Portal failed`);        
       }
       
       return portalBinding;

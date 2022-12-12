@@ -60,6 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 컨텍스트 변수 세팅 (팝업 메뉴를 위해)
 	vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
+	vscode.commands.executeCommand('setContext', 'teletype:isShared', false);
 
 	const teletype = new TeletypePackage({
 		fs: memFs,
@@ -96,7 +97,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
 
 		const token = await getTeletypeToken();
-		notificationManager.addTrace("start signin...");
 		if (!token) {
 			notificationManager.addError("No Token has been entered. Please try again");
 		} else {

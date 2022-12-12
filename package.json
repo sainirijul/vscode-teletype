@@ -159,6 +159,16 @@
 					"command": "extension.teletype-signout",
 					"when": "view == teletype.accountsView && teletype:isSignin",
 					"group": "identify"
+				},
+				{
+					"command": "extension.share-portal",
+					"when": "view == teletype.accountsView && teletype:isSignin && !teletype:isShared",
+					"group": "portal"
+				},
+				{
+					"command": "extension.join-portal",
+					"when": "view == teletype.accountsView && teletype:isSignin",
+					"group": "portal"
 				}
 			],
 			"view/item/context": [
@@ -169,7 +179,7 @@
 				},
 				{
 					"command": "extension.share-portal",
-					"when": "view == teletype.accountsView && viewItem == Identify",
+					"when": "view == teletype.accountsView && viewItem == Identify && !teletype:isShared",
 					"group": "portal"
 				},
 				{

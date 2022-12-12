@@ -83,6 +83,7 @@ export default class TeletypePackage {
       connectionTimeout: this.peerConnectionTimeout,
       tetherDisconnectWindow: this.tetherDisconnectWindow
     });
+    this.client.onSignInChange(this.handleSignInChange.bind(this));
     this.client.onConnectionError(this.handleConnectionError.bind(this));
     this.portalBindingManagerPromise = null;
     // this.joinViaExternalAppDialog = new JoinViaExternalAppDialog({config, commandRegistry, workspace});
@@ -314,6 +315,22 @@ export default class TeletypePackage {
     const {popoverComponent} = this.portalStatusBarIndicator;
     const {portalListComponent} = popoverComponent.refs;
     await portalListComponent.showJoinPortalPrompt();
+  }
+
+  async handleSignInChange () {
+    if (await this.isSignedIn()) {
+      // console.log('signin');
+    } else {
+      // console.log('signout');
+      const manager = await this.portalBindingManagerPromise;
+      if(manager?.getHostPortalBinding()) {
+        manager.getHostPortalBinding()?.closePortal();        
+      }
+      const guestPortals = manager?.getGuestPortalBindings();
+      (await guestPortals)?.forEach(portal => {
+        portal.leave();
+      });
+    }
   }
 
   handleConnectionError (event: Error) {
