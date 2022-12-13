@@ -10,13 +10,13 @@ import { AuthenticationProvider } from './authentication-provider';
 // import { IMemberIdentify } from '@atom/teletype-client';
 
 export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> {
-	public isSignin : boolean = true;
+	// public isSignin : boolean = true;
 	
 	public static readonly viewType = 'teletype.accountsView';
 
     private portalBindingUri: string | undefined;
     private identify: any;
-    //private items: Dependency[] = [];
+    // private items: Dependency[] = [];
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
@@ -127,24 +127,24 @@ export class Dependency extends vscode.TreeItem {
 			if (value instanceof PortalBinding) {
 				this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
 				if (value instanceof HostPortalBinding) {
-					this.contextValue = 'Host';
+					this.contextValue = 'teletype.Host';
 				} else if (value instanceof GuestPortalBinding) {
-					this.contextValue = 'Guest';
+					this.contextValue = 'teletype.Guest';
 				}
 			} else if ('portal' in value) {
 				if (id === value.portal.getLocalSiteId()) {
 					extLabel = '(me)';
-					this.contextValue = 'Member';
+					this.contextValue = 'teletype.Member';
 				} else {
 					if (value.portal.isHost) {
-						this.contextValue = 'Member';
+						this.contextValue = 'teletype.Member';
 					} else {
 						if (id === value.portal.getFollowedSiteId()) {
 							extLabel = (id === 1)? '(Host) *' : '*';
-							this.contextValue = 'FollowedMember';
+							this.contextValue = 'teletype.FollowedMember';
 						} else {
 							extLabel = (id === 1)? '(Host)' : undefined;
-							this.contextValue = 'FollowableMember';
+							this.contextValue = 'teletype.FollowableMember';
 						}
 					}
 				}
@@ -154,7 +154,7 @@ export class Dependency extends vscode.TreeItem {
 			}
 		} else {
 			extLabel = '(signed)';
-			this.contextValue = 'Identify';
+			this.contextValue = 'teletype.Identify';
 			// console.log(this);
 		}
 
@@ -172,6 +172,4 @@ export class Dependency extends vscode.TreeItem {
 	// 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
 	// 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
 	// };
-
-	// contextValue = 'dependency';
 }

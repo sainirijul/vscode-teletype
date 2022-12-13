@@ -161,79 +161,89 @@
 				},
 				{
 					"command": "extension.teletype-signin",
-					"when": "view == teletype.accountsView && !teletype:isSignin",
+					"when": "view == teletype.accountsView && !teletype.status.isSignin",
 					"group": "identify"
 				},
 				{
 					"command": "extension.teletype-signout",
-					"when": "view == teletype.accountsView && teletype:isSignin",
+					"when": "view == teletype.accountsView && teletype.status.isSignin",
 					"group": "identify"
 				},
 				{
 					"command": "extension.share-portal",
-					"when": "view == teletype.accountsView && teletype:isSignin && !teletype:isShared",
+					"when": "view == teletype.accountsView && teletype.status.isSignin && !teletype.status.isShared",
+					"group": "portal"
+				},
+				{
+					"command": "extension.close-host-portal",
+					"when": "view == teletype.accountsView && teletype.status.isSignin && teletype.status.isShared",
+					"group": "portal"
+				},
+				{
+					"command": "extension.copy-portal-url",
+					"when": "view == teletype.accountsView && teletype.status.isSignin && teletype.status.isShared",
 					"group": "portal"
 				},
 				{
 					"command": "extension.join-portal",
-					"when": "view == teletype.accountsView && teletype:isSignin",
+					"when": "view == teletype.accountsView && teletype.status.isSignin",
 					"group": "portal"
 				}
 			],
 			"view/item/context": [
 				{
 					"command": "extension.teletype-signout",
-					"when": "view == teletype.accountsView && viewItem == Identify",
+					"when": "view == teletype.accountsView && viewItem == teletype.Identify",
 					"group": "identify"
 				},
 				{
 					"command": "extension.share-portal",
-					"when": "view == teletype.accountsView && viewItem == Identify && !teletype:isShared",
+					"when": "view == teletype.accountsView && viewItem == teletype.Identify && !teletype.status.isShared",
 					"group": "portal"
 				},
 				{
 					"command": "extension.close-host-portal",
-					"when": "view == teletype.accountsView && viewItem == Host",
+					"when": "view == teletype.accountsView && viewItem == teletype.Host",
 					"group": "portal"
 				},
 				{
 					"command": "extension.copy-portal-url",
-					"when": "view == teletype.accountsView && viewItem == Host",
+					"when": "view == teletype.accountsView && viewItem == teletype.Host",
 					"group": "portal"
 				},
 				{
 					"command": "extension.copy-portal-url",
-					"when": "view == teletype.accountsView && viewItem == Host",
+					"when": "view == teletype.accountsView && viewItem == teletype.Host",
 					"group": "inline"
 				},
 				{
 					"command": "extension.join-portal",
-					"when": "view == teletype.accountsView && viewItem == Identify",
+					"when": "view == teletype.accountsView && viewItem == teletype.Identify",
 					"group": "portal"
 				},
 				{
 					"command": "extension.leave-portal",
-					"when": "view == teletype.accountsView && viewItem == Guest",
+					"when": "view == teletype.accountsView && viewItem == teletype.Guest",
 					"group": "portal"
 				},
 				{
 					"command": "extension.follow-portal",
-					"when": "view == teletype.accountsView && viewItem == FollowableMember",
+					"when": "view == teletype.accountsView && viewItem == teletype.FollowableMember",
 					"group": "portal"
 				},
 				{
 					"command": "extension.follow-portal",
-					"when": "view == teletype.accountsView && viewItem == FollowableMember",
+					"when": "view == teletype.accountsView && viewItem == teletype.FollowableMember",
 					"group": "inline"
 				},
 				{
 					"command": "extension.unfollow-portal",
-					"when": "view == teletype.accountsView && viewItem == FollowedMember",
+					"when": "view == teletype.accountsView && viewItem == teletype.FollowedMember",
 					"group": "portal"
 				},
 				{
 					"command": "extension.unfollow-portal",
-					"when": "view == teletype.accountsView && viewItem == FollowedMember",
+					"when": "view == teletype.accountsView && viewItem == teletype.FollowedMember",
 					"group": "inline"
 				}
 			]

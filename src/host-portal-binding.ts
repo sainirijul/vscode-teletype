@@ -58,7 +58,7 @@ export default class HostPortalBinding extends PortalBinding {
       //   this.workspace.observeActiveTextEditor(this.didChangeActiveTextEditor.bind(this))
       // );
 
-      vscode.commands.executeCommand('setContext', 'teletype:isShared', true);
+      vscode.commands.executeCommand('setContext', 'teletype.status.isShared', true);
 
       vscode.workspace.textDocuments.forEach(async (document) => {
         if (document.uri.scheme === 'file' && this.isWorkspaceFiles(document.uri.fsPath)) {
@@ -86,7 +86,7 @@ export default class HostPortalBinding extends PortalBinding {
 
   // @override
   dispose () {
-    vscode.commands.executeCommand('setContext', 'teletype:isShared', false);
+    vscode.commands.executeCommand('setContext', 'teletype.status.isShared', false);
 
     this.emitter.emit('did-change', {type: 'close-portal'});
 

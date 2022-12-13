@@ -61,8 +61,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	// 컨텍스트 변수 세팅 (팝업 메뉴를 위해)
-	vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
-	vscode.commands.executeCommand('setContext', 'teletype:isShared', false);
+	vscode.commands.executeCommand('setContext', 'teletype.status.isSignin', false);
+	vscode.commands.executeCommand('setContext', 'teletype.status.isShared', false);
 
 	const teletype = new TeletypePackage({
 		fs: memFs,
@@ -111,10 +111,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		} else {
 			notificationManager.addTrace('Trying to SignIn...');
 			if (await (globalAny.teletype as TeletypeClient).signIn(token)) {
-				vscode.commands.executeCommand('setContext', 'teletype:isSignin', true);
+				vscode.commands.executeCommand('setContext', 'teletype.status.isSignin', true);
 				notificationManager.addInfo("SignIn successeded.");
 			} else {
-				vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
+				vscode.commands.executeCommand('setContext', 'teletype.status.isSignin', false);
 				notificationManager.addError("SignIn failed.");
 			}
 		}
@@ -125,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand('extension.teletype-signout', async () => {
 
 		await (globalAny.teletype as TeletypeClient).signOut();
-		vscode.commands.executeCommand('setContext', 'teletype:isSignin', false);
+		vscode.commands.executeCommand('setContext', 'teletype.status.isSignin', false);
 
 	});
 	context.subscriptions.push(disposable);
