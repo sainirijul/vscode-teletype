@@ -82,8 +82,11 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
       // this.markerLayersBySiteId.forEach((l) => l.destroy());
       // this.markerLayersBySiteId.clear();
       if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
-      const siteDecoration = this.findSiteDecoration(this.editorProxy.siteId);
-      this.updateDecorations(siteDecoration, [], []);
+
+      this.decorationBySiteId?.forEach(siteDecoration => {
+        // const siteDecoration = this.findSiteDecoration(this.editorProxy.siteId);
+        this.updateDecorations(siteDecoration, [], []);
+      });
 
       if (!this.editor?.document.isClosed) {
         // if (vscode.window.activeTextEditor !== this.editor){
