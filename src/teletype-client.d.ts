@@ -96,7 +96,7 @@ declare module '@atom/teletype-client' {
 
         updateMarkers(...args: any[]): void;
 
-        static deserialize(...args: any[]): void;
+        static deserialize(message: any, props: any): void;
 
     }
 
@@ -121,9 +121,9 @@ declare module '@atom/teletype-client' {
 
         createLocalSelectionsLayer(...args: any[]): void;
 
-        cursorPositionForSiteId(...args: any[]): void;
+        cursorPositionForSiteId(siteId: number): void;
 
-        didScroll(...args: any[]): void;
+        didScroll(): void;
 
         dispose(...args: any[]): void;
 
@@ -131,35 +131,35 @@ declare module '@atom/teletype-client' {
 
         getMetadata(...args: any[]): void;
 
-        hideSelections(...args: any[]): void;
+        hideSelections(): void;
 
-        hostDidDisconnect(...args: any[]): void;
+        hostDidDisconnect(): void;
 
-        isScrollNeededToViewPosition(...args: any[]): void;
+        isScrollNeededToViewPosition(position: Position): void;
 
-        onDidScroll(...args: any[]): void;
+        onDidScroll(callback: any): void;
 
-        onDidUpdateLocalSelections(...args: any[]): void;
+        onDidUpdateLocalSelections(callback: any): void;
 
-        onDidUpdateRemoteSelections(...args: any[]): void;
+        onDidUpdateRemoteSelections(callback: any): void;
 
-        receiveFetch(...args: any[]): void;
+        receiveFetch({requestId}: any): void;
 
-        receiveSelectionsUpdate(...args: any[]): void;
+        receiveSelectionsUpdate(selectionsUpdate: any): void;
 
-        receiveUpdate(...args: any[]): void;
+        receiveUpdate({body}: any): void;
 
-        serialize(...args: any[]): void;
+        serialize(): void;
 
         setDelegate(delegate: IEditorDelegate): void;
 
-        showSelections(...args: any[]): void;
+        showSelections(): void;
 
-        siteDidDisconnect(...args: any[]): void;
+        siteDidDisconnect(siteId: number): void;
 
         updateSelections(updates: any[]): void;
 
-        static deserialize(...args: any[]): void;
+        static deserialize(message: any, props: any): void;
 
     }
 
@@ -172,7 +172,7 @@ declare module '@atom/teletype-client' {
 
         serialize(...args: any[]): void;
 
-        static deserialize(...args: any[]): void;
+        static deserialize(message: any, props: any): void;
 
     }
 

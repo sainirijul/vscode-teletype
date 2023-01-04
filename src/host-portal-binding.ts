@@ -104,12 +104,15 @@ export default class HostPortalBinding extends PortalBinding {
   //   this.emitter.emit('did-change', {type: 'join-portal', portal: this.portal});
   // }
 
-  // // @override
-  // siteDidLeave (siteId: number) {
-  //   const site = this.portal?.getSiteIdentity(siteId);
-  //   this.notificationManager.addInfo(`@${site?.login} has left your portal`);
-  //   this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
-  // }
+  // @override
+  siteDidLeave (siteId: number) {
+    //const editorProxy = this.portal?.getLocalActiveEditorProxy();
+    //editorProxy?.hideSelections();
+    super.siteDidLeave(siteId);
+    // const site = this.portal?.getSiteIdentity(siteId);
+    // this.notificationManager.addInfo(`@${site?.login} has left your portal`);
+    // this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
+  }
 
   isWorkspaceFiles(fsPath: string) : boolean {
     fsPath = path.normalize(fsPath);

@@ -82,6 +82,8 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
       // this.markerLayersBySiteId.forEach((l) => l.destroy());
       // this.markerLayersBySiteId.clear();
       if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
+      const siteDecoration = this.findSiteDecoration(this.editorProxy.siteId);
+      this.updateDecorations(siteDecoration, [], []);
 
       if (!this.editor?.document.isClosed) {
         // if (vscode.window.activeTextEditor !== this.editor){
@@ -187,14 +189,14 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   async editorDidChangeScrollTop () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    this.editorProxy.didScroll();
+    // this.editorProxy.didScroll();
     this.emitter.emit('did-scroll');
   }
 
   async editorDidChangeScrollLeft () {
     // const {element} = this.editor;
     // await element.component.getNextUpdatePromise();
-    this.editorProxy.didScroll();
+    // this.editorProxy.didScroll();
     this.emitter.emit('did-scroll');
   }
 
@@ -382,6 +384,11 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     // if (markerLayer) { markerLayer.destroy(); }
     // this.markerLayersBySiteId.delete(siteId);
     // this.markersByLayerAndId.delete(markerLayer);
+
+		let siteDecoration = this.findSiteDecoration(siteId);
+		this.updateDecorations(siteDecoration, [], []);
+
+    this.localMarkerSelectionMap.delete(siteId);
   }
 
   relayLocalSelections () {

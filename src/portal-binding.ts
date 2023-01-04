@@ -25,10 +25,15 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     public async closePortal () {
         if (this.portal) {
             for (const [_, proxy] of this.portal.bufferProxiesById) {
-                const bufferBinding = (proxy as unknown as IBufferProxyExt).getBufferBinding();
-                if (bufferBinding?.pendingUpdates?.length > 0) {
-                    const reply = await this.notificationManager.confirm('There are changes that have not been reflected yet.\nAre you sure you want to quit?');
-                    if (!reply) { return; }
+                const getBufferBindingFunc = (proxy as unknown as IBufferProxyExt)?.getBufferBinding;
+                if (getBufferBindingFunc) {
+                    const bufferBinding = getBufferBindingFunc();
+                    if (bufferBinding?.pendingUpdates?.length > 0) {
+                        const reply = await this.notificationManager.confirm('There are changes that have not been reflected yet.\nAre you sure you want to quit?');
+                        if (!reply) { return; }
+                    }
+                } else {
+                    console.error(proxy);
                 }
             }
             this.portal.dispose();
@@ -93,7 +98,8 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         const hostLogin = this.portal?.getSiteIdentity(1);
         const siteLogin = this.portal?.getSiteIdentity(siteId);
         this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s Portal (${this.portal?.id})`);
-        this.emitter.emit('did-change');
+        // this.emitter.emit('did-change');
+        this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
     }
     
     // @override

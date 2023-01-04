@@ -375,7 +375,6 @@ export default class WorkspaceManager {
       this.editorBindingsByTextEditor.clear();
 
       editors.forEach(async (editor) => {
-
         const proxyObj = this.getProxyObjectByUri(editor.document.uri);
         if (proxyObj) {
           let editorBinding = this.getEditorBindingByEditorProxy(proxyObj.editorProxy);
@@ -459,6 +458,11 @@ export default class WorkspaceManager {
     vscode.window.onDidChangeVisibleTextEditors(this.didChangeVisibleTextEditors.bind(this));
     vscode.window.onDidChangeTextEditorSelection(this.didSelectionChanges.bind(this));
     vscode.window.onDidChangeTextEditorVisibleRanges(this.didViewRangeChanges.bind(this));
+
+    // setInterval(() => {
+    //   console.log(vscode.window.visibleTextEditors.length);
+    //   this.synchronizedShowingEditors(vscode.window.visibleTextEditors);
+    // }, 1000);
 	}
 
 	private didChangeTextDocument (event : vscode.TextDocumentChangeEvent) {
