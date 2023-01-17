@@ -82,12 +82,12 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
       if (this.remoteFile) { this.remoteFile.dispose(); }
       // this.emitDidDispose();
 
-      // teletype-client에서 자동으로 해 주지 않아서 수동으로 연결 된 editorProxy들을 찾아서 청소해 줘야 한다.
-      this.portal.editorProxiesById.forEach(editorProxy => {
-        if(editorProxy.bufferProxy === this.bufferProxy) {
-          editorProxy.dispose();
-        }
-      });
+      // // teletype-client에서 자동으로 해 주지 않아서 수동으로 연결 된 editorProxy들을 찾아서 청소해 줘야 한다.
+      // this.portal.editorProxiesById.forEach(editorProxy => {
+      //   if(editorProxy.bufferProxy === this.bufferProxy) {
+      //     editorProxy.dispose();
+      //   }
+      // });
 
       this.disposed = true;
     }

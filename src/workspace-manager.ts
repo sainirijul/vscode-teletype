@@ -69,6 +69,13 @@ export default class WorkspaceManager {
       this.didRequireUpdateBuffer.bind(this),
       () => {},
       (bufferBinding) => {
+        // teletype-client에서 자동으로 해 주지 않아서 수동으로 연결 된 editorProxy들을 찾아서 청소해 줘야 한다.
+        portal?.editorProxiesById.forEach(editorProxy => {
+          if(editorProxy.bufferProxy === bufferProxy) {
+            editorProxy.dispose();
+          }
+        });
+
         this.removeBufferBinding(bufferBinding);
       }
     );
@@ -554,6 +561,7 @@ export default class WorkspaceManager {
 	private didSelectionChanges (event: vscode.TextEditorSelectionChangeEvent) {
     const editorBinding = this.getEditorBindingByEditor(event.textEditor);
     if (editorBinding) {
+      console.log(`didSelectionChanges (editorBinding.processOpen:${editorBinding.processOpen}`);
       editorBinding.updateSelections(event.selections);
     }
   }

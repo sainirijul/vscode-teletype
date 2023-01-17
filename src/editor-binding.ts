@@ -23,7 +23,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
 	// public portal: Portal | undefined;
   private disposed: boolean = false;
   private emitter: EventEmitter;
-  // selectionsMarkerLayer: any;
+  private selectionsMarkerLayer: vscode.Selection[];
   // markerLayersBySiteId: Map<number, any>;
   // markersByLayerAndId: WeakMap<number, object>;
 	private localSelectionMap: SelectionMap;
@@ -39,6 +39,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   // isBatchingMarkerUpdates: boolean;
   bufferBinding: BufferBinding;
   public pendingUpdates: any[];
+  processOpen: boolean = false;
 
   constructor (editor: vscode.TextEditor, bufferBinding: BufferBinding, title?: string, /*portal?: Portal,*/ didDispose: Function = doNothing) {
     super(didDispose);
@@ -48,7 +49,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     this.title = title ?? editor.document.uri.fsPath;
     // this.portal = portal;
     this.emitter = new EventEmitter();
-    // this.selectionsMarkerLayer = this.editor.selectionsMarkerLayer.bufferMarkerLayer;
+    this.selectionsMarkerLayer = this.editor.selections;
     // this.markerLayersBySiteId = new Map();
     // this.markersByLayerAndId = new WeakMap();
     // this.subscriptions = new CompositeDisposable();
@@ -83,8 +84,8 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
       // this.markerLayersBySiteId.clear();
       if (this.localCursorLayerDecoration) { this.localCursorLayerDecoration.destroy(); }
 
+      // const siteDecoration = this.findSiteDecoration(this.editorProxy.siteId);
       this.decorationBySiteId?.forEach(siteDecoration => {
-        // const siteDecoration = this.findSiteDecoration(this.editorProxy.siteId);
         this.updateDecorations(siteDecoration, [], []);
       });
 
@@ -395,13 +396,14 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
   }
 
   relayLocalSelections () {
-    // const selectionUpdates = {};
-    // const selectionMarkers = this.selectionsMarkerLayer.getMarkers();
+    // const selectionUpdates = [];
+    // const selectionMarkers = this.selectionsMarkerLayer;
     // for (let i = 0; i < selectionMarkers.length; i++) {
     //   const marker = selectionMarkers[i];
-    //   selectionUpdates[marker.id] = getSelectionState(marker);
+    //   selectionUpdates[i] = getSelectionState(marker);
     // }
     // this.editorProxy?.updateSelections(selectionUpdates, {initialUpdate: true});
+    this.updateSelections(this.selectionsMarkerLayer, {initialUpdate: true});
   }
 
   batchMarkerUpdates (fn: Function) {
@@ -413,7 +415,7 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
     // this.batchedMarkerUpdates = null;
   }
 
-  updateSelections (updates: ReadonlyArray<vscode.Selection>) {
+  updateSelections (updates: ReadonlyArray<vscode.Selection>, options: {} = {}) {
     // if (this.isBatchingMarkerUpdates) {
     //   Object.assign(this.batchedMarkerUpdates, update);
     // } else {
@@ -428,7 +430,8 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
               reversed: false,
               tailed: false
           };
-        })
+        }),
+        {...options, isRmoteChange: this.processOpen}
       );
     // }
   }
@@ -511,11 +514,13 @@ function getCursorRangeFromSelection(selection: Selection): Range {
   }
 }
 
-function getSelectionState (marker: any) {
+function getSelectionState (marker: vscode.Selection): any {
   return {
-    range: marker.getRange(),
-    exclusive: marker.isExclusive(),
-    reversed: marker.isReversed()
+    range: {
+      start: {row: marker.start.line, column: marker.start.character}, 
+      end: {row: marker.end.line, column: marker.end.character}
+    },
+    reversed: marker.isReversed
   };
 }
 

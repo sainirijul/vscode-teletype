@@ -157,7 +157,7 @@ declare module '@atom/teletype-client' {
 
         siteDidDisconnect(siteId: number): void;
 
-        updateSelections(updates: any[]): void;
+        updateSelections(updates: any[], options: any): void;
 
         static deserialize(message: any, props: any): void;
 
