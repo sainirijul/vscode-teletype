@@ -15,6 +15,3 @@
 ---
 
 
-![](screenshots/screenshot_01.png)
-
-[Documents](docs/README.md)

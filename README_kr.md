@@ -17,4 +17,5 @@
 
 ![](screenshots/screenshot_01.png)
 
-[Documents](docs/README.md)
+
+[문서](docs/README_kr.md)

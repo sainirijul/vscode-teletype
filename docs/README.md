@@ -15,6 +15,4 @@
 ---
 
 
-![](screenshots/screenshot_01.png)
-
-[Documents](docs/README.md)
+[Manual](manuals/README_kr.md)
