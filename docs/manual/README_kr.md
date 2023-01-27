@@ -54,282 +54,137 @@ Teletype 탭을 클릭하면 Teletype 페이지로 전환된다.
 
 ![Teletype 시작 화면](images/start_01.png)
 
-상단에 Teletype Accounts 뷰 가 나타난다.
+각 뷰의 요소는 다음과 같다.
 
-하단에 editors 뷰가 나타난다.
+![Teletype 시작 화면](images/start_02.png)
 
-Teletype Accounts 뷰에 Signin 버튼이 나타난다.
-
+> **1 - Teletype 페이지탭**  
+> Teletype 페이지로 전환
+> 
+> **2 - Teletype Accounts**  
+> Teletype 접속 정보 및 계정 정보
+> 
+> **3 - Teletype Target Documents**  
+> 현재 공유 중인 에디터 목록
 
 
 ## Teletype Sign-in
 
-상단의 Teletype Accounts 뷰가 보인다
-Teletype Accounts 뷰에 Signin 버튼이 보인다.
-Signin 버튼을 누른다.
-user id 입력 받는 입력박스가 나타난다.
+상단의 Teletype Accounts 뷰의 Signin 버튼을 누른다.
+그럼 user id 입력 받는 입력박스가 나타난다.
 
 ![](images/signin_01.png)
 
 
-유저 이름을 입력하고 enter를 누른다.
-
-Teletype Accounts 뷰에서 Signin 버튼이 사라지고 트리뷰가 나타난다.
-
-트리뷰의 첫번째 항목에 유저 이름이 나타난다.
+유저 이름을 입력하고 enter를 누른다.  
+접속이 성공적으로 이루어지면 Teletype Accounts 뷰에서 Signin 버튼이 사라지고 접속한 유저의 이름이 표시된다.
 
 ![](images/signin_02.png)
 
 
 ## Teletype Signout
 
-Teletype Accounts 뷰의 user 이름 항목을 우클릭 한다.
+Teletype Accounts 뷰의 user 이름 항목을 우클릭하여 팝업 메뉴를 호출한다.
 
 ![](images/signout_01.png)
 
-팝업 메뉴가 나타나며 다음 항목들이 보인다.
-
-    Signout Teletype
-    shared Portal
-    join to Portal
-
 팝업 메뉴 중, Signout Teletype 을 클릭한다.
-
-Teletype Accounts 뷰의 tree에서 계정 항목이 사라진다.
-
-Signin 버튼이 다시 나타난다.
+그럼 Teletype Accounts 뷰의 tree에서 계정 항목이 사라지고 다시 Signin 버튼이 나타난다.
 
 ![](images/signout_02.png)
 
 
+## 소스를 공유하기 (Host)
 
-Host
-## Teletype Host 생성
+현재 자신의 Workspace 상의 소스를 공유하고자 한다면 먼저 Host로서 공유 Portal을 생성하고 그 Portal을 공개해야 한다. 그럼 다른 유저들이 해당 Portal에 접속하여 Guest로서 참여하여 Host가 제공하는 소스를 공유할 수 있게 된다.
 
-Teletype Accounts 뷰에서 user_user1 항목을 우클릭 한다.
-
-팝업 메뉴가 나타나며, 팝업 메뉴 항목은 다음과 같다.
+공유 Portal을 생성하려면 Teletype Accounts 뷰에서 유저 이름 항목을 우클릭하여 팝업 메뉴를 호출한다.
 
 ![](images/share_01.png)
 
-shared Portal를 선택한다.
-팝업 메시지로 Create Portal with ID atom://Teletype/Portal/xxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 메시지가 나타난다.
+팝업 메뉴 중 Shared Portal를 선택하여 Portal을 생성한다. 성공적으로 Portal이 생성되면 팝업 메시지와 함께 Teletype Accounts 뷰에 Host 항목이 추가된다.
 
 ![](images/share_02.png)
 
-Teletype Accounts 뷰의 트리뷰에 Host 항목이 추가된다.
-
-Host 항목의 하단에 user_user1이 기본으로 추가된다.
-
-팝업 메시지로 Copy Portal to URL to Clipboard가 나타난다.
+Host 항목의 하단에 현재의 유저 이름이 기본으로 추가된다.  
+또한 생성된 Portal의 접속 URL이 클립보드로 들어가게 되는데, 이를 적절한 방법으로 공유하고자 하는 유저들에게 전달하면 된다. (ex. 메신저, e-Mail, etc...)
 
 
-## Host Portal URL을 클립보드로 복사
+## 공유 Portal URL을 클립보드로 복사
 
-Teletype Accounts 뷰에서 Host 항목을 우클릭 한다.
+만약 작업 도중에 새로운 사용자에게 공유 Portal의 접속 URL을 전송해야 할 경우가 생긴다면 클립보드를 통해 해당 URL을 얻을 수 있다.
 
-팝업 메뉴가 나타나며, 팝업 메뉴 항목은 다음과 같다.
+먼저 Teletype Accounts 뷰에서 Host 항목을 우클릭하여 팝업 메뉴를 호출한다.
 
 ![](images/copy_url_01.png)
 
-    close Host Portal
-    copy Portal url to clipboard
-
-팝업 메뉴 중 copy Portal url to clipboard 항목을 클릭한다.
-
-팝업 메시지로 Copy Portal to URL to Clipboard가 나타난다.
+팝업 메뉴 중 Copy Portal url to clipboard 항목을 클릭하면 팝업 메시지가 표시되며 Portal의 접속 URL이 클립보드로 복사된다.
 
 ![](images/copy_url_02.png)
 
-
-## Teletype Host 닫기
-
-Teletype Accounts 뷰에서 Host 항목을 우클릭 한다.
-
-팝업 메뉴가 나타나며, 팝업 메뉴 항목은 다음과 같다.
-
-![](images/close_portal_01.png)
-
-    close Host Portal
-    copy Portal url to clipboard
-
-팝업 메뉴 중 close Host Portal 항목을 클릭한다.
-
-팝업 메시지로 Close Host Portal이 나타난다.
-
-Teletype Accounts 뷰의 트리에서 Host 항목이 사라진다.
-
-![](images/close_portal_02.png)
+> ***Info:*** 이 작업은 Portal의 Host 유저만이 가능하다.
 
 
-Guest
-[Teletype] Teletype Guest 접속
+## 공유 Portal에 Guest로 접속
 
-Teletype Accounts 뷰에서 Signin 된 유저 이름 항목을 우클릭 한다.
+이미 생성 된 공유 Portal에 Guest로서 참여하여 Host 유저가 제공하는 소스를 열람하기 위해서는 사전에 다른 유저가 해당 Portal의 접속 URL을 알고 있어야 한다. 이 접속 URL은 Host 유저가 임의의 방법(ex. 메신저, e-Mail, etc...)으로 다른 유저들에게 전달해 주어야 한다.
+공유 Portal의 URL을 알고 있다면, Teletype 접속 후 해당 Portal에 접속하면 됩니다.
 
-팝업 메뉴가 나타나며, 팝업 메뉴 항목은 다음과 같다.
+Teletype Accounts 뷰에서 Signin 된 유저 이름 항목을 우클릭 하여 팝업 메뉴를 호출한다.
 
 ![](images/join_01.png)
 
-    Signout Teletype
-    shared Portal
-    join to Portal
-
-join to Portal을 선택한다.
-
-Portal url 입력 창이 나타난다.
-
-클립보드에 저장 된 Host Portal의 url을 붙여넣기 하고 enter를 누른다.
+팝업 메뉴 중, Join to Portal을 선택하면 Portal URL 입력 창이 나타난다.  
+입력창에 Portal URL을 입력하고 enter를 누른다.
 
 ![](images/join_02.png)
 
-
-Teletype Accounts 뷰의 트리에 Portal id 항목이 나타난다.
-
-Portal id 항목 아래에 Host 유저의 이름과 현재 Signin 된 유저 이름이 함께 나타난다.
+성공적으로 Portal에 접속이 되었다면 Teletype Accounts 뷰에 Portal Id 항목이 나타나고, 그 아래에 Host 유저의 이름과 현재 Signin 된 유저 이름이 함께 나타난다.
 
 ![](images/join_03.png)
 
+> ***info:*** 만약 Host 유저가 편집 중인 파일이 존재한다면 해당 파일의 소스가 함께 에디터로 열리게 된다.
 
 
 
+## 팔로잉 대상의 에디터 변경 동기화
 
+Teletype의 기본 사용 패턴은 서로 다른 유저가 같은 소스를 동시에 열람하는 것이다. 때문에 한 유저가 편집 대상 소스를 다른 파일로 변경했을 때 다른 유저 역시 즉각적으로 해당 소스를 함께 열람할 수 있어야 한다. 이때 소스의 대상을 가리키는 유저를 **리더**라고 부르고 이 소스를 열람하는 유저를 **팔로어**라 부른다.  
+기본적으로 초기엔 소스를 공개하는 Host가 디폴트로 리더가 되어 있고, 다른 Guest는 모두 이 리더를 팔로잉하게 된다.  
+하지만 필요에 따라 이 리더의 대상 소스의 변경을 계속 팔로잉하는 것이 불필요해지는 경우도 있다. 이럴 땐 팔로잉을 끊으면 된다. 유저가 명시적으로 팔로잉을 끊을 수도 있지만, 에디터 조작하는 상황에 따라서 Teletype이 지능적으로 팔로잉을 끊을 수도 있다.  
+또한 계속 복수의 유저가 동시에 Portal에 접속한 상태에서는 자신이 주목하고자 하는 특정 유저를 골라서 팔로어가 될 수도 있다.
 
-팔로잉
+> ***info:*** Host 유저는 기본적으로 리더만 될 수 있을 뿐, 팔로어는 될 수 없다.
 
-
-[Teletype] 팔로잉 대상의 에디터 변경 동기화
-
-Teletype Accounts 뷰에서 Host 항목 아래에 Host 유저의 이름과 현재 Guest 자신의 유저 이름이 각각 표시되어 있다.
-
+초기 Portal에 접속한 상태에선 Teletype Accounts 뷰에 Host 유저의 이름 옆에 '*' 문자가 표시되어 있다. 이는 현재 팔로잉하는 대상이 Host 유저임을 나타낸다.
 
 ![](images/follow_01.png)
 
+이 상태에서는 Host 유저가 편집할 파일을 열거나 편집 중인 대상 파일을 변경하면 즉시 해당 파일에 해당하는 에디터가 함께 열리게 된다.
 
-
-Host 유저 이름의 옆에 ‘*’ 표시가 붙어 있다.
-
-에디터 영역에 2개의 에디터가 열려 있다
-
-현재 열린 에디터는 Host 모드에서 표시 된 에디터와 일치한다.
-
-Host 모드가 포함 된 워크스페이스로 이동한다.
-
-열려 있는 다른 에디터의 탭을 클릭한다.
-
-클릭 한 에디터로 포커스가 이동되어 화면에 표시된다.
-
-Guest 모드가 포함 된 워크스페이스로 이동한다.
-
-Host 모드에서 새로 활성화 한 에디터와 동일한 에디터가 화면에 표시된다.
-
-
-
-[Teletype] 팔로잉 끊거나 다시 설정하기
-
+만약 팔로잉을 끊고 싶다면 Teletype Accounts 뷰에 Host 유저 이름에서 마우스 우클릭을 하여 팝업 메뉴를 호출한다.
 
 ![](images/follow_02.png)
 
+팝업 메뉴 중 Unflollow Portal을 클릭하면 Unfollow 되었다라는 팝업 메시지와 함께 Host 유저 이름의 옆에 ‘*’ 표시가 사라진다.
+
+![](images/follow_03.png)
+
+이 상태에서는 Host 유저가 새로운 파일을 열거나 편집 중인 에디터를 변경해도 Guest 유저의 화면에서 즉각적으로 해당 에디터가 함께 열리지 않게 된다.
+
+다시 특정 유저의 공유 파일 편집 상태를 팔로잉하고자 한다면 해당 유저를 리더로 지정하면 된다. 반드시 Host 유저 뿐 아니라 복수의 유저가 접속했을 경우, 임의의 유저도 리더로 지정하는 것이 가능하다.
+
+Teletype Accounts 뷰에서 팔로잉하고자 하는 유저의 아이디를 우클릭해서 팝업 메뉴를 호출한다.
+
+![](images/follow_04.png)
+
+Flollow Portal을 클릭하게 되면 팔로잉했다라는 메시지가 출력되면 해당 유저의 우측에 '*' 문자가 나타나게 된다. 또한 현재 해당 에디터가 편집하고 있던 소스가 있다면 해당 파일도 즉각적으로 표시되게 된다.
+
+![](images/follow_05.png)
 
 
 
-
-Guest 모드가 포함 된 워크 스페이스로 이동한다.
-
-Teletype Accounts 뷰에서 Host 항목 아래에 Host 유저의 이름과 현재 Guest 자신의 유저 이름이 각각 표시되어 있다.
-
-Host 유저 이름의 옆에 ‘*’ 표시가 붙어 있다.
-
-Host 유저 이름에서 마우스 우클릭을 한다.
-
-팝업 메뉴가 나온다. 메뉴 항목은 다음과 같다.
-
-   Unflollow Portal
-
-팝업 메뉴 중 Unflollow Portal을 클릭한다.
-
-Host 유저 이름의 옆에 ‘*’ 표시가 사라진다.
-
-Host 모드가 포함 된 워크스페이스로 이동한다.
-
-열려 있는 에디터들 중, Guest에서 변경한 에디터와 다른 파일의 탭을 클릭한다.
-
-클릭 한 에디터로 포커스가 이동되어 화면에 표시된다.
-
-Guest 모드가 포함 된 워크스페이스로 이동한다.
-
-Host 모드에서 새로 활성화 한 에디터로 변경이 되지 않고, 이전에 활성화 한 에디터가 여전히 그대로 화면에 표시된다.
-
-
-
-
-
-[Teletype] Guest에서 에디터 변경시 팔로잉 끊김
-
-Guest 모드가 포함 된 워크 스페이스로 이동한다.
-
-Teletype Accounts 뷰에서 Host 항목 아래에 Host 유저의 이름과 현재 Guest 자신의 유저 이름이 각각 표시되어 있다.
-
-Host 유저 이름의 옆에 ‘*’ 표시가 붙어 있다.
-
-에디터 영역에 3개의 에디터가 열려 있다
-
-현재 열린 에디터는 Host 모드에서 표시 된 에디터와 일치한다.
-
-열려 있는 다른 에디터의 탭을 클릭한다.
-
-클릭 한 에디터로 포커스가 이동되어 화면에 표시된다.
-
-Teletype Accounts 뷰에서 Host 항목 아래에 Host 유저 이름의 옆에 있던 ‘*’ 표시가 사라진다.
-
-Host 모드가 포함 된 워크스페이스로 이동한다.
-
-열려 있는 에디터들 중, Guest에서 변경한 에디터와 다른 파일의 탭을 클릭한다.
-
-클릭 한 에디터로 포커스가 이동되어 화면에 표시된다.
-
-Guest 모드가 포함 된 워크스페이스로 이동한다.
-
-Host 모드에서 새로 활성화 한 에디터로 변경이 되지 않고, 이전에 활성화 한 에디터가 여전히 그대로 화면에 표시된다.
-
-
-
-
-[Teletype] 팔로잉 대상 변경
-
-Guest 모드가 포함 된 워크 스페이스로 이동한다.
-
-Teletype Accounts 뷰에서 Host 항목 아래에 Host 유저의 이름과 현재 Guest 자신의 유저 이름이 각각 표시되어 있다.
-
-Host 유저 이름의 옆에 ‘*’ 표시가 붙어 있다.
-
-Host와 현재 유저 이름 외의 다른 유저 이름 위에서 마우스 우클릭을 한다.
-
-팝업 메뉴가 나온다. 메뉴 항목은 다음과 같다.
-
-   Flollow Portal
-
-
-팝업 메뉴 중 Flollow Portal을 클릭한다.
-
-해당 유저 이름의 옆에 ‘*’ 표시가 사라진다.
-
-해당 유저의 Guest 모드가 포함 된 워크스페이스로 이동한다.
-
-열려 있는 에디터들 중, 활성화 된 에디터 이외의 에디터의 탭을 선택한다.
-
-클릭 한 에디터로 포커스가 이동되어 화면에 표시된다.
-
-변경 직전의 Guest 모드가 포함 된 워크스페이스로 이동한다.
-
-follow 대상으로 삼은 유저에서 변경 된 에디터가 활성화되어 나타난다.
-
-
-
-
-
-Host 모드에서 편집 및 동기화
-[Teletype] Host 모드에서 에디터 열기
+## Host 모드에서 에디터 열기
 
 왼쪽 페이지 탭에서 Explorer 탭을 선택한다.
 
@@ -356,39 +211,21 @@ Teletype target documents 뷰에 현재 Host에서 연 텍스트 에디터의 �
 
 
 
-[Teletype] Host 모드에서 에디터의 커서 위치 변경
-
-Host 모드로 연 web-ide 워크스페이스로 이동한다.
-
-Teletype target documents에 열린 에디터를 클릭한다.
-
-해당 에디터가 에디터 모드에 활성화 된다.
+## 에디터의 커서 위치 변경
 
 문서의 특정 위치로 마우스를 클릭한다.
 
 커서의 위치가 해당 위치로 이동된다.
 
-Guest 모드로 연 web ide의 워크스페이스를 활성화 한다.
+![](images/cursor_01.png)
 
 Host 모드에서 연 문서에 해당하는 에디터가 에디터 영역에 표시되어 있다.
-
 Host 모드의 에디터에서의 커서 위치에 마크가 되어 있으며, Host 모드의 유저 아이디가 표기되어 있다.
-
-Host 모드로 연 web-ide 워크스페이스로 이동한다.
-
-문서 상의 다른 위치로 마우스를 클릭한다.
-
-커서의 위치가 새로운 위치로 이동된다.
-
-Guest 모드로 연 web ide의 워크스페이스를 활성화 한다.
 
 Host 모드의 에디터에서의 이동한 새로운 커서 위치에 마크가 되어 있으며, Host 모드의 유저 아이디가 표기되어 있다.
 
+![](images/cursor_02.png)
 
-
-
-
-[Teletype] Host 모드에서 에디터의 선택 영역 변경
 
 Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
 
@@ -406,7 +243,7 @@ Host 모드에서 선택한 영역과 동일한 영역에 마커가 칠해져 �
 
 
 
-[Teletype] Host 모드에서 편집
+## 편집 동기화
 
 Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
 
@@ -426,79 +263,7 @@ Host 모드에서 추가한 텍스트가 동일하게 입력되어 있다.
 
 
 
-
-
-Guest 모드에서 편집 및 동기화
-
-
-
-
-[Teletype] Guest 모드에서 에디터의 커서 위치 변경
-
-Guest 모드로 연 web-ide 워크스페이스로 이동한다.
-
-에디터 영역에 텍스트 에디터가 열려 있다.
-
-문서의 특정 위치로 마우스를 클릭한다.
-
-커서의 위치가 해당 위치로 이동된다.
-
-Host 모드로 연 web ide의 워크스페이스를 활성화 한다.
-
-Guest의 에디터에서의 커서 위치에 마크가 되어 있으며, Guest 유저 아이디가 표기되어 있다.
-
-Guest 모드로 연 web-ide 워크스페이스로 이동한다.
-
-문서 상의 다른 위치로 마우스를 클릭한다.
-
-커서의 위치가 새로운 위치로 이동된다.
-
-Host 모드로 연 web ide의 워크스페이스를 활성화 한다.
-
-Guest 에디터에서의 이동한 새로운 커서 위치에 마크가 되어 있으며, Guest의 유저 아이디가 표기되어 있다.
-
-
-
-
-[Teletype] Guest 모드에서 에디터의 선택 영역 변경
-
-teleteype Host 생성 된 상태
-
-다른 워크스페이스의 teleteype에서 Guest 모드로 Host에 join 한 상태
-
-Host 모드의 워크스페이스에서 임의의 텍스트 파일을 선택해 에디터가 열린 상태
-
-Guest 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
-
-마우스로 드래그하여 텍스트 영역의 일부를 선택한다.
-
-마우스로 드래그 한 영역이 블럭으로 선택된다.
-
-Host 모드의 Teletype이 포함 된 워크스페이스로 이동한다.
-
-Guest 모드에서 선택한 영역과 동일한 영역에 마커가 칠해져 있다.
-
-[Teletype] Guest 모드에서 편집
-
-Guest 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
-
-에디터의 임의의 위치로 커서를 이동한다.
-
-임의의 텍스트 내용을 입력한다.
-
-입력한 내용이 에디터에 반영되어 텍스트 내용이 변경된다.
-
-Host 모드의 Teletype이 포함 된 워크스페이스로 이동한다.
-
-Guest 모드에서 추가한 텍스트가 동일하게 입력되어 있다.
-
-새롭게 입력한 텍스트의 마지막 위치에 커서 마커가 표시되며 Host 유저 이름이 표시되어 있다.
-
-
-
-
-
-[Teletype] 서로 포커싱이 다를 때 편집
+## 서로 포커싱이 다를 때 편집
 
 Guest 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
 
@@ -531,91 +296,35 @@ Teletype target documents 뷰에 나타난 해당 에디터의 파일명 옆의 
 
 
 
+## Guest 접속 종료
 
-접속 종료
-[Teletype] Teletype Host Portal 종료
+Guest 유저가 소스 열람을 끝내고 싶다면 Portal의 접속을 끊으면 된다.
 
-Host 모드로 연 web-ide 워크스페이스로 이동한다.
+Teletype Accounts 뷰의 Host ID 항목을 마우스 우클릭하여 팝업 메뉴를 호출한다.
 
-teleteype Teletype Accounts 뷰에 Host 항목이 보인다.
+![](images/leave_01.png)
 
-teleteype Teletype Accounts 뷰의 Host 항목을 마우스 우클릭 한다.
+팝업 메뉴에서 Leave Portal을 클릭하면 접속을 종료하게 된다.  
+접속 종료가 완료되면 Teletype Accounts 뷰에서 Host의 ID 항목이 사라진다. 또한 열람 중인 공유 소스의 목록이 표시되던 Teletype Target Documents 뷰의 목록 중에 해당 Portal의 소스들은 사라지게 된다.
 
-팝업 메뉴가 나타나며, 다음의 항목들이 보인다.
-
-  Close Host Portal
-  Copy Host Portal URL to Clipboard
-
-팝업 메뉴에서 Close Host Portal을 클릭한다.
-
-Teletype Accounts 뷰에서 Host 항목이 사라진다.
-
-Close Host Portal 이라는 팝업 메시지가 나타난다.
-
-Guest 모드로 연 web-ide 워크스페이스로 이동한다.
-
-Teletype Accounts 뷰에서 Host의 ID 항목이 사라진다.
+![](images/leave_02.png)
 
 
 
+## Teletype Host 닫기
 
+Host 유저가 더이상 소스 공유를 중단하고 싶다면 Portal을 닫으면 된다.
 
-[Teletype] Teletype Guest 접속 종료
+Teletype Accounts 뷰에서 Host 항목을 우클릭 하여 팝업 메뉴를 호출한다.
 
-Guest 모드로 연 web-ide 워크스페이스로 이동한다.
+![](images/close_portal_01.png)
 
-teleteype Teletype Accounts 뷰에 Host의 ID 항목이 보인다.
+팝업 메뉴 중 Close Host Portal 항목을 클릭하면 접속이 종료 되었다는 팝업 메시지가 출력되며, Teletype Accounts 뷰에서 Host 항목이 사라진다. 또한 현재 공유 중인 에디터의 목록에서도 모든 항목들이 사라진다.
 
-teleteype Teletype Accounts 뷰의 Host의 ID 항목을 마우스 우클릭 한다.
-
-팝업 메뉴가 나타나며, 다음의 항목들이 보인다.
-
-  Leave Portal
-
-팝업 메뉴에서 Leave Portal을 클릭한다.
-
-Teletype Accounts 뷰에서 Host의 ID 항목이 사라진다.
-
-Leave Portal 이라는 팝업 메시지가 나타난다.
-
-Host 모드로 연 web-ide 워크스페이스로 이동한다.
-
-Teletype Accounts 뷰에서 Host 항목에서 Guest 유저의 이름이 사라진다.
-
-
-
+![](images/close_portal_02.png)
 
 
 [Teletype] Host 종료시 미반영 편집 내용 경고
-
-Guest 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
-
-Host에서 연 에디터가 나타난다.
-
-에디터 목록 중 현재 활성화 된 것과 다른 에디터 탭을 선택한다.
-
-다른 에디터가 활성화 된다.
-
-Teletype Accounts 뷰의 Host 유저 이름 옆의 ‘*’가 사라진다.
-
-텍스트 에디터에 임의의 문자를 입력한다.
-
-새로 입력한 내용을 반영하여 텍스트 내용이 변경된다.
-
-Host 모드의 Teletype이 포함 된 워크스페이스를 활성화 한다.
-
-Guest 모드와 다른 에디터가 활성화 되어 있다.
-
-Teletype target documents 뷰에 Guest 모드에서 활성화 된 에디터에 해당하는 파일명의 옆에 ‘*’ 문자가 나타난다.
-
-Teletype Accounts 뷰의 Host 항목을 마우스 우클릭 한다.
-
-팝업 메뉴가 나타나며, 다음의 항목들이 보인다.
-
-  Close Host Portal
-  Copy Host Portal URL to Clipboard
-
-팝업 메뉴에서 Close Host Portal을 클릭한다.
 
 종료 확인 팝업창이 나타나며 다음의 메시지가 출력된다.
 
