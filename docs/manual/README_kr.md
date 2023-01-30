@@ -244,8 +244,6 @@ Host 모드에서 선택한 영역과 동일한 영역에 마커가 칠해져 �
 
 
 
-
-
 ## 편집 동기화
 
 Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
@@ -254,7 +252,11 @@ Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에
 
 임의의 텍스트 내용을 입력한다.
 
+![](images/edit_01.png)
+
 Guest 모드의 Teletype이 포함 된 워크스페이스로 이동한다.
+
+![](images/edit_02.png)
 
 Host 모드에서 연 파일과 동일한 파일의 에디터가 열려 있다.
 
@@ -264,9 +266,7 @@ Host 모드에서 추가한 텍스트가 동일하게 입력되어 있다.
 
 
 
-
-
-## 서로 포커싱이 다를 때 편집
+## 서로 다른 파일을 편집하고 있을 떄 동기화
 
 Guest 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에디터를 선택한다.
 
@@ -278,6 +278,9 @@ Host에서 연 에디터가 나타난다.
 
 Teletype Accounts 뷰의 Host 유저 이름 옆의 ‘*’가 사라진다.
 
+![](images/lazy_sync_01.png)
+
+
 텍스트 에디터에 임의의 문자를 입력한다.
 
 새로 입력한 내용을 반영하여 텍스트 내용이 변경된다.
@@ -285,6 +288,8 @@ Teletype Accounts 뷰의 Host 유저 이름 옆의 ‘*’가 사라진다.
 Host 모드의 Teletype이 포함 된 워크스페이스를 활성화 한다.
 
 Guest 모드와 다른 에디터가 활성화 되어 있다.
+
+![](images/lazy_sync_02.png)
 
 Teletype target documents 뷰에 Guest 모드에서 활성화 된 에디터에 해당하는 파일명의 옆에 ‘*’ 문자가 나타난다.
 
@@ -296,6 +301,7 @@ Guest에서 변경한 내용이 반영되어 텍스트 내용이 변경 된다.
 
 Teletype target documents 뷰에 나타난 해당 에디터의 파일명 옆의 ‘*’ 문자가 사라진다.
 
+![](images/lazy_sync_03.png)
 
 
 
@@ -326,17 +332,21 @@ Teletype Accounts 뷰에서 Host 항목을 우클릭 하여 팝업 메뉴를 호
 
 ![](images/close_portal_02.png)
 
+Host 유저가 Portal을 닫을 땐 한가지 주의 사항이 있다. 바로 Guest 유저가 편집 한 내용이 아직 반영되지 않은 상태에서 종료를 하면 편집 내용을 잃게 된다는 점이다.  
+일례로, 현재 Host 유저와 Guest 유저의 팔로잉이 끊긴 상태에서 Guest 유저가 Host에게 보이지 않는 에디터의 내용을 편집 중인 상태를 가정해 보자.  
+그럼 Guest 유저의 Teletype Accounts 뷰에서는 팔로잉을 표시하는 '*' 문자가 사라져 있을 것이다. 
+이 상태에서 Guest와 Host가 서로 다른 에디터를 바라보고 있을 수가 있다. 이때 Guest가 문서의 내용을 편집한다면 Host 유저의 Teletype Target Documents 뷰에는 Guest가 편집 중인 파일명의 옆에 '*' 표시가 나타난다.
 
-[Teletype] Host 종료시 미반영 편집 내용 경고
+![](images/close_portal_03.png)
 
-종료 확인 팝업창이 나타나며 다음의 메시지가 출력된다.
+이때 Host 유저가 워크스페이스의 공유를 중단하고 Portal을 닫으려고 시도하려면 팝업 메뉴를 통해 종료 명령을 내리면 된다.
 
-There are changes that have not been reflected yet. Are you sure you want to quit?
-
-팝업창에 Yes와 No 버튼이 표시된다.
-
-No 버튼을 누른다.
-
-팝업창이 닫히고 종료 절차가 취소된다.
+![](images/close_portal_04.png)
 
 
+만약 이때 미반영 된 편집 내용이 있다는 경고 메시지와 함께 종료 확인 팝업창이 나타난다.
+
+![](images/close_portal_05.png)
+
+만약 여기서 Yes를 누른다면 Portal이 정상적으로 종료되지만 대신 미반영 된 편집 내용은 잃게 된다.
+미반영 된 내용을 확인하고 적용한 이후에 다시 종료 절차를 밟고 싶다면 No를 누르면 된다. 그 경우 팝업창이 닫히고 종료 절차가 취소된다.
