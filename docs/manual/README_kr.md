@@ -148,7 +148,7 @@ Teletype의 기본 사용 패턴은 서로 다른 유저가 같은 소스를 동
 
 > ***info:*** Host 유저는 기본적으로 리더만 될 수 있을 뿐, 팔로어는 될 수 없다.
 
-초기 Portal에 접속한 상태에선 Teletype Accounts 뷰에 Host 유저의 이름 옆에 ‘*’ 문자가 표시되어 있다. 이는 현재 팔로잉하는 대상이 Host 유저임을 나타낸다.
+초기 Portal에 접속한 상태에선 Teletype Accounts 뷰에 Host 유저의 이름 옆에 * 문자가 표시되어 있다. 이는 현재 팔로잉하는 대상이 Host 유저임을 나타낸다.
 
 ![](images/follow_01.png)
 
@@ -158,7 +158,7 @@ Teletype의 기본 사용 패턴은 서로 다른 유저가 같은 소스를 동
 
 ![](images/follow_02.png)
 
-팝업 메뉴 중 Unflollow Portal을 클릭하면 Unfollow 되었다라는 팝업 메시지와 함께 Host 유저 이름의 옆에 ‘*’ 표시가 사라진다.
+팝업 메뉴 중 Unflollow Portal을 클릭하면 Unfollow 되었다라는 팝업 메시지와 함께 Host 유저 이름의 옆에 * 표시가 사라진다.
 
 ![](images/follow_03.png)
 
@@ -170,7 +170,7 @@ Teletype Accounts 뷰에서 팔로잉하고자 하는 유저의 아이디를 우
 
 ![](images/follow_04.png)
 
-Flollow Portal을 클릭하게 되면 팔로잉했다라는 메시지가 출력되면 해당 유저의 우측에 ‘*’ 문자가 나타나게 된다. 또한 현재 해당 에디터가 편집하고 있던 소스가 있다면 해당 파일도 즉각적으로 표시되게 된다.
+Flollow Portal을 클릭하게 되면 팔로잉했다라는 메시지가 출력되면 해당 유저의 우측에 * 문자가 나타나게 된다. 또한 현재 해당 에디터가 편집하고 있던 소스가 있다면 해당 파일도 즉각적으로 표시되게 된다.
 
 ![](images/follow_05.png)
 
@@ -181,10 +181,24 @@ Flollow Portal을 클릭하게 되면 팔로잉했다라는 메시지가 출력�
 기본적으로 Portal을 통해 공유되는 소스 파일들은 Host 유저가 제공하는 워크스페이스 상의 텍스트 파일로 한정된다. 즉, 오직 Host 유저만이 소스를 제공할 수 있고, Guest 유저의 소스는 공유 될 수 없다.  
 그래서 소스 공유를 원하는 유저는 먼저 자신이 Host가 되어 Portal을 열고, 이후에 자신의 워크스페이스 상의 파일을 스스로 열어줘야 한다.
 
-Host 모드로 소스 공유를 시작했다면, 이제 IDE의 Explore 탭으로 이동하여 워크스페이스 상에 존재하는 임의의 파일을 클릭하여 열어 준다.  
-이렇게 열린 파일은 Teletype 탭의 Teletype Target Documents 목록에 추가되게 된다.
+기본적으로 Teletype Target Documents 뷰에는 현재 워크스페이스의 파일 중, 활성화 된 문서의 목록이 나타난다.
 
+![](images/fileopen_01.png)
+
+> ***info:*** 에디터 영역에는 나타나지 않지만 IDE 내부적으로 활성화 된 파일도 목록에 나타난다.
+
+Host 모드로 소스 공유를 시작했다면, 이제 IDE의 Explore 탭으로 이동하여 워크스페이스의 파일 목록으로 이동해야 한다.
+
+![](images/fileopen_02.png)
+
+워크스페이스 상에 존재하는 임의의 파일을 클릭하여 열어 준다.  
+
+![](images/fileopen_03.png)
+
+이제 다시 Teletype 페이지 탭으로 이동하여 보면 새롭게 열린 파일이 Teletype 탭의 Teletype Target Documents 목록에 추가되게 된다.  
 또한 Guest 유저 역시 즉각적으로 Host 유저가 공유 한 파일의 목록이 표시되며, 팔로잉 상태에 있다면 해당 파일이 즉시 에디터로 열리게 된다.
+
+![](images/fileopen_04.png)
 
 
 
@@ -234,20 +248,20 @@ Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에
 Host 유저 혹은 다른 Guest 유저와 팔로잉이 끊어진 상태라면 일반적으로 서로 다른 파일을 에디터 상에서 표시하고 있는 상태가 될 수 있다.  
 그 상태에서 문서를 편집한다면 즉시 해당 내용이 다른 유저들의 에디터에 반영될 수 없다. (이는 Visual Studio Code와 Theia의 정책에 따른 이슈이다.) 때문에 이런 편집 내용은 일단 pending 상태가 되었다가 적절한 순간이 되면 그제서야 실제로 반영된다.
 
-먼저 Host 유저가 복수개의 파일을 열어 놓았다고 가정한다. 그 상태에서 Guest 유자가 임의로 다른 에디터를 선택한다면 팔로잉이 끊기게 된다. (Teletype Accounts 뷰의 Host 유저 이름 옆의 ‘*’가 사라진다.)
+먼저 Host 유저가 복수개의 파일을 열어 놓았다고 가정한다. 그 상태에서 Guest 유자가 임의로 다른 에디터를 선택한다면 팔로잉이 끊기게 된다. (Teletype Accounts 뷰의 Host 유저 이름 옆의 *가 사라진다.)
 
 ![](images/lazy_sync_01.png)
 
 
 이렇게 팔로잉이 끊기고 서로 다른 에디터에 포커싱이 되어 있는 상황에서는 편집을 진행하면 즉시 편집 내용이 반영되지는 않지만 대신 문서에 변경이 이루어지고 있다는 사실은 표시된다.  
-Teletype Target Documents 뷰에 나열 된 파일 목록 중, 현재 변경이 이루어지고 있지만 아직 동기화가 이루어지지 않은 파일의 옆에 ‘*’ 문자가 표시된다.
+Teletype Target Documents 뷰에 나열 된 파일 목록 중, 현재 변경이 이루어지고 있지만 아직 동기화가 이루어지지 않은 파일의 옆에 * 문자가 표시된다.
 
 ![](images/lazy_sync_02.png)
 
 실제로 동기화가 이루어지는 시점은 해당 에디터가 활성화 되는 순간이며, 그 전까지는 반영을 미루고 있는 pending 상태인 것이다.
 
-Teletype Target Documents 뷰에 나타난 파일명 중 ‘*’ 문자가 붙은 항목을 클릭하여 해당 에디터를 활성화시키면 그 즉시 변경한 내용이 실제로 반영되어 텍스트 내용이 변경 된 모습을 볼 수 있다.  
-이렇게 지연 된 동기화가 완료되면 Teletype target documents 뷰에 나타난 해당 에디터의 파일명 옆에 표시되어 있던 ‘*’ 문자 역시 사라진다.
+Teletype Target Documents 뷰에 나타난 파일명 중 * 문자가 붙은 항목을 클릭하여 해당 에디터를 활성화시키면 그 즉시 변경한 내용이 실제로 반영되어 텍스트 내용이 변경 된 모습을 볼 수 있다.  
+이렇게 지연 된 동기화가 완료되면 Teletype target documents 뷰에 나타난 해당 에디터의 파일명 옆에 표시되어 있던 * 문자 역시 사라진다.
 
 ![](images/lazy_sync_03.png)
 
@@ -282,8 +296,8 @@ Teletype Accounts 뷰에서 Host 항목을 우클릭 하여 팝업 메뉴를 호
 
 Host 유저가 Portal을 닫을 땐 한가지 주의 사항이 있다. 바로 Guest 유저가 편집 한 내용이 아직 반영되지 않은 상태에서 종료를 하면 편집 내용을 잃게 된다는 점이다.  
 일례로, 현재 Host 유저와 Guest 유저의 팔로잉이 끊긴 상태에서 Guest 유저가 Host에게 보이지 않는 에디터의 내용을 편집 중인 상태를 가정해 보자.  
-그럼 Guest 유저의 Teletype Accounts 뷰에서는 팔로잉을 표시하는 ‘*’ 문자가 사라져 있을 것이다. 
-이 상태에서 Guest와 Host가 서로 다른 에디터를 바라보고 있을 수가 있다. 이때 Guest가 문서의 내용을 편집한다면 Host 유저의 Teletype Target Documents 뷰에는 Guest가 편집 중인 파일명의 옆에 ‘*’ 표시가 나타난다.
+그럼 Guest 유저의 Teletype Accounts 뷰에서는 팔로잉을 표시하는 * 문자가 사라져 있을 것이다. 
+이 상태에서 Guest와 Host가 서로 다른 에디터를 바라보고 있을 수가 있다. 이때 Guest가 문서의 내용을 편집한다면 Host 유저의 Teletype Target Documents 뷰에는 Guest가 편집 중인 파일명의 옆에 * 표시가 나타난다.
 
 ![](images/close_portal_03.png)
 
