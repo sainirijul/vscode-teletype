@@ -19,19 +19,18 @@
 Eclipse Che에서 Teletype을 사용하기 위해서는 Devfile에 플러그인을 추가해 주면 된다.  
 Add Workspace를 클릭하여 워크스페이스를 생성하기 위한 Devfile 입력 박스가 나타면 다음의 내용을 입력한다.
 
-> data
 ```yaml
 apiVersion: 1.0.0
-metadata: 
-  name: Teletype-test-1
-  projects:
-    - name: official-testcase-spring1
-      source:     
-        location: 'https://code.sdsdev.co.kr/cloud-ide/official-testcase-spring1.git'
-        type: github
+metadata:
+   name: Teletype-test-1
+   projects:
+     - name: testcase-spring1
+       source:
+         location: 'https://github.com/samples/testcase-spring1.git'
+         type: github
 components:
-  - id: sds/Teletype/latest
-    type: chePlugin
+   - reference: 'https://plugin-server/teletype/latest/plugin.yaml'
+     type: chePlugin
 ```
 
 그리고 Create & Open 버튼을 클릭하면 생성 된 IDE에 Teletype이 설치되어 동작하게 된다.  
@@ -60,12 +59,11 @@ Teletype 탭을 클릭하면 Teletype 페이지로 전환된다.
 Teletype을 사용하기 위해서는 제일 먼저 서버에 접속하여 인증 작업을 마쳐야 한다.
 
 상단의 Teletype Accounts 뷰의 Signin 버튼을 누른다.
-그럼 user id 입력 받는 입력박스가 나타난다.
+그럼 인증 Token을 입력 받는 입력박스가 나타난다.
 
 ![](images/signin_01.png)
 
-
-유저 이름을 입력하고 enter를 누른다.  
+인증 Token을 입력하고 enter를 누른다.  
 접속이 성공적으로 이루어지면 Teletype Accounts 뷰에서 Signin 버튼이 사라지고 접속한 유저의 이름이 표시된다.
 
 ![](images/signin_02.png)
@@ -137,7 +135,6 @@ Teletype Accounts 뷰에서 Signin 된 유저 이름 항목을 우클릭 하여 
 > ***info:*** 만약 Host 유저가 편집 중인 파일이 존재한다면 해당 파일의 소스가 함께 에디터로 열리게 된다.
 
 
-
 ## 팔로잉 대상의 에디터 변경 동기화
 
 Teletype의 기본 사용 패턴은 서로 다른 유저가 같은 소스를 동시에 열람하는 것이다. 때문에 한 유저가 편집 대상 소스를 다른 파일로 변경했을 때 다른 유저 역시 즉각적으로 해당 소스를 함께 열람할 수 있어야 한다.  
@@ -175,7 +172,6 @@ Flollow Portal을 클릭하게 되면 팔로잉했다라는 메시지가 출력�
 ![](images/follow_05.png)
 
 
-
 ## Host 모드에서 에디터 열기
 
 기본적으로 Portal을 통해 공유되는 소스 파일들은 Host 유저가 제공하는 워크스페이스 상의 텍스트 파일로 한정된다. 즉, 오직 Host 유저만이 소스를 제공할 수 있고, Guest 유저의 소스는 공유 될 수 없다.  
@@ -199,7 +195,6 @@ Host 모드로 소스 공유를 시작했다면, 이제 IDE의 Explore 탭으로
 또한 Guest 유저 역시 즉각적으로 Host 유저가 공유 한 파일의 목록이 표시되며, 팔로잉 상태에 있다면 해당 파일이 즉시 에디터로 열리게 된다.
 
 ![](images/fileopen_04.png)
-
 
 
 ## 에디터의 커서 위치 변경
@@ -228,7 +223,6 @@ Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에
 ![](images/cursor_04.png)
 
 
-
 ## 편집 동기화
 
 서로 공유되고 있는 문서를 한 유저가 편집하게 되면 다른 유저들의 에디터에도 즉각적으로 해당 편집 내용이 표시된다.
@@ -240,7 +234,6 @@ Host 모드의 Teletype이 포함 된 워크스페이스에서 열려 있는 에
 편집 내용의 동기화는 일방향으로 이루어지지 않는다. 각 유저가 동시에 서로의 에디터를 편집하더라도 그 편집 내용이 쌍방향으로 서로의 에디터에 즉각 반영된다.
 
 ![](images/edit_02.png)
-
 
 
 ## 서로 다른 파일을 편집하고 있을 떄 동기화
@@ -266,7 +259,6 @@ Teletype Target Documents 뷰에 나타난 파일명 중 * 문자가 붙은 항�
 ![](images/lazy_sync_03.png)
 
 
-
 ## Guest 접속 종료
 
 Guest 유저가 소스 열람을 끝내고 싶다면 Portal의 접속을 끊으면 된다.
@@ -279,7 +271,6 @@ Teletype Accounts 뷰의 Host ID 항목을 마우스 우클릭하여 팝업 메�
 접속 종료가 완료되면 Teletype Accounts 뷰에서 Host의 ID 항목이 사라진다. 또한 열람 중인 공유 소스의 목록이 표시되던 Teletype Target Documents 뷰의 목록 중에 해당 Portal의 소스들은 사라지게 된다.
 
 ![](images/leave_02.png)
-
 
 
 ## Teletype Host 닫기
@@ -304,7 +295,6 @@ Host 유저가 Portal을 닫을 땐 한가지 주의 사항이 있다. 바로 Gu
 이때 Host 유저가 워크스페이스의 공유를 중단하고 Portal을 닫으려고 시도하려면 팝업 메뉴를 통해 종료 명령을 내리면 된다.
 
 ![](images/close_portal_04.png)
-
 
 만약 이때 미반영 된 편집 내용이 있다는 경고 메시지와 함께 종료 확인 팝업창이 나타난다.
 

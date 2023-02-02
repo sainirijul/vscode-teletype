@@ -19,18 +19,17 @@
 To use Teletype in Eclipse Che, add a plug-in to Devfile.
 When the Devfile input box for creating a workspace appears by clicking Add Workspace, enter the following information.
 
-> data
 ```yaml
 apiVersion: 1.0.0
 metadata:
    name: Teletype-test-1
    projects:
-     - name: official-testcase-spring1
+     - name: testcase-spring1
        source:
-         location: 'https://code.sdsdev.co.kr/cloud-ide/official-testcase-spring1.git'
+         location: 'https://github.com/samples/testcase-spring1.git'
          type: github
 components:
-   - id: sds/Teletype/latest
+   - reference: 'https://plugin-server/teletype/latest/plugin.yaml'
      type: chePlugin
 ```
 
@@ -60,12 +59,11 @@ The elements of each view are as follows.
 To use Teletype, you must first connect to the server and complete authentication.
 
 Click the Signin button in the Teletype Accounts view at the top.
-Then, an input box for entering the user ID appears.
+Then, an input box for entering the authentication token appears.
 
 ![](images/signin_01.png)
 
-
-Enter your username and press enter.
+Enter the authentication token and press enter.
 When the connection is successful, the Signin button disappears from the Teletype Accounts view and the name of the connected user is displayed.
 
 ![](images/signin_02.png)
@@ -137,7 +135,6 @@ If you have successfully connected to the portal, the Portal Id item appears in 
 > ***info:*** If there is a file being edited by the host user, the source of the file is opened as an editor.
 
 
-
 ## Synchronize editor changes for following targets
 
 Teletype's basic usage pattern is for different users to view the same source simultaneously. Therefore, when one user changes the source to be edited to another file, other users must be able to immediately browse the corresponding source as well.
@@ -175,7 +172,6 @@ When you click on the Follow Portal, a message saying that you are following is 
 ![](images/follow_05.png)
 
 
-
 ## Open editor in host mode
 
 Basically, source files shared through Portal are limited to text files on the workspace provided by the host user. That is, only host users can provide sources, and guest users' sources cannot be shared.
@@ -201,7 +197,6 @@ In addition, the guest user is also immediately shown the list of files shared b
 ![](images/fileopen_04.png)
 
 
-
 ## Change the editor's cursor position
 
 The cursor position in a document shared between a host user and a guest user, or between a guest user and another guest user, can be shared by everyone.
@@ -217,16 +212,13 @@ The new cursor position moved in the host mode editor is marked, and the host mo
 
 ![](images/cursor_02.png)
 
-
 Select an open editor in the workspace containing Teletype in host mode and select a part of the text area as a block by dragging it with the mouse.
 
 ![](images/cursor_03.png)
 
-
 Then, in the guest user's editor, the marker is painted in the same area as the corresponding area.
 
 ![](images/cursor_04.png)
-
 
 
 ## Synchronize edits
@@ -242,7 +234,6 @@ Synchronization of edits is not unidirectional. Even if each user edits each oth
 ![](images/edit_02.png)
 
 
-
 ## Synchronization when editing different files
 
 If following is disconnected from the host user or other guest users, it can be a state in which different files are generally displayed on the editor.
@@ -251,7 +242,6 @@ If you edit the document in that state, the contents cannot be immediately refle
 First, it is assumed that the host user has multiple files open. In that state, if a guest user arbitrarily selects another editor, the following will be cut off. (The * next to the Host username in the Teletype Accounts view disappears.)
 
 ![](images/lazy_sync_01.png)
-
 
 In a situation where following is discontinued and the focus is on different editors, editing is not immediately reflected, but the fact that changes are being made to the document is displayed instead.
 Among the files listed in the Teletype Target Documents view, a * character is displayed next to a file that is currently being modified but not synchronized yet.
@@ -266,7 +256,6 @@ When this delayed synchronization is completed, the * character displayed next t
 ![](images/lazy_sync_03.png)
 
 
-
 ## Close guest connection
 
 If the guest user wants to finish viewing the source, he or she can disconnect from the Portal.
@@ -279,7 +268,6 @@ If you click Leave Portal in the pop-up menu, you will end the connection.
 When the connection is terminated, the Host ID item disappears from the Teletype Accounts view. Also, among the list of Teletype Target Documents view where the list of shared sources being browsed was displayed, the portal sources disappear.
 
 ![](images/leave_02.png)
-
 
 
 ## Close Teletype Host
@@ -304,7 +292,6 @@ In this state, Guest and Host may be looking at different editors. At this time,
 At this time, if the host user wants to stop sharing the workspace and try to close the Portal, he or she can issue the shutdown command through the pop-up menu.
 
 ![](images/close_portal_04.png)
-
 
 At this time, a termination confirmation pop-up window appears with a warning message that there are unreflected edits.
 
