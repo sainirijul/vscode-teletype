@@ -283,9 +283,8 @@ If you click the Close Host Portal item in the pop-up menu, a pop-up message ind
 ![](images/close_portal_02.png)
 
 There is one caveat when the host user closes the portal. The point is that if the Guest user exits while the edited content has not yet been reflected, the edited content will be lost.
-As an example, let's assume that the guest user is editing the contents of the editor invisible to the host while the following of the current host user and guest user is disconnected.
-Then, in the guest user's Teletype Accounts view, the * character that indicates following will disappear.
-In this state, Guest and Host may be looking at different editors. At this time, if Guest edits the content of the document, an * mark appears next to the file name Guest is editing in the Host user's Teletype Target Documents view.
+If there is a Guest user who does not currently follow the Host user, the * character that means following will disappear from the Host user ID in the Guest user's Teletype Accounts view.
+In this state, Guest user and Host user can look at different editors. At this time, if Guest edits the contents of the document, * mark appears next to the file name Guest is editing in the Teletype Target Documents view because the changes in the document have not yet been reflected in the host user's document.
 
 ![](images/close_portal_03.png)
 

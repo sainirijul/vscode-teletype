@@ -286,9 +286,8 @@ Teletype Accounts 뷰에서 Host 항목을 우클릭 하여 팝업 메뉴를 호
 ![](images/close_portal_02.png)
 
 Host 유저가 Portal을 닫을 땐 한가지 주의 사항이 있다. 바로 Guest 유저가 편집 한 내용이 아직 반영되지 않은 상태에서 종료를 하면 편집 내용을 잃게 된다는 점이다.  
-일례로, 현재 Host 유저와 Guest 유저의 팔로잉이 끊긴 상태에서 Guest 유저가 Host에게 보이지 않는 에디터의 내용을 편집 중인 상태를 가정해 보자.  
-그럼 Guest 유저의 Teletype Accounts 뷰에서는 팔로잉을 표시하는 * 문자가 사라져 있을 것이다. 
-이 상태에서 Guest와 Host가 서로 다른 에디터를 바라보고 있을 수가 있다. 이때 Guest가 문서의 내용을 편집한다면 Host 유저의 Teletype Target Documents 뷰에는 Guest가 편집 중인 파일명의 옆에 * 표시가 나타난다.
+만약 현재 Host 유저를 팔로잉 하지 않는 Guest 유저가 존재한다면, Guest 유저의 Teletype Accounts 뷰에서는 Host 유저의 아이디에 팔로잉을 의미하는 * 문자가 사라져 있을 것이다. 
+이 상태에서 Guest 유저와 Host 유저는 서로 다른 에디터를 바라보고 있을 수가 있다. 이때 Guest가 문서의 내용을 편집한다면 그 문서의 변경 내용이 아직 Host 유저의 문서에 반영되지 않았기 때문에 Teletype Target Documents 뷰에는 Guest가 편집 중인 파일명의 옆에 * 표시가 나타난다.
 
 ![](images/close_portal_03.png)
 

@@ -15,4 +15,4 @@
 ---
 
 
-[Manual](manual/README_kr.md)
+[Manual](manual/README.md)
