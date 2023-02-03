@@ -16,20 +16,39 @@
 
 ## Running Teletype in Eclipse Che
 
-To use Teletype in Eclipse Che, add a plug-in to Devfile.
+To use Teletype in Eclipse Che, add a plug-in to Devfile.  
+The plug-in format is as follows.
+
+```yaml
+apiVersion: v2
+publisher: Amos
+name: teletype
+category: Language
+type: VS Code extension
+description: Teleteyp for Visual Studio Code
+displayName: Teletype
+firstPublicationDate: "2023-01-01"
+icon: https://github.com/amos42/vscode-teletype/blob/master/resources/teletype.svg
+repository: https://github.com/amos42/vscode-teletype
+version: 1.0.0
+spec:
+  extensions:
+  - 'https://my-plugin-server/repository/vscode-teletype-1.0.0.vsix'
+```
+
 When the Devfile input box for creating a workspace appears by clicking Add Workspace, enter the following information.
 
 ```yaml
 apiVersion: 1.0.0
 metadata:
-   name: Teletype-test-1
+   name: Teletype_test_1
    projects:
-     - name: testcase-spring1
+     - name: sample_001
        source:
-         location: 'https://github.com/samples/testcase-spring1.git'
+         location: 'https://my-project-server/samples/sample_001.git'
          type: github
 components:
-   - reference: 'https://plugin-server/teletype/latest/plugin.yaml'
+   - reference: 'https://my-plugin-server/teletype/latest/plugin.yaml'
      type: chePlugin
 ```
 

@@ -17,19 +17,38 @@
 ## Eclipse Che에서 Teletype 실행
 
 Eclipse Che에서 Teletype을 사용하기 위해서는 Devfile에 플러그인을 추가해 주면 된다.  
+플러그인 포맷은 다음과 같다.
+
+```yaml
+apiVersion: v2
+publisher: Amos
+name: teletype
+category: Language
+type: VS Code extension
+description: Teleteyp for Visual Studio Code
+displayName: Teletype
+firstPublicationDate: "2023-01-01"
+icon: https://github.com/amos42/vscode-teletype/blob/master/resources/teletype.svg
+repository: https://github.com/amos42/vscode-teletype
+version: 1.0.0
+spec:
+  extensions:
+  - 'https://my-plugin-server/repository/vscode-teletype-1.0.0.vsix'
+```
+
 Add Workspace를 클릭하여 워크스페이스를 생성하기 위한 Devfile 입력 박스가 나타면 다음의 내용을 입력한다.
 
 ```yaml
 apiVersion: 1.0.0
 metadata:
-   name: Teletype-test-1
+   name: Teletype_test_1
    projects:
-     - name: testcase-spring1
+     - name: sample_001
        source:
-         location: 'https://github.com/samples/testcase-spring1.git'
+         location: 'https://my-project-server/samples/sample_001.git'
          type: github
 components:
-   - reference: 'https://plugin-server/teletype/latest/plugin.yaml'
+   - reference: 'https://my-plugin-server/teletype/latest/plugin.yaml'
      type: chePlugin
 ```
 
