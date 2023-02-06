@@ -14,6 +14,8 @@
 
 ---
 
+## Teletype 기본 화면
+
 정상적으로 Teletype이 설치되었다면 IDE의 페이지탭에 Teletype 아이콘이 표시된다.
 
 Teletype 탭을 클릭하면 Teletype 페이지로 전환된다.

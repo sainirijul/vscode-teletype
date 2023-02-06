@@ -14,6 +14,8 @@
 
 ---
 
+## Teletype basic screen
+
 If Teletype is normally installed, the Teletype icon is displayed on the page tab of the IDE.
 
 Clicking on the Teletype tab will take you to the Teletype page.
