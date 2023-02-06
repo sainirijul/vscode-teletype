@@ -58,26 +58,3 @@ If Teletype is normally installed, the Teletype icon is displayed on the page ta
 Clicking on the Teletype tab will take you to the Teletype page.
 
 ![Teletype start screen](images/start_01.png)
-
-The elements of each view are as follows.
-
-![Teletype start screen](images/start_02.png)
-
-> **1 - Teletype page tab**
-> Switch to Teletype page
->
-> **2 - Teletype Accounts**
-> Teletype access information and account information
->
-> **3 - Teletype Target Documents**
-> Editor list currently being shared
-
-
-## Teletype sign-in
-
-To use Teletype, you must first connect to the server and complete authentication.
-
-Click the Signin button in the Teletype Accounts view at the top.
-Then, an input box for entering the authentication token appears.
-
-![](images/signin_01.png)
