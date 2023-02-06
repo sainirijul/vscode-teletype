@@ -14,5 +14,6 @@
 
 ---
 
+[Run on Eclipse-Che](eclipse-che/README.md)
 
 [Manual](manual/README.md)

@@ -14,5 +14,6 @@
 
 ---
 
+[Eclipse-Che에서 실행](eclipse-che/README_kr.md)
 
 [메뉴얼](manual/README_kr.md)
