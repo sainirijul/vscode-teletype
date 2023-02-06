@@ -17,4 +17,6 @@
 
 ![](screenshots/screenshot_01.png)
 
-[Documents](docs/README.md)
+[Run on Eclipse-Che](docs/eclipse-che/README.md)
+
+[Manual](docs/manual/README.md)

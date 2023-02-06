@@ -18,4 +18,6 @@
 ![](screenshots/screenshot_01.png)
 
 
-[문서](docs/README_kr.md)
+[Eclipse-Che에서 실행](docs/eclipse-che/README_kr.md)
+
+[메뉴얼](docs/manual/README_kr.md)
