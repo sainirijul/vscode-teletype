@@ -144,7 +144,7 @@ export default class PortalBindingManager {
         return portalBinding;
     }
 
-    private async _createGuestPortalBinding(portalId: string): Promise<GuestPortalBinding> {
+    private async _createGuestPortalBinding(portalId: string): Promise<GuestPortalBinding | undefined> {
         const portalBinding = new GuestPortalBinding(
             this.client, portalId, this.notificationManager, this.workspaceManager,
             () => {
@@ -160,6 +160,7 @@ export default class PortalBindingManager {
             this.emitter.emit('did-change', { type: 'join-portal', portal: portalBinding?.portal });
         } else {
             portalBinding.dispose();
+            return undefined;
         }
 
         return portalBinding;
