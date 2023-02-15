@@ -42,12 +42,12 @@ export default class HostPortalBinding extends PortalBinding {
     // didChangeEditorProxies(): void {
     // }
 
-    async initialize(): Promise<boolean> {
+    async initializeAsync(): Promise<boolean> {
         try {
             const portal = await this.client.createPortal();
             if (!portal) { return false; }
 
-            await this.setPortal(portal);
+            await this.setPortalAsync(portal);
 
             if (!this.portal) { return false; }
 
@@ -65,7 +65,7 @@ export default class HostPortalBinding extends PortalBinding {
 
             vscode.workspace.textDocuments.forEach(async (document) => {
                 if (document.uri.scheme === 'file' && this.isWorkspaceFiles(document.uri.fsPath)) {
-                    const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
+                    const bufferBinding = this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
                     // this.portal?.activateEditorProxy(editorBinding?.editorProxy);
                     // this.sitePositionsComponent.show(editor.element);
                     // this.workspaceManager.addHostTextDocument(document);
@@ -145,23 +145,23 @@ export default class HostPortalBinding extends PortalBinding {
         await super.updateTether(followState, editorProxy, position);
     }
 
-    private async didOpenTextDocument(document: vscode.TextDocument) {
+    private didOpenTextDocument(document: vscode.TextDocument) {
         if (document.uri.scheme === 'file' && this.isWorkspaceFiles(document.uri.fsPath)) {
-            const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
+            const bufferBinding = this.workspaceManager.findOrCreateBufferBindingForBuffer(document, this.portal);
             // this.portal?.activateEditorProxy(editorBinding?.editorProxy);
             // this.sitePositionsComponent.show(editor.element);
             // this.workspaceManager.addHostTextDocument(document);
         }
     }
 
-    private async didChangeActiveTextEditor(editor?: vscode.TextEditor) {
+    private didChangeActiveTextEditor(editor?: vscode.TextEditor) {
         let editorProxy: EditorProxy | undefined = undefined;
 
         if (editor) {
             const doc = editor.document;
 
             if (doc.uri.scheme === 'file' && this.isWorkspaceFiles(doc.uri.fsPath)) {
-                const bufferBinding = await this.workspaceManager.findOrCreateBufferBindingForBuffer(doc, this.portal);
+                const bufferBinding = this.workspaceManager.findOrCreateBufferBindingForBuffer(doc, this.portal);
                 if (bufferBinding?.bufferProxy.isHost) {
                     //const editorProxy = await this.workspaceManager.findOrCreateEditorProxyForEditor(editor, this.portal);
                     //const editorBinding = this.workspaceManager.getEditorBindingByEditor(editor);

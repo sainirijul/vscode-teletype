@@ -7,8 +7,8 @@ export default class TeletypeService {
         this.teletypePackage = teletypePackage;
     }
 
-    async getRemoteEditors() {
-        const portalBindingManager = await this.teletypePackage.getPortalBindingManager();
+    async getRemoteEditorsAsync() {
+        const portalBindingManager = await this.teletypePackage.getPortalBindingManagerAsync();
         if (portalBindingManager) {
             return portalBindingManager.getRemoteEditors();
         } else {

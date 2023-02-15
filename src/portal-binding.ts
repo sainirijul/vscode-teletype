@@ -25,7 +25,7 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         this.resIdxTable = [undefined, undefined, undefined];
     }
 
-    public async setPortal(portal: Portal) {
+    public async setPortalAsync(portal: Portal) {
         this.portal = portal;
         await this.portal.setDelegate(this);
         this.monkeyPatch();
@@ -63,7 +63,7 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
                 if (getBufferBindingFunc) {
                     const bufferBinding = getBufferBindingFunc();
                     if (bufferBinding?.pendingUpdates?.length > 0) {
-                        const reply = await this.notificationManager.confirm('There are changes that have not been reflected yet.\nAre you sure you want to quit?');
+                        const reply = await this.notificationManager.confirmAsync('There are changes that have not been reflected yet.\nAre you sure you want to quit?');
                         if (!reply) { return; }
                     }
                 } else {

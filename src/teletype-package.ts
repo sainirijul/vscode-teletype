@@ -40,7 +40,8 @@ export default class TeletypePackage {
     tetherDisconnectWindow: any;
     credentialCache: any;
     client: TeletypeClient;
-    portalBindingManagerPromise: Promise<PortalBindingManager | null> | null;
+    // portalBindingManagerPromise: Promise<PortalBindingManager | null> | null;
+    portalBindingManager: PortalBindingManager | null;
     joinViaExternalAppDialog: any;
     subscriptions: any[];
     initializationError: any;
@@ -83,14 +84,14 @@ export default class TeletypePackage {
             connectionTimeout: this.peerConnectionTimeout,
             tetherDisconnectWindow: this.tetherDisconnectWindow
         });
-        this.client.onSignInChange(this.handleSignInChange.bind(this));
+        this.client.onSignInChange(this.handleSignInChangeAsync.bind(this));
         this.client.onConnectionError(this.handleConnectionError.bind(this));
-        this.portalBindingManagerPromise = null;
+        this.portalBindingManager = null;
         // this.joinViaExternalAppDialog = new JoinViaExternalAppDialog({config, commandRegistry, workspace});
         this.subscriptions = subscriptions;
     }
 
-    async activate() {
+    async activateAsync() {
         // console.log('teletype: Using pusher key:', this.pusherKey);
         // console.log('teletype: Using base URL:', this.baseURL);
 
@@ -117,9 +118,9 @@ export default class TeletypePackage {
         let result;
 
         if (this.authToken) {
-            result = await this.signIn(this.authToken);
+            result = await this.signInAsync(this.authToken);
         } else {
-            result = await this.signInUsingSavedToken();
+            result = await this.signInUsingSavedTokenAsync();
         }
 
         if (result) {
@@ -131,7 +132,7 @@ export default class TeletypePackage {
         this.workspaceManager.initialize();
     }
 
-    async deactivate() {
+    async deactivateAsync() {
         this.initializationError = null;
 
         // this.subscriptions.dispose();
@@ -139,13 +140,13 @@ export default class TeletypePackage {
 
         if (this.portalStatusBarIndicator) { this.portalStatusBarIndicator.destroy(); }
 
-        if (this.portalBindingManagerPromise) {
-            const manager = await this.portalBindingManagerPromise;
+        if (this.portalBindingManager) {
+            const manager = this.portalBindingManager;
             await manager?.dispose();
         }
     }
 
-    async handleURI(parsedURI: vscode.Uri, rawURI: string) {
+    async handleURIAsync(parsedURI: vscode.Uri, rawURI: string) : Promise<Portal | undefined > {
         const portalId = findPortalId(parsedURI.fsPath) || rawURI;
 
         if (this.config.get('teletype.askBeforeJoiningPortalViaExternalApp')) {
@@ -162,17 +163,17 @@ export default class TeletypePackage {
             //     break;
             // }
             const portalID = await vscode.window.showInputBox({ prompt: 'Enter ID of the Portal you wish to join' });
-            return this.joinPortal(portalId);
+            return await this.joinPortalAsync(portalId);
         } else {
-            return this.joinPortal(portalId);
+            return await this.joinPortalAsync(portalId);
         }
     }
 
-    async sharePortal(): Promise<Portal | undefined> {
+    async sharePortalAsync(): Promise<Portal | undefined> {
         this.showPopover();
 
-        if (await this.isSignedIn()) {
-            const manager = await this.getPortalBindingManager();
+        if (await this.isSignedInAsync()) {
+            const manager = await this.getPortalBindingManagerAsync();
             const portalBinding = await manager?.createHostPortalBindingAsync();
             if (portalBinding?.portal) {
                 return portalBinding.portal;
@@ -182,42 +183,42 @@ export default class TeletypePackage {
         }
     }
 
-    async joinPortal(id: string = ''): Promise<Portal | undefined> {
+    async joinPortalAsync(id: string = ''): Promise<Portal | undefined> {
         this.showPopover();
 
-        if (await this.isSignedIn()) {
+        if (await this.isSignedInAsync()) {
             if (id) {
-                const manager = await this.getPortalBindingManager();
+                const manager = await this.getPortalBindingManagerAsync();
                 const portalBinding = await manager?.createGuestPortalBindingAsync(id);
                 if (portalBinding) { return portalBinding.portal; }
             } else {
-                await this.showJoinPortalPrompt();
+                this.showJoinPortalPrompt();
             }
         }
     }
 
-    async closeHostPortal() {
+    async closeHostPortalAsync() {
         this.showPopover();
 
-        const manager = await this.getPortalBindingManager();
+        const manager = await this.getPortalBindingManagerAsync();
         const hostPortalBinding = await manager?.getHostPortalBinding();
         await hostPortalBinding?.closePortalAsync();
     }
 
-    async copyHostPortalURI() {
-        const manager = await this.getPortalBindingManager();
+    async copyHostPortalURIAsync() {
+        const manager = await this.getPortalBindingManagerAsync();
         const hostPortalBinding = await manager?.getHostPortalBinding();
         if (hostPortalBinding?.uri) {
             this.clipboard.writeText(hostPortalBinding.uri);
         }
     }
 
-    async leavePortal(portalBinding?: GuestPortalBinding | undefined) {
+    async leavePortalAsync(portalBinding?: GuestPortalBinding | undefined) {
         this.showPopover();
 
-        const manager = await this.getPortalBindingManager();
+        const manager = await this.getPortalBindingManagerAsync();
         if (!portalBinding) {
-            portalBinding = await manager?.getActiveGuestPortalBinding();
+            portalBinding = manager?.getActiveGuestPortalBinding();
         }
         await portalBinding?.leavePortalAsync();
     }
@@ -266,36 +267,36 @@ export default class TeletypePackage {
     //   }
     // }
 
-    async signIn(token: string): Promise<boolean> {
-        const authenticationProvider = await this.getAuthenticationProvider();
+    async signInAsync(token: string): Promise<boolean> {
+        const authenticationProvider = await this.getAuthenticationProviderAsync();
         if (authenticationProvider) {
-            return authenticationProvider.signIn(token);
+            return authenticationProvider.signInAsync(token);
         } else {
             return false;
         }
     }
 
-    async signInUsingSavedToken(): Promise<boolean> {
+    async signInUsingSavedTokenAsync(): Promise<boolean> {
         console.log('start get auth provider...');
-        const authenticationProvider = await this.getAuthenticationProvider();
+        const authenticationProvider = await this.getAuthenticationProviderAsync();
         console.log('get auth provider');
         if (authenticationProvider) {
-            return await authenticationProvider.signInUsingSavedToken();
+            return await authenticationProvider.signInUsingSavedTokenAsync();
         } else {
             return false;
         }
     }
 
-    async signOut() {
-        const authenticationProvider = await this.getAuthenticationProvider();
+    async signOutAsync() {
+        const authenticationProvider = await this.getAuthenticationProviderAsync();
         if (authenticationProvider) {
             //this.portalStatusBarIndicator.showPopover();
-            await authenticationProvider.signOut();
+            await authenticationProvider.signOutAsync();
         }
     }
 
-    async isSignedIn(): Promise<boolean> {
-        const authenticationProvider = await this.getAuthenticationProvider();
+    async isSignedInAsync(): Promise<boolean> {
+        const authenticationProvider = await this.getAuthenticationProviderAsync();
         if (authenticationProvider) {
             return authenticationProvider.isSignedIn();
         } else {
@@ -309,20 +310,20 @@ export default class TeletypePackage {
         this.portalStatusBarIndicator.showPopover();
     }
 
-    async showJoinPortalPrompt() {
+    showJoinPortalPrompt() {
         if (!this.portalStatusBarIndicator) { return; }
 
         const { popoverComponent } = this.portalStatusBarIndicator;
         const { portalListComponent } = popoverComponent.refs;
-        await portalListComponent.showJoinPortalPrompt();
+        portalListComponent.showJoinPortalPrompt();
     }
 
-    async handleSignInChange() {
-        if (await this.isSignedIn()) {
+    async handleSignInChangeAsync() {
+        if (await this.isSignedInAsync()) {
             // console.log('signin');
         } else {
             // console.log('signout');
-            const manager = await this.portalBindingManagerPromise;
+            const manager = this.portalBindingManager;
             if (manager?.getHostPortalBinding()) {
                 await manager.getHostPortalBinding()?.closePortalAsync();
             }
@@ -342,10 +343,10 @@ export default class TeletypePackage {
         });
     }
 
-    async getAuthenticationProvider(): Promise<AuthenticationProvider> {
+    async getAuthenticationProviderAsync(): Promise<AuthenticationProvider> {
         if (!this.authenticationProviderPromise) {
             this.authenticationProviderPromise = new Promise(async (resolve, reject) => {
-                const client = await this.getClient();
+                const client = await this.getClientAsync();
                 if (client) {
                     resolve(new AuthenticationProvider(
                         client, this.notificationManager, this.credentialCache
@@ -360,25 +361,22 @@ export default class TeletypePackage {
         return this.authenticationProviderPromise;
     }
 
-    getPortalBindingManager(): Promise<PortalBindingManager | null> {
-        if (!this.portalBindingManagerPromise) {
-            this.portalBindingManagerPromise = new Promise(async (resolve, reject) => {
-                const client = await this.getClient();
-                if (client) {
-                    resolve(new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager));
-                } else {
-                    this.portalBindingManagerPromise = null;
-                    resolve(null);
-                }
-            });
+    async getPortalBindingManagerAsync() : Promise<PortalBindingManager | null> {
+        if (!this.portalBindingManager) {
+            const client = await this.getClientAsync();
+            if (client) {
+                this.portalBindingManager = new PortalBindingManager(client, this.workspace, this.notificationManager, this.workspaceManager);
+            } else {
+                this.portalBindingManager = null;
+            }
         }
 
-        return this.portalBindingManagerPromise;
+        return this.portalBindingManager;
     }
 
-    async getClient() {
-        if (this.initializationError) { return null; }
-        if (this.isClientOutdated) { return null; }
+    async getClientAsync() : Promise<TeletypeClient | undefined> {
+        if (this.initializationError) { return undefined; }
+        if (this.isClientOutdated) { return undefined; }
 
         try {
             await this.client.initialize();
@@ -408,7 +406,7 @@ export default class TeletypePackage {
 
     async test() {
         this.workspaceManager.refresh();
-        (await this.getPortalBindingManager())?.refresh();
+        (await this.getPortalBindingManagerAsync())?.refresh();
 
         if (vscode.window.activeTextEditor) {
             // this.fs.writeFile(vscode.window.activeTextEditor.document.uri, 'test text');

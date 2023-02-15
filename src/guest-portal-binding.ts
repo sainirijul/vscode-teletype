@@ -24,12 +24,12 @@ export default class GuestPortalBinding extends PortalBinding {
         this.shouldRelayActiveEditorChanges = true;
     }
 
-    async initialize(): Promise<boolean> {
+    async initializeAsync(): Promise<boolean> {
         try {
             const portal = await this.client.joinPortal(this.portalId);
             if (!portal) { return false; }
 
-            await this.setPortal(portal);
+            await this.setPortalAsync(portal);
 
             // this.sitePositionsComponent = new SitePositionsComponent({portal: this.portal, workspace: this.workspace});
             // this.subscriptions.add(this.workspace.onDidChangeActivePaneItem(this.didChangeActivePaneItem.bind(this)));
@@ -147,7 +147,7 @@ export default class GuestPortalBinding extends PortalBinding {
         // guest:
         if (followState === FollowState.RETRACTED) {
             this.shouldRelayActiveEditorChanges = false;
-            const editorBinding = await this.workspaceManager.findOrCreateEditorForEditorProxy(editorProxy, this.portal);
+            const editorBinding = await this.workspaceManager.findOrCreateEditorForEditorProxyAsync(editorProxy, this.portal);
             // if (editor && editor !== vscode.window.activeTextEditor) {
             if (editorBinding?.bufferBinding.buffer) {
                 // await this.openPaneItem(editor);
@@ -230,7 +230,7 @@ export default class GuestPortalBinding extends PortalBinding {
     //     this.newActivePaneItem = null;
     // }
 
-    private async didChangeActiveTextEditor(editor?: vscode.TextEditor) {
+    private didChangeActiveTextEditor(editor?: vscode.TextEditor) {
         let editorProxy: EditorProxy | undefined = undefined;
 
         if (editor) {

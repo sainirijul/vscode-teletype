@@ -18,7 +18,7 @@ export default class NotificationManager {
         vscode.window.showInformationMessage(message);
     }
 
-    public async confirm(message: string): Promise<boolean> {
+    public async confirmAsync(message: string): Promise<boolean> {
         const answer = await vscode.window.showInformationMessage(message, "Yes", "No");
 
         if (answer === "Yes") {

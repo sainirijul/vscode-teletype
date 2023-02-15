@@ -160,17 +160,17 @@ export default class EditorBinding extends vscode.Disposable implements IEditorD
         // editor.element.classList.add('teletype-RemotePaneItem');
     }
 
-    async editorDidChangeScrollTop(visibleRanges: ReadonlyArray<vscode.Range>) {
+    editorDidChangeScrollTop(visibleRanges: ReadonlyArray<vscode.Range>) {
         this.editorProxy.didScroll();
         this.emitter.emit('did-scroll');
     }
 
-    async editorDidChangeScrollLeft(visibleRanges: ReadonlyArray<vscode.Range>) {
+    editorDidChangeScrollLeft(visibleRanges: ReadonlyArray<vscode.Range>) {
         this.editorProxy.didScroll();
         this.emitter.emit('did-scroll');
     }
 
-    async editorDidResize(visibleRanges: ReadonlyArray<vscode.Range>) {
+    editorDidResize(visibleRanges: ReadonlyArray<vscode.Range>) {
         this.emitter.emit('did-resize');
     }
 

@@ -177,40 +177,25 @@ declare module '@atom/teletype-client' {
     }
 
     export class PeerConnection {
-        constructor(...args: any[]);
+        constructor(props: any);
 
-        connect(...args: any[]): void;
+        connect(): void;
+        disconnect(): void;
+        finishReceiving(envelope: Buffer): void;
+        getConnectedPromise(): Promise<any>;
+        getDisconnectedPromise(): Promise<any>;
+        isConnectionClosed(): Boolean;
+        isConnectionOpen(): Boolean;
+        receive(data: Buffer): void;
+        receiveSignal(signal: any): void;
+        send(message: any): void;
+        sendSignal(signal: any): void;
 
-        disconnect(...args: any[]): void;
-
-        finishReceiving(...args: any[]): void;
-
-        getConnectedPromise(...args: any[]): void;
-
-        getDisconnectedPromise(...args: any[]): void;
-
-        handleConnectionStateChange(...args: any[]): void;
-
-        handleDataChannel(...args: any[]): void;
-
-        handleError(...args: any[]): void;
-
-        handleICECandidate(...args: any[]): void;
-
-        handleNegotiationNeeded(...args: any[]): void;
-
-        isConnectionClosed(...args: any[]): void;
-
-        isConnectionOpen(...args: any[]): void;
-
-        receive(...args: any[]): void;
-
-        receiveSignal(...args: any[]): void;
-
-        send(...args: any[]): void;
-
-        sendSignal(...args: any[]): void;
-
+        // handleConnectionStateChange(): void;
+        // handleDataChannel(opts: any): void;
+        // handleError(event: any): void;
+        // /*async*/ handleNegotiationNeeded(): Promise<void>;
+        // /*async*/ handleICECandidate(opts: any): Promise<void>;
     }
 
     export class PeerPool {
@@ -230,9 +215,9 @@ declare module '@atom/teletype-client' {
 
         fetchICEServers(...args: any[]): void;
 
-        getConnectedPromise(...args: any[]): void;
+        getConnectedPromise(peerId: String): Promise<any>;
 
-        getDisconnectedPromise(...args: any[]): void;
+        getDisconnectedPromise(peerId: String): Promise<any>;
 
         getLocalPeerIdentity(...args: any[]): void;
 
@@ -263,7 +248,7 @@ declare module '@atom/teletype-client' {
         updateActivePositions(positionsBySiteId: UpdatePosition[]): void;
         hostDidLoseConnection(): void
         hostDidClosePortal(): void;
-        updateTether(state: number, editorProxy: EditorProxy, position: Position): Promise<void>;
+        /*async*/ updateTether(state: number, editorProxy: EditorProxy, position: Position): Promise<void>;
         siteDidJoin(siteId: number): void;
         siteDidLeave(siteId: number): void;
         didChangeEditorProxies(): void;
@@ -372,7 +357,7 @@ declare module '@atom/teletype-client' {
 
         sendSubscriptionResponse(...args: any[]): void;
 
-        setDelegate(delegate: IPortalDelegate): Promise<void>;
+        /*async*/ setDelegate(delegate: IPortalDelegate): Promise<void>;
 
         setFollowState(...args: any[]): void;
 
@@ -514,29 +499,17 @@ declare module '@atom/teletype-client' {
         constructor(options: any);
 
         createPortal(): Portal;
-
         dispose(): void;
-
-        getClientId(...args: any[]): void;
-
-        getLocalUserIdentity(...args: any[]): any;
-
-        initialize(): void;
-
+        getClientId(): String;
+        getLocalUserIdentity(): PeerPool | null;
+        /*async*/ initialize(): Promise<void>;
         isSignedIn(): boolean;
-
-        joinPortal(...args: any[]): Portal;
-
-        onConnectionError(...args: any[]): void;
-
+        /*async*/ joinPortal(id: String): Promise<Portal>;
+        onConnectionError(callback: Function): void;
         onSignInChange(callback: Function): void;
-
-        peerPoolDidError(...args: any[]): void;
-
+        peerPoolDidError(error: any): void;
         signIn(oauthToken: string): boolean;
-
         signOut(): boolean;
-
     }
 
     export const FollowState: {
@@ -578,70 +551,60 @@ declare module '@atom/teletype-client' {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace HTTPRequestError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace InvalidAuthenticationTokenError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace NetworkConnectionError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace PeerConnectionError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace PortalCreationError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace PortalJoinError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace PortalNotFoundError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace PubSubConnectionError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
         namespace UnexpectedAuthenticationError {
             const stackTraceLimit: number;
 
             function captureStackTrace(p0: any, p1: any): any;
-
         }
 
     }

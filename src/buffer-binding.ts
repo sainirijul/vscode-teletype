@@ -174,7 +174,7 @@ export default class BufferBinding extends vscode.Disposable implements IBufferD
         }
     }
 
-    public async applyUpdate(editor: vscode.TextEditor) {
+    public async applyUpdateAsync(editor: vscode.TextEditor) {
         if (this.pendingUpdates.length <= 0) {
             return;
         }

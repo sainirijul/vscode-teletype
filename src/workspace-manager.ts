@@ -42,26 +42,17 @@ export default class WorkspaceManager {
         this.emitter = new EventEmitter();
     }
 
-    public async initialize() {
+    public initialize() : Boolean {
         this.registerWorkspaceEvents();
         return true;
     }
 
-    // dspose () {
-    // }
-
-    async removeDocuments(id: string | undefined) {
+    removeDocuments(id: string | undefined) {
         if (!id) { return; }
 
-        // await vscode.commands.executeCommand('workbench.action.nextEditor');
-        // vscode.window.activeTextEditor?.document
-        // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-
-        // this.bufferBindings.forEach(bufferBinding => {
-        //   if (bufferBinding.portal?.id === id) {
-        //     this.removeDocumentByBufferBinding(bufferBinding);
-        //   }
-        // });
+        // VSCode에서는 특정 문서를 직접 닫는 기능이 없다. (과거엔 있었지만 버전업과 함께 deprecated 되었다.)
+        // 대신 연결 된 파일을 삭제하면 연결 된 에디터도 자동으로 닫히게 된다.
+        // 단, VSCode와 Code-server에서는 정상 동작하나, Theia에서는 파일 삭제 표시만 될 뿐, 에디터는 자동으로 닫히지 않는다.
     }
 
     private createBufferBinding(filePath: string | undefined, bufferProxy: BufferProxy, portal: Portal, buffer: vscode.TextDocument | undefined, fsPath?: vscode.Uri): BufferBinding {
@@ -137,14 +128,14 @@ export default class WorkspaceManager {
     }
 
     // guest 파일 열기
-    public async findOrCreateEditorForEditorProxy(editorProxy: EditorProxy, portal?: Portal): Promise<EditorBinding | undefined> {
+    public async findOrCreateEditorForEditorProxyAsync(editorProxy: EditorProxy, portal?: Portal): Promise<EditorBinding | undefined> {
         let editor: vscode.TextEditor | undefined;
 
         let editorBinding = this.getEditorBindingByEditorProxy(editorProxy);
         if (!editorBinding) {
             const { bufferProxy } = editorProxy;
             // this.addProxyObject(bufferProxy.uri, bufferProxy, editorProxy);
-            const buffer = await this.findOrCreateBufferForEditorProxy(editorProxy, portal);
+            const buffer = await this.findOrCreateBufferForEditorProxyAsync(editorProxy, portal);
             if (buffer && portal) {
                 if (buffer.buffer) {
                     vscode.commands.executeCommand('vscode.open', buffer.buffer.uri);
@@ -164,7 +155,7 @@ export default class WorkspaceManager {
     }
 
     // guest에서 리모트 파일 연결 된 에디터 열기
-    private async findOrCreateBufferForEditorProxy(editorProxy: EditorProxy, portal?: Portal): Promise<BufferBinding | undefined> {
+    private async findOrCreateBufferForEditorProxyAsync(editorProxy: EditorProxy, portal?: Portal): Promise<BufferBinding | undefined> {
         const bufferProxy = editorProxy.bufferProxy;
         let bufferBinding = this.getBufferBindingByBufferProxy(bufferProxy);
         if (bufferBinding) {
@@ -179,7 +170,7 @@ export default class WorkspaceManager {
         const baseUri = vscode.Uri.parse(`memfs:///${portal.id}/`);
         const bufferUri = vscode.Uri.joinPath(baseUri, normPath);
 
-        await this.mkdirp(bufferUri, true);
+        await this.mkdirpAsync(bufferUri, true);
         await this.fs.writeFile(bufferUri, new TextEncoder().encode(''), { create: true, overwrite: true });
 
         bufferBinding = this.createBufferBinding(bufferProxy.uri, bufferProxy, portal, undefined, bufferUri);
@@ -199,7 +190,7 @@ export default class WorkspaceManager {
         return bufferBinding;
     }
 
-    private async mkdirp(pathUri: vscode.Uri, includeFileName: boolean = false) {
+    private async mkdirpAsync(pathUri: vscode.Uri, includeFileName: boolean = false) {
         const paths = pathUri.path.split('/');
         const depth = (includeFileName) ? 2 : 1;
         const paths2 = paths.slice(0, paths.length - depth);
@@ -212,7 +203,7 @@ export default class WorkspaceManager {
             await this.fs.stat(parentDirUri);
         } catch (error) {
             if (error instanceof vscode.FileSystemError) {
-                await this.mkdirp(parentDirUri);
+                await this.mkdirpAsync(parentDirUri);
             }
         }
 
@@ -365,7 +356,7 @@ export default class WorkspaceManager {
     }
 
     // 현재 활성화 된 editor들과 editorProxy를 연결시켜서 동기화시킨다.
-    async synchronizedShowingEditors(editors: vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
+    async applyShowingEditorsAsync(editors: vscode.TextEditor[] | undefined = vscode.window.visibleTextEditors) {
         if (editors) {
             let newList = new Map(this.editorBindingsByTextEditor);
             this.editorBindingsByTextEditor.clear();
@@ -391,7 +382,7 @@ export default class WorkspaceManager {
                     if (editorBinding?.editor) {
                         const bufferBinding = this.getBufferBindingByBufferProxy(proxyObj.bufferProxy);
                         if (bufferBinding) {
-                            await bufferBinding.applyUpdate(editorBinding?.editor);
+                            await bufferBinding.applyUpdateAsync(editorBinding?.editor);
                         }
                         editorBinding.applyUpdate();
                     }
@@ -434,7 +425,7 @@ export default class WorkspaceManager {
         for (let i: number = 0; i < vscode.window.visibleTextEditors.length; i++) {
             const editor = vscode.window.visibleTextEditors[i];
             if (editor.document === bufferBinding.buffer) {
-                bufferBinding.applyUpdate(editor);
+                bufferBinding.applyUpdateAsync(editor);
                 break;
             }
         }
@@ -513,7 +504,7 @@ export default class WorkspaceManager {
     }
 
     private didChangeVisibleTextEditors(editors?: vscode.TextEditor[]) {
-        this.synchronizedShowingEditors(editors);
+        this.applyShowingEditorsAsync(editors);
     }
 
     private didCloseTextDocument(buffer: vscode.TextDocument) {

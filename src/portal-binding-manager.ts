@@ -84,7 +84,7 @@ export default class PortalBindingManager {
                 () => { this.didDisposeHostPortalBinding(); }
             );
 
-            if (await portalBinding.initialize()) {
+            if (await portalBinding.initializeAsync()) {
                 portalBinding.onDidChange((event) => {
                     this.emitter.emit('did-change', event);
                 });
@@ -152,7 +152,7 @@ export default class PortalBindingManager {
             }
         );
 
-        if (await portalBinding.initialize()) {
+        if (await portalBinding.initializeAsync()) {
             // this.workspace.getElement().classList.add('teletype-Guest');
             portalBinding.onDidChange((event) => {
                 this.emitter.emit('did-change', event);
@@ -207,7 +207,7 @@ export default class PortalBindingManager {
     //   }
     //   return undefined;
     // }
-    async getActiveGuestPortalBinding(): Promise<GuestPortalBinding | undefined> {
+    getActiveGuestPortalBinding(): GuestPortalBinding | undefined {
         const activePaneItem = vscode.window.activeTextEditor;
         if (activePaneItem) {
             for (const [_, portalBinding] of this.guestPortalBindingById) { // eslint-disable-line no-unused-vars
@@ -219,11 +219,11 @@ export default class PortalBindingManager {
         return undefined;
     }
 
-    async hasActivePortals() {
-        const hostPortalBinding = await this.getHostPortalBinding();
-        const guestPortalBindings = await this.getGuestPortalBindings();
+    hasActivePortals() : Boolean {
+        const hostPortalBinding = this.getHostPortalBinding();
+        const guestPortalBindings = this.getGuestPortalBindings();
 
-        return (hostPortalBinding) || (guestPortalBindings.length > 0);
+        return !!(hostPortalBinding) || (guestPortalBindings.length > 0);
     }
 
     // async getRemoteEditorForURI (uri: string) : Promise<vscode.TextEditor | undefined> {

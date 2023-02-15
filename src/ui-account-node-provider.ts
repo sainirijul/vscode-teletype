@@ -70,7 +70,8 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
         return element;
     }
 
-    async getChildren(element?: Dependency): Promise<Dependency[] | null> {
+    // @override
+    getChildren(element?: Dependency): Dependency[] | null {
         if (!this.portalBindingManager) {
             vscode.window.showInformationMessage('No dependency in empty workspace');
             return [];
@@ -86,11 +87,10 @@ export class AccountNodeProvider implements vscode.TreeDataProvider<Dependency> 
             // lst.push(new Dependency(this.identify.login, undefined, this.identify, vscode.Uri.parse(getAvatarUrl(this.identify.login, 32))));
             lst.push(new Dependency(this.identify.login, undefined, null, vscode.Uri.parse(getAvatarUrl(this.identify.login, 32))));
 
-            const host = await this.portalBindingManager.getHostPortalBinding();
+            const host = this.portalBindingManager.getHostPortalBinding();
             if (host) {
                 lst.push(new Dependency('Host', host.portal?.id, host));
             }
-            // const guest = await this.portalBindingManager.getGuestPortalBindings();
             const guest = this.portalBindingManager.getGuestPortalBindings();
             if (guest) {
                 guest.forEach(element => {

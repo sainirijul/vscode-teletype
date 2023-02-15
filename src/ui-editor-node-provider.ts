@@ -24,16 +24,16 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
         return element;
     }
 
-    async getChildren(element?: Dependency): Promise<Dependency[]> {
+    getChildren(element?: Dependency): Dependency[] {
         if (!this.workspaceManager) {
             vscode.window.showInformationMessage('No dependency in empty workspace');
-            return Promise.resolve([]);
+            return [];
         }
 
         let lst: Dependency[] = [];
 
         if (!element) {
-            const host = await this.portalBindingManager.getHostPortalBinding();
+            const host = this.portalBindingManager.getHostPortalBinding();
 
             if (host) {
                 host.portal?.bufferProxiesById.forEach((a, _) => {
@@ -52,7 +52,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
                 //  	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
                 // });
             }
-            const guests = await this.portalBindingManager.getGuestPortalBindings();
+            const guests = this.portalBindingManager.getGuestPortalBindings();
             if (guests) {
                 guests.forEach(guest => {
                     guest.portal?.bufferProxiesById.forEach((a, _) => {
@@ -83,7 +83,7 @@ export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
             // });
         }
 
-        return Promise.resolve(lst);
+        return lst;
     }
 }
 

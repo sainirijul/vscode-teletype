@@ -22,22 +22,22 @@ export class AuthenticationProvider {
         });
     }
 
-    public async signInUsingSavedToken(): Promise<boolean> {
+    public async signInUsingSavedTokenAsync(): Promise<boolean> {
         console.log('start signInUsingSavedToken...');
         if (this.isSignedIn()) { return true; }
 
         const token = await this.credentialCache.get('oauth-token');
         if (token) {
-            return await this._signIn(token);
+            return await this._signInAsync(token);
         } else {
             return false;
         }
     }
 
-    public async signIn(token: string): Promise<boolean> {
+    public async signInAsync(token: string): Promise<boolean> {
         if (this.isSignedIn()) { return true; }
 
-        if (await this._signIn(token)) {
+        if (await this._signInAsync(token)) {
             await vscode.commands.executeCommand('setContext', 'teletype.status.isSignin', true);
             await this.credentialCache.set('oauth-token', token);
             return true;
@@ -47,7 +47,7 @@ export class AuthenticationProvider {
         }
     }
 
-    public async signOut() {
+    public async signOutAsync() {
         if (!this.isSignedIn()) { return; }
 
         this.client.signOut();
@@ -56,7 +56,7 @@ export class AuthenticationProvider {
         await this.credentialCache.delete('oauth-token');
     }
 
-    private async _signIn(token: string): Promise<boolean> {
+    private async _signInAsync(token: string): Promise<boolean> {
         let signedIn = false;
         try {
             this.signingIn = true;

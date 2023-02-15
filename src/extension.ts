@@ -85,13 +85,13 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     globalAny.teletype = teletype;
 
-    const manager = await globalAny.teletype.getPortalBindingManager();
+    const manager = await teletype.getPortalBindingManagerAsync();
     if (!manager) {
         notificationManager.addError("Failed to connect to server.");
         return;
     }
 
-    createViews(await teletype.getAuthenticationProvider(), workspaceManager, manager);
+    createViews(await teletype.getAuthenticationProviderAsync(), workspaceManager, manager);
 
     console.log('Great, your extension "vscode-teletype" is now active!');
 
@@ -101,7 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.teletype-signin', async () => {
-        const token = await getTeletypeToken();
+        const token = await getTeletypeTokenAsync();
         if (!token) {
             notificationManager.addError("No Token has been entered. Please try again");
         } else {
@@ -124,38 +124,38 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.join-portal', async () => {
-        const portalIdInput = await getPortalID();
+        const portalIdInput = await getPortalIDAsync();
         if (!portalIdInput) {
             notificationManager.addError("No Portal ID has been entered. Please try again");
         }
         else {
             notificationManager.addTrace('Trying to Join Portal with ID' + ' ' + portalIdInput + ' ');
-            await (globalAny.teletype as TeletypePackage).joinPortal(portalIdInput);
+            await (globalAny.teletype as TeletypePackage).joinPortalAsync(portalIdInput);
         }
     });
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.leave-portal', (item: vscode.TreeItem) => {
         notificationManager.addInfo('Leave Portal');
-        (globalAny.teletype as TeletypePackage).leavePortal((item as Dependency)?.value);
+        (globalAny.teletype as TeletypePackage).leavePortalAsync((item as Dependency)?.value);
     });
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.share-portal', () => {
         notificationManager.addTrace('Trying to Share Portal');
-        (globalAny.teletype as TeletypePackage).sharePortal();
+        (globalAny.teletype as TeletypePackage).sharePortalAsync();
     });
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.close-host-portal', () => {
         notificationManager.addInfo('Close Host Portal');
-        (globalAny.teletype as TeletypePackage).closeHostPortal();
+        (globalAny.teletype as TeletypePackage).closeHostPortalAsync();
     });
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand('extension.copy-portal-url', () => {
         notificationManager.addInfo('Copy Portal URL to Clipboard');
-        (globalAny.teletype as TeletypePackage).copyHostPortalURI();
+        (globalAny.teletype as TeletypePackage).copyHostPortalURIAsync();
     });
     context.subscriptions.push(disposable);
 
@@ -182,10 +182,10 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
-    (globalAny.teletype as TeletypePackage).activate();
+    await (globalAny.teletype as TeletypePackage).activateAsync();
 }
 
-async function getPortalID(): Promise<string | undefined | null> {
+async function getPortalIDAsync(): Promise<string | undefined | null> {
     let text = await vscode.env.clipboard.readText();
     if (!isPortalURI(text)) {
         text = '';
@@ -199,7 +199,7 @@ async function getPortalID(): Promise<string | undefined | null> {
     return undefined;
 }
 
-async function getTeletypeToken(): Promise<string | undefined> {
+async function getTeletypeTokenAsync(): Promise<string | undefined> {
     const token = await vscode.window.showInputBox({ prompt: 'Enter Teletype Authentication Token' });
     return token;
 }
