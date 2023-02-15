@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import {EventEmitter } from 'events';
-import {SelectionMap, Selection, Position, Range} from './teletype-types';
-import {EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
+import { EventEmitter } from 'events';
+import { SelectionMap, Selection, Position, Range } from './teletype-types';
+import { EditorProxy, FollowState, IPortalDelegate, Portal, TeletypeClient, UpdatePosition } from "@atom/teletype-client";
 import NotificationManager from './notification-manager';
 import WorkspaceManager from './workspace-manager';
 import BufferBinding, { IBufferProxyExt } from './buffer-binding';
@@ -14,15 +14,49 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     portal?: Portal;
     // lastUpdateTetherPromise: Promise<void>;
     emitter: EventEmitter;
+    private resIdxTable: Array<Number | undefined>;
 
-    constructor (public client: TeletypeClient, public workspaceManager: WorkspaceManager, public notificationManager: NotificationManager, didDispose: Function) {
+    constructor(public client: TeletypeClient, public workspaceManager: WorkspaceManager, public notificationManager: NotificationManager, didDispose: Function) {
         super(didDispose);
 
         // this.lastUpdateTetherPromise = Promise.resolve();
         this.emitter = new EventEmitter();
+
+        this.resIdxTable = [undefined, undefined, undefined];
     }
 
-    public async closePortal () {
+    public async setPortal(portal: Portal) {
+        this.portal = portal;
+        await this.portal.setDelegate(this);
+        this.monkeyPatch();
+    }
+
+    private monkeyPatch() {
+        (this.portal as any).portalBinding = this;
+    }
+
+    public getResIndexBySiteId(siteId: number): number | undefined {
+        let idx = undefined;
+        for (let i = 0; i < this.resIdxTable.length; i++) {
+            if (!this.resIdxTable[i]) {
+                this.resIdxTable[i] = siteId;
+                idx = i;
+                break;
+            }
+        }
+        return idx;
+    }
+
+    public removeResIndexBySiteId(siteId: number): void {
+        for (let i = 0; i < this.resIdxTable.length; i++) {
+            if (this.resIdxTable[i] === siteId) {
+                this.resIdxTable[i] = undefined;
+                break;
+            }
+        }
+    }
+
+    public async closePortalAsync() {
         if (this.portal) {
             for (const [_, proxy] of this.portal.bufferProxiesById) {
                 const getBufferBindingFunc = (proxy as unknown as IBufferProxyExt)?.getBufferBinding;
@@ -37,20 +71,19 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
                 }
             }
             this.portal.dispose();
-            this.portal = undefined;
         }
     }
 
     // @override
-    dispose (): any {
+    dispose(): any {
         this.workspaceManager.removeDocuments(this.portal?.id);
         this.portal = undefined;
-        return super.dispose();        
+        return super.dispose();
     }
 
     // @override
-    hostDidClosePortal () {
-        this.emitter.emit('did-change', {type: 'close-portal'});
+    hostDidClosePortal() {
+        this.emitter.emit('did-change', { type: 'close-portal' });
 
         // guest:
         this.notificationManager.addInfo('Portal closed', {
@@ -60,14 +93,14 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     }
 
     // @override
-    hostDidLoseConnection () {
-        this.emitter.emit('did-change', {type: 'close-portal'});
+    hostDidLoseConnection() {
+        this.emitter.emit('did-change', { type: 'close-portal' });
 
         // guest:
         this.notificationManager.addInfo('Portal closed', {
             description: (
-            'We haven\'t heard from the host in a while.\n' +
-            'Once your host is back online, they can share a new portal with you to resume collaborating.'
+                'We haven\'t heard from the host in a while.\n' +
+                'Once your host is back online, they can share a new portal with you to resume collaborating.'
             ),
             dismissable: true
         });
@@ -79,7 +112,7 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         // const site = this.portal?.getSiteIdentity(siteId);
         // this.notificationManager.addInfo(`@${site?.login} has joined your portal`);
         // this.emitter.emit('did-change', {type: 'join-portal', portal: this.portal});
-    
+
         // guest:
         const hostLogin = this.portal?.getSiteIdentity(1);
         const siteLogin = this.portal?.getSiteIdentity(siteId);
@@ -94,21 +127,23 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
         // this.notificationManager.addInfo(`@${site?.login} has left your portal`);
         // this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
 
+        this.removeResIndexBySiteId(siteId);
+
         // guest:
         const hostLogin = this.portal?.getSiteIdentity(1);
         const siteLogin = this.portal?.getSiteIdentity(siteId);
         this.notificationManager.addInfo(`@${siteLogin?.login} has left @${hostLogin?.login}'s Portal (${this.portal?.id})`);
         // this.emitter.emit('did-change');
-        this.emitter.emit('did-change', {type: 'leave-portal', portal: this.portal});
-    }
-    
-    // @override
-    didChangeEditorProxies(): void {
-        this.emitter.emit('did-change', {type: 'change-editor-proxies'});
+        this.emitter.emit('did-change', { type: 'leave-portal', portal: this.portal });
     }
 
     // @override
-    updateActivePositions (positionsBySiteId: UpdatePosition[]) {
+    didChangeEditorProxies(): void {
+        this.emitter.emit('did-change', { type: 'change-editor-proxies' });
+    }
+
+    // @override
+    updateActivePositions(positionsBySiteId: UpdatePosition[]) {
         // if (positionsBySiteId) { 
         //     this.workspaceManager.getEditorBindings().forEach(editorBinding => {
         //         editorBinding.updateActivePositions(positionsBySiteId);
@@ -159,7 +194,7 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
     // }
 
     // @override
-    async updateTether (followState: number, editorProxy: EditorProxy, position: Position) {
+    async updateTether(followState: number, editorProxy: EditorProxy, position: Position) {
         if (!editorProxy) { return; }
 
         if (followState === FollowState.RETRACTED) {
@@ -170,9 +205,9 @@ export class PortalBinding extends vscode.Disposable implements IPortalBinding, 
             }
         } else {
             //if (position) { 
-                //this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-                    // editorBinding.updateTether(followState, position);
-                //});
+            //this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+            // editorBinding.updateTether(followState, position);
+            //});
             //}
         }
     }

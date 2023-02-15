@@ -11,30 +11,30 @@ export class TeleteypStatusProviderOld implements vscode.WebviewViewProvider {
     private identify: any;
 
     constructor(private disp?: vscode.Disposable, private authenticationProvider?: AuthenticationProvider, private portalBindingManager?: PortalBindingManager) {
-      authenticationProvider?.onDidChange(this.didChangeLogin.bind(this));
-      portalBindingManager?.onDidChange(this.didPortalBindingChanged.bind(this));
+        authenticationProvider?.onDidChange(this.didChangeLogin.bind(this));
+        portalBindingManager?.onDidChange(this.didPortalBindingChanged.bind(this));
     }
 
     refreshIdentify(): void {
-      if (this.identify) {
-        const avatarUrl = getAvatarUrl(this.identify.login, 64);
-        this.webView?.postMessage({command: 'identify', text: {loginId: this.identify.login, avatarUrl}});
-      }
+        if (this.identify) {
+            const avatarUrl = getAvatarUrl(this.identify.login, 64);
+            this.webView?.postMessage({ command: 'identify', text: { loginId: this.identify.login, avatarUrl } });
+        }
     }
 
     didChangeLogin(): void {
-      this.identify = this.authenticationProvider?.getIdentity();
-      this.refreshIdentify();
+        this.identify = this.authenticationProvider?.getIdentity();
+        this.refreshIdentify();
     }
 
     didPortalBindingChanged(event: any): void {
-      if (event.type === 'share-portal') {
-          this.portalBindingUri = event.uri;
-          this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
-      } else if (event.type === 'close-portal') {
-          this.portalBindingUri = undefined;
-          this.webView?.postMessage({command: 'host-uri', text: ''});
-      }
+        if (event.type === 'share-portal') {
+            this.portalBindingUri = event.uri;
+            this.webView?.postMessage({ command: 'host-uri', text: this.portalBindingUri });
+        } else if (event.type === 'close-portal') {
+            this.portalBindingUri = undefined;
+            this.webView?.postMessage({ command: 'host-uri', text: '' });
+        }
     }
 
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
@@ -134,45 +134,45 @@ export class TeleteypStatusProviderOld implements vscode.WebviewViewProvider {
 </html>`;
 
         webviewView.webview.onDidReceiveMessage(message => {
-          switch (message.command) {
-            case 'message':
-              if (message.type === 'warning') {
-                vscode.window.showWarningMessage(message.text);
-              } else if (message.type === 'error') {
-                vscode.window.showErrorMessage(message.text);
-              } else {
-                vscode.window.showInformationMessage(message.text);
-              }
-              break;
-            case 'refresh':
-              this.refreshIdentify();
-              this.webView?.postMessage({command: 'host-uri', text: this.portalBindingUri});
-              break;
-            case 'signin':
-              vscode.commands.executeCommand('extension.teletype-signin');
-              vscode.window.showInformationMessage(message.text);
-              break;
-            case 'share-portal':
-              vscode.commands.executeCommand('extension.share-portal');
-              vscode.window.showInformationMessage(message.text);
-              break;
-            case 'close-portal':
-              vscode.commands.executeCommand('extension.close-host-portal');
-              vscode.window.showInformationMessage(message.text);
-              break;
-            case 'join-portal':
-              vscode.commands.executeCommand('extension.join-portal');
-              vscode.window.showInformationMessage(message.text);
-              break;
-            case 'alert':
-              vscode.window.showWarningMessage(message.text);
-              break;
-            case 'test':
-              webviewView.webview.postMessage({command: 'xxxxxx'});
-              break;
-          }            
+            switch (message.command) {
+                case 'message':
+                    if (message.type === 'warning') {
+                        vscode.window.showWarningMessage(message.text);
+                    } else if (message.type === 'error') {
+                        vscode.window.showErrorMessage(message.text);
+                    } else {
+                        vscode.window.showInformationMessage(message.text);
+                    }
+                    break;
+                case 'refresh':
+                    this.refreshIdentify();
+                    this.webView?.postMessage({ command: 'host-uri', text: this.portalBindingUri });
+                    break;
+                case 'signin':
+                    vscode.commands.executeCommand('extension.teletype-signin');
+                    vscode.window.showInformationMessage(message.text);
+                    break;
+                case 'share-portal':
+                    vscode.commands.executeCommand('extension.share-portal');
+                    vscode.window.showInformationMessage(message.text);
+                    break;
+                case 'close-portal':
+                    vscode.commands.executeCommand('extension.close-host-portal');
+                    vscode.window.showInformationMessage(message.text);
+                    break;
+                case 'join-portal':
+                    vscode.commands.executeCommand('extension.join-portal');
+                    vscode.window.showInformationMessage(message.text);
+                    break;
+                case 'alert':
+                    vscode.window.showWarningMessage(message.text);
+                    break;
+                case 'test':
+                    webviewView.webview.postMessage({ command: 'xxxxxx' });
+                    break;
+            }
         });
 
-        this.webView = webviewView.webview;    
+        this.webView = webviewView.webview;
     }
 }

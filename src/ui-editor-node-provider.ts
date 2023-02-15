@@ -6,119 +6,120 @@ import EditorBinding from './editor-binding';
 import PortalBindingManager from './portal-binding-manager';
 
 export class EditorNodeProvider implements vscode.TreeDataProvider<Dependency> {
-	public static readonly viewType = 'teletype.accountsView';
+    public static readonly viewType = 'teletype.accountsView';
 
-	private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event;
 
-	constructor(private portalBindingManager: PortalBindingManager, private workspaceManager: WorkspaceManager) {
-		portalBindingManager.onDidChange(this.refresh.bind(this));
-		workspaceManager.onDidChange(this.refresh.bind(this));
-	}
+    constructor(private portalBindingManager: PortalBindingManager, private workspaceManager: WorkspaceManager) {
+        portalBindingManager.onDidChange(this.refresh.bind(this));
+        workspaceManager.onDidChange(this.refresh.bind(this));
+    }
 
-	refresh(): void {
-		this._onDidChangeTreeData.fire();
-	}
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
+    }
 
-	getTreeItem(element: Dependency): vscode.TreeItem {
-		return element;
-	}
+    getTreeItem(element: Dependency): vscode.TreeItem {
+        return element;
+    }
 
-	async getChildren(element?: Dependency): Promise<Dependency[]> {
-		if (!this.workspaceManager) {
-			vscode.window.showInformationMessage('No dependency in empty workspace');
-			return Promise.resolve([]);
-		}
+    async getChildren(element?: Dependency): Promise<Dependency[]> {
+        if (!this.workspaceManager) {
+            vscode.window.showInformationMessage('No dependency in empty workspace');
+            return Promise.resolve([]);
+        }
 
-		let lst: Dependency[] = [];
+        let lst: Dependency[] = [];
 
-		if (!element) {
-			const host = await this.portalBindingManager.getHostPortalBinding();
+        if (!element) {
+            const host = await this.portalBindingManager.getHostPortalBinding();
 
-			if (host) {
-				host.portal?.bufferProxiesById.forEach((a,_) => {
-					const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
-					if (binding) {
-						let pathName = binding.filePath ?? binding.fsFullPathUri?.toString() ?? '';
-						if (binding.pendingUpdates?.length > 0) {
-							pathName += ' *';
-						}
-						lst.push(new Dependency(pathName, binding.fsFullPathUri, true));
-					} else {
-						lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
-					}
-				});
-				// host.portal?.editorProxiesById.forEach((a,_) => {
-				//  	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
-				// });
-			}
-			const guests = await this.portalBindingManager.getGuestPortalBindings();
-			if (guests) {
-				guests.forEach(guest => {
-					guest.portal?.bufferProxiesById.forEach((a,_) => {
-						const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
-						if (binding) {
-							let pathName = binding.filePath ?? binding.fsFullPathUri?.toString() ?? '';
-							if (binding.pendingUpdates?.length > 0) {
-								pathName += ' *';
-							}
-							lst.push(new Dependency(pathName, binding.fsFullPathUri));
-						} else {
-							lst.push(new Dependency(`(unbinded) ${a.uri}`));
-						}
-					});
-					// guest.portal?.editorProxiesById.forEach((a,_) => {
-					// 	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`));
-					// });
-				});				
-			}
+            if (host) {
+                host.portal?.bufferProxiesById.forEach((a, _) => {
+                    const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
+                    if (binding) {
+                        let pathName = binding.filePath ?? binding.fsFullPathUri?.toString() ?? '';
+                        if (binding.pendingUpdates?.length > 0) {
+                            pathName += ' *';
+                        }
+                        lst.push(new Dependency(pathName, binding.fsFullPathUri, true));
+                    } else {
+                        lst.push(new Dependency(`(unbinded) ${a.uri}`, undefined, true));
+                    }
+                });
+                // host.portal?.editorProxiesById.forEach((a,_) => {
+                //  	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`, undefined, true));
+                // });
+            }
+            const guests = await this.portalBindingManager.getGuestPortalBindings();
+            if (guests) {
+                guests.forEach(guest => {
+                    guest.portal?.bufferProxiesById.forEach((a, _) => {
+                        const binding = this.workspaceManager.getBufferBindingByBufferProxy(a);
+                        if (binding) {
+                            let pathName = binding.filePath ?? binding.fsFullPathUri?.toString() ?? '';
+                            if (binding.pendingUpdates?.length > 0) {
+                                pathName += ' *';
+                            }
+                            lst.push(new Dependency(pathName, binding.fsFullPathUri));
+                        } else {
+                            lst.push(new Dependency(`(unbinded) ${a.uri}`));
+                        }
+                    });
+                    // guest.portal?.editorProxiesById.forEach((a,_) => {
+                    // 	lst.push(new Dependency(` > (editor) ${a.bufferProxy.uri}`));
+                    // });
+                });
+            }
 
-			// this.workspaceManager.getEditorBindings().forEach(editorBinding => {
-			// 	const filePath = editorBinding.bufferBinding.getBufferProxyURI();
-			// 	if (!editorBinding.isRemote) {
-			// 		lst.push(new Dependency(filePath));
-			// 	} else {
-			// 		lst.push(new Dependency(`* ${filePath}`));
-			// 	}
-			// });
-		}
+            // this.workspaceManager.getEditorBindings().forEach(editorBinding => {
+            // 	const filePath = editorBinding.bufferBinding.getBufferProxyURI();
+            // 	if (!editorBinding.isRemote) {
+            // 		lst.push(new Dependency(filePath));
+            // 	} else {
+            // 		lst.push(new Dependency(`* ${filePath}`));
+            // 	}
+            // });
+        }
 
-		return Promise.resolve(lst);
-	}
+        return Promise.resolve(lst);
+    }
 }
 
 export class Dependency extends vscode.TreeItem {
 
-	constructor(
-		public readonly label: string,
-		public readonly path?: vscode.Uri,
-		public readonly isHost?: boolean,
-		public readonly iconPath?: vscode.Uri | string | vscode.ThemeIcon,
-		public readonly collapsibleState?: vscode.TreeItemCollapsibleState
-	) {
-		super(label, collapsibleState);
+    constructor(
+        public readonly label: string,
+        public readonly path?: vscode.Uri,
+        public readonly isHost?: boolean,
+        public readonly iconPath?: vscode.Uri | string | vscode.ThemeIcon,
+        public readonly collapsibleState?: vscode.TreeItemCollapsibleState
+    ) {
+        super(label, collapsibleState);
 
-		if (iconPath) {
-			this.iconPath = iconPath;
-		} else if (!isHost) {
-			this.iconPath = new vscode.ThemeIcon('link');
-		}
+        if (iconPath) {
+            this.iconPath = iconPath;
+        } else if (!isHost) {
+            this.iconPath = new vscode.ThemeIcon('link');
+        }
 
-		this.tooltip = `${this.label}\n(${path?.toString()})`;
-		// this.description = `${this.label}`;
+        this.tooltip = `${this.label}\n(${path?.toString()})`;
+        // this.description = `${this.label}`;
 
-		if (this.path) {
-			this.command = {title: 'Open Editor', command: 'extension.show-editor',
-							// arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
-							arguments: [this.path ?? '']
-						};
-		}
-	}
+        if (this.path) {
+            this.command = {
+                title: 'Open Editor', command: 'extension.show-editor',
+                // arguments: [this.isHost ? vscode.Uri.parse(label) : this.path? vscode.Uri.file(this.path) : '']
+                arguments: [this.path ?? '']
+            };
+        }
+    }
 
-	// iconPath = {
-	// 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-	// 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	// };
+    // iconPath = {
+    // 	light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+    // 	dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+    // };
 
-	contextValue = 'dependency';
+    contextValue = 'dependency';
 }

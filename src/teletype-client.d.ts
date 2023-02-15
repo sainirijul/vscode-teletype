@@ -1,7 +1,7 @@
 
 declare module '@atom/teletype-client' {
     // import { Position } from "./teletype-types";
-    import {CompositeDisposable, Emitter} from 'event-kit';
+    import { CompositeDisposable, Emitter } from 'event-kit';
 
     export interface Position {
         row: number;
@@ -14,25 +14,25 @@ declare module '@atom/teletype-client' {
     }
 
     export interface IBufferDelegate {
-        dispose() : void;
-        setText(text: string) : void;
-        didChangeURI(uri: string) : void;
-        save() : void;
-        updateText(updates: any[]) : void;
+        dispose(): void;
+        setText(text: string): void;
+        didChangeURI(uri: string): void;
+        save(): void;
+        updateText(updates: any[]): void;
     }
 
     export interface UpdatePosition {
         followState: number;
         editorProxy: EditorProxy;
         position: Position;
-    }    
+    }
 
     export class BufferProxy {
         id: number;
         uri: string;
-		onDidChangeBuffer: any;
+        onDidChangeBuffer: any;
         isHost: boolean;
-        hostPeerId: string; 
+        hostPeerId: string;
         subscriptions: CompositeDisposable;
 
         // constructor({id, uri, text, history, operations, router, hostPeerId, siteId, didDispose});
@@ -143,11 +143,11 @@ declare module '@atom/teletype-client' {
 
         onDidUpdateRemoteSelections(callback: any): void;
 
-        receiveFetch({requestId}: any): void;
+        receiveFetch({ requestId }: any): void;
 
         receiveSelectionsUpdate(selectionsUpdate: any): void;
 
-        receiveUpdate({body}: any): void;
+        receiveUpdate({ body }: any): void;
 
         serialize(): void;
 
@@ -266,7 +266,7 @@ declare module '@atom/teletype-client' {
         updateTether(state: number, editorProxy: EditorProxy, position: Position): Promise<void>;
         siteDidJoin(siteId: number): void;
         siteDidLeave(siteId: number): void;
-        didChangeEditorProxies(): void;    
+        didChangeEditorProxies(): void;
     }
 
     export class Portal {
@@ -279,7 +279,7 @@ declare module '@atom/teletype-client' {
         editorProxiesById: Map<string, EditorProxy>;
         bufferProxiesById: Map<string, BufferProxy>;
         activeEditorProxiesBySiteId: Map<number, EditorProxy>;
-            
+
         constructor(...args: any[]);
 
         activateEditorProxy(editorProxy: EditorProxy | null | undefined): void;
